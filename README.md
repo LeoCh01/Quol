@@ -1,1 +1,1 @@
-# windows-helper
+pyQt window application
