@@ -1,0 +1,18 @@
+#title-bar {
+    background-color: red;
+    border: 10px solid red;
+    border-radius: 10px;
+    font-size: 16px;
+    color: transparent;
+}
+
+#title-bar QPushButton {
+    border: 10px solid transparent;
+    border-top: 0;
+    border-bottom: 0;
+    color: white;
+}
+
+#title-bar QLabel {
+    color: white;
+}

@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QBrush, QColor, QPen
+from PySide6.QtGui import QPainter, QBrush, QColor, QPen, QPainterPath, QRegion
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
 
 
@@ -9,41 +9,44 @@ class CustomTitleBar(QWidget):
         self.parent = parent
         self.parent.setWindowFlags(Qt.FramelessWindowHint)
 
-        self.setStyleSheet("QWidget {background-color: #333; color: white; font-size: 16px;}")
+        self.setObjectName("title-bar")
+        self.bar_color = QColor("#222")
 
         self.l1 = QHBoxLayout(self)
-        # self.l1.setContentsMargins(0, 0, 0, 0)
-        # self.l1.setSpacing(0)
 
         self.title_label = QLabel(title)
-        self.l1.addWidget(self.title_label)
+        self.l1.addWidget(self.title_label, stretch=10)
 
-        self.collapse_button = QPushButton("▼")
-        self.collapse_button.clicked.connect(self.toggleCollapse)
-        self.l1.addWidget(self.collapse_button)
+        self.collapse_btn = QPushButton("▼")
+        self.collapse_btn.clicked.connect(self.toggleCollapse)
+        self.l1.addWidget(self.collapse_btn, stretch=1)
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setBrush(QBrush(QColor(51, 51, 51)))
+        painter.setBrush(QBrush(self.bar_color))
         painter.drawRect(self.rect())
 
     def toggleCollapse(self):
-        if self.collapse_button.text() == "▼":
-            self.collapse_button.setText("▲")
+        if self.collapse_btn.text() == "▼":
+            self.collapse_btn.setText("▲")
             self.hideContent()
         else:
-            self.collapse_button.setText("▼")
+            self.collapse_btn.setText("▼")
             self.showContent()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.offset = event.globalPosition().toPoint() - self.window().pos()
-            event.accept()
+            self.bar_color = QColor("#111")
+            self.update()
 
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton:
             self.window().move(event.globalPosition().toPoint() - self.offset)
-            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self.bar_color = QColor("#222")
+        self.update()
 
     def hideContent(self):
         # self.parent.w1.setVisible(False)
@@ -53,3 +56,5 @@ class CustomTitleBar(QWidget):
     def showContent(self):
         # self.parent.w1.setVisible(True)
         self.parent.setFixedHeight(self.parent.original_geometry.height())
+
+
