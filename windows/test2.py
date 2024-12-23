@@ -9,6 +9,7 @@ class Test2(CustomWindow):
 
         self.setGeometry(250, 20, 200, 200)
         self.geo = self.geometry()
+        self.init_geo = self.geometry()
 
         self.w1 = QWidget()
         self.w1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)

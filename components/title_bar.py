@@ -33,6 +33,7 @@ class CustomTitleBar(QWidget):
         else:
             self.collapse_btn.setText("▼")
             self.showContent()
+        self.parent.geo = self.parent.geometry()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -54,6 +55,6 @@ class CustomTitleBar(QWidget):
         self.parent.setFixedHeight(title_bar_height)
 
     def showContent(self):
-        self.parent.setFixedHeight(self.parent.geo.height())
+        self.parent.setFixedHeight(self.parent.init_geo.height())
 
 

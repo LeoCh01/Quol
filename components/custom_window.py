@@ -8,7 +8,7 @@ from components.title_bar import CustomTitleBar
 class CustomWindow(QWidget):
     def __init__(self, title="Custom Window"):
         super().__init__()
-        self.geo = self.geometry()
+
         self.l1 = QVBoxLayout(self)
         self.l1.setContentsMargins(0, 0, 0, 0)
         self.l1.setSpacing(0)
