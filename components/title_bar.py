@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QBrush, QColor, QPen, QPainterPath, QRegion
+from PySide6.QtGui import QPainter, QBrush, QColor
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
 
 
@@ -46,15 +46,14 @@ class CustomTitleBar(QWidget):
 
     def mouseReleaseEvent(self, event):
         self.bar_color = QColor("#222")
+        self.parent.geo = self.parent.geometry()
         self.update()
 
     def hideContent(self):
-        # self.parent.w1.setVisible(False)
         title_bar_height = self.parent.title_bar.sizeHint().height()
         self.parent.setFixedHeight(title_bar_height)
 
     def showContent(self):
-        # self.parent.w1.setVisible(True)
-        self.parent.setFixedHeight(self.parent.original_geometry.height())
+        self.parent.setFixedHeight(self.parent.geo.height())
 
 

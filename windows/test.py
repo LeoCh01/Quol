@@ -1,27 +1,16 @@
-from PySide6.QtWidgets import QVBoxLayout, QWidget, QSizePolicy
+from PySide6.QtWidgets import QWidget, QSizePolicy
 
-from components.round_window import RoundWindow
-from components.title_bar import CustomTitleBar
+from components.custom_window import CustomWindow
 
 
-class Test(RoundWindow):
+class Test(CustomWindow):
     def __init__(self):
-        super().__init__()
+        super().__init__("Test Window")
 
-        self.setGeometry(100, 100, 250, 400)
-        self.original_geometry = self.geometry()
+        self.setGeometry(20, 20, 200, 200)
+        self.geo = self.geometry()
 
         self.w1 = QWidget()
-        self.l1 = QVBoxLayout(self.w1)
-        self.l1.setContentsMargins(0, 0, 0, 0)
-        self.l1.setSpacing(0)
-
-        self.title_bar = CustomTitleBar("Test 1 Title", self)
-        self.l1.addWidget(self.title_bar)
-
-        self.w2 = QWidget()
-        self.w2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.w2.setStyleSheet("background-color: #444;")
-        self.l1.addWidget(self.w2)
-
-        self.setCentralWidget(self.w1)
+        self.w1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.w1.setStyleSheet("background-color: #444;")
+        self.l1.addWidget(self.w1)
