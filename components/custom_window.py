@@ -1,15 +1,12 @@
 from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt
-from PySide6.QtGui import QPainterPath, QRegion
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy
-
-from components.title_bar import CustomTitleBar
+from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton
 
 
 class CustomWindow(QWidget):
     def __init__(self, title="Custom Window", geometry=(0, 0, 0, 0)):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
-        self.setAttribute(Qt.WA_TranslucentBackground)
         self.setGeometry(*geometry)
         self.geo = self.geometry()
         self.geo_old = self.geometry()
@@ -67,3 +64,58 @@ class CustomWindow(QWidget):
             self.geo = self.geometry()
             self.geo_old = self.geometry()
             self.first_run = False
+
+
+class CustomTitleBar(QWidget):
+    def __init__(self, title="Custom Title Bar", parent: CustomWindow = None):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.setObjectName("title-bar")
+        self.bar_color_default = QColor("#222")
+        self.bar_color = self.bar_color_default
+
+        self.l1 = QHBoxLayout(self)
+
+        self.title_label = QLabel(title)
+        self.l1.addWidget(self.title_label, stretch=10)
+
+        self.collapse_btn = QPushButton("▼")
+        self.collapse_btn.clicked.connect(self.toggleCollapse)
+        self.l1.addWidget(self.collapse_btn, stretch=1)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setBrush(QBrush(self.bar_color))
+        painter.drawRect(self.rect())
+
+    def toggleCollapse(self):
+        self.parent.geometry_bugfix()
+        if self.collapse_btn.text() == "▼":
+            self.collapse_btn.setText("▲")
+            self.parent.hideContent()
+        else:
+            self.collapse_btn.setText("▼")
+            self.parent.showContent()
+        self.parent.geo = self.parent.geometry()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.offset = event.globalPosition().toPoint() - self.window().pos()
+            self.bar_color = self.bar_color.darker(150)
+            self.parent.setWindowOpacity(0.5)
+            self.update()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & Qt.LeftButton:
+            self.window().move(event.globalPosition().toPoint() - self.offset)
+
+    def mouseReleaseEvent(self, event):
+        self.bar_color = self.bar_color_default
+        self.parent.setWindowOpacity(1)
+        self.parent.geo = self.parent.geometry()
+        self.update()
+
+
+
+
