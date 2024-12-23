@@ -6,13 +6,14 @@ from components.title_bar import CustomTitleBar
 
 
 class CustomWindow(QWidget):
-    def __init__(self, title="Custom Window", geometry=(20, 20, 200, 200)):
+    def __init__(self, title="Custom Window", geometry=(0, 0, 0, 0)):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
-
+        self.setAttribute(Qt.WA_TranslucentBackground)
         self.setGeometry(*geometry)
         self.geo = self.geometry()
-        self.init_geo = self.geometry()
+        self.geo_old = self.geometry()
+        self.first_run = True
 
         self.l1 = QVBoxLayout(self)
         self.l1.setContentsMargins(0, 0, 0, 0)
@@ -29,7 +30,6 @@ class CustomWindow(QWidget):
         self.layout = QVBoxLayout(self.w1)
         self.layout.setAlignment(Qt.AlignTop)
 
-
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.setMask(self.generateRoundedMask())
@@ -42,6 +42,7 @@ class CustomWindow(QWidget):
         return QRegion(path.toFillPolygon().toPolygon())
 
     def toggle_windows(self, is_hidden):
+        self.geometry_bugfix()
         self.animation = QPropertyAnimation(self, b"pos")
         start_pos = self.pos()
         end_pos = QPoint(self.geo.x(), self.geo.y() if is_hidden else 0 - self.geo.height())
@@ -59,4 +60,10 @@ class CustomWindow(QWidget):
 
     def showContent(self):
         self.w1.show()
-        self.setFixedHeight(self.init_geo.height())
+        self.setFixedHeight(self.geo_old.height())
+
+    def geometry_bugfix(self):
+        if self.first_run:
+            self.geo = self.geometry()
+            self.geo_old = self.geometry()
+            self.first_run = False

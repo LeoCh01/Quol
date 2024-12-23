@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QBrush, QColor, QPalette
+from PySide6.QtGui import QPainter, QBrush, QColor
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
 
 
@@ -39,6 +39,7 @@ class CustomTitleBar(QWidget):
         if event.button() == Qt.LeftButton:
             self.offset = event.globalPosition().toPoint() - self.window().pos()
             self.bar_color = self.bar_color.darker(150)
+            self.parent.setWindowOpacity(0.5)
             self.update()
 
     def mouseMoveEvent(self, event):
@@ -47,6 +48,7 @@ class CustomTitleBar(QWidget):
 
     def mouseReleaseEvent(self, event):
         self.bar_color = self.bar_color_default
+        self.parent.setWindowOpacity(1)
         self.parent.geo = self.parent.geometry()
         self.update()
 

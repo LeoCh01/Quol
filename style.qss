@@ -8,6 +8,7 @@
     border-top: 0;
     border-bottom: 0;
     color: white;
+    font-weight: bold;
 }
 
 #content {
@@ -17,4 +18,8 @@
 
 #content * {
     color: white;
+}
+
+#content QPushButton {
+    background-color: #333;
 }

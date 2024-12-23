@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt, Signal, QObject
 from PySide6.QtWidgets import QApplication
 from windows.test import Test
 from windows.test2 import Test2
+from windows.info import Info
 
 
 class App(QObject):
@@ -11,8 +12,9 @@ class App(QObject):
     def __init__(self):
         super().__init__()
         self.windows = [
-            Test("Test Window", (20, 20, 200, 200)),
-            Test2("Test Window 2", (250, 20, 200, 200))
+            Info("Info", (10, 10, 200, 1)),
+            Test("Test Window", (10, 90, 200, 1)),
+            Test2("Test Window 2", (220, 10, 200, 1))
         ]
         self.is_hidden = False
 
