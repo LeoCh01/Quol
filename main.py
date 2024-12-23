@@ -10,11 +10,13 @@ class App(QObject):
 
     def __init__(self):
         super().__init__()
-        self.windows = [Test(), Test2()]
+        self.windows = [
+            Test("Test Window", (20, 20, 200, 200)),
+            Test2("Test Window 2", (250, 20, 200, 200))
+        ]
         self.is_hidden = False
 
         for window in self.windows:
-            window.setWindowFlags(window.windowFlags() | Qt.WindowStaysOnTopHint)
             self.toggle.connect(window.toggle_windows)
 
             window.show()

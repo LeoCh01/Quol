@@ -1,17 +1,26 @@
-from PySide6.QtWidgets import QWidget, QSizePolicy
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, QLabel, QGroupBox, QLineEdit, QPushButton
 
 from components.custom_window import CustomWindow
 
 
 class Test(CustomWindow):
-    def __init__(self):
-        super().__init__("Test Window")
+    def __init__(self, title, geometry):
+        super().__init__(title, geometry)
 
-        self.setGeometry(20, 20, 200, 200)
-        self.geo = self.geometry()
-        self.init_geo = self.geometry()
+        self.box = QGroupBox("Test")
+        self.layout.addWidget(self.box)
 
-        self.w1 = QWidget()
-        self.w1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.w1.setStyleSheet("background-color: #444;")
-        self.l1.addWidget(self.w1)
+        self.box_layout = QVBoxLayout(self.box)
+
+        self.label = QLabel("Test label")
+        self.box_layout.addWidget(self.label)
+
+        self.text_input = QLineEdit()
+        self.box_layout.addWidget(self.text_input)
+
+        self.button = QPushButton("Submit")
+        self.box_layout.addWidget(self.button)
+
+
+

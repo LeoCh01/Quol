@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QBrush, QColor
+from PySide6.QtGui import QPainter, QBrush, QColor, QPalette
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
 
 
@@ -7,10 +7,10 @@ class CustomTitleBar(QWidget):
     def __init__(self, title="Custom Title Bar", parent=None):
         super().__init__(parent)
         self.parent = parent
-        self.parent.setWindowFlags(Qt.FramelessWindowHint)
 
         self.setObjectName("title-bar")
-        self.bar_color = QColor("#222")
+        self.bar_color_default = QColor("#222")
+        self.bar_color = self.bar_color_default
 
         self.l1 = QHBoxLayout(self)
 
@@ -29,16 +29,16 @@ class CustomTitleBar(QWidget):
     def toggleCollapse(self):
         if self.collapse_btn.text() == "▼":
             self.collapse_btn.setText("▲")
-            self.hideContent()
+            self.parent.hideContent()
         else:
             self.collapse_btn.setText("▼")
-            self.showContent()
+            self.parent.showContent()
         self.parent.geo = self.parent.geometry()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.offset = event.globalPosition().toPoint() - self.window().pos()
-            self.bar_color = QColor("#111")
+            self.bar_color = self.bar_color.darker(150)
             self.update()
 
     def mouseMoveEvent(self, event):
@@ -46,15 +46,10 @@ class CustomTitleBar(QWidget):
             self.window().move(event.globalPosition().toPoint() - self.offset)
 
     def mouseReleaseEvent(self, event):
-        self.bar_color = QColor("#222")
+        self.bar_color = self.bar_color_default
         self.parent.geo = self.parent.geometry()
         self.update()
 
-    def hideContent(self):
-        title_bar_height = self.parent.title_bar.sizeHint().height()
-        self.parent.setFixedHeight(title_bar_height)
 
-    def showContent(self):
-        self.parent.setFixedHeight(self.parent.init_geo.height())
 
 
