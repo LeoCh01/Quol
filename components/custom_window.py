@@ -1,6 +1,6 @@
 from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt
 from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog
 
 
 class CustomWindow(QWidget):
@@ -34,7 +34,7 @@ class CustomWindow(QWidget):
     def generateRoundedMask(self):
         rect = self.rect()
         path = QPainterPath()
-        radius = 10
+        radius = 6
         path.addRoundedRect(rect, radius, radius)
         return QRegion(path.toFillPolygon().toPolygon())
 
@@ -64,6 +64,23 @@ class CustomWindow(QWidget):
             self.geo = self.geometry()
             self.geo_old = self.geometry()
             self.first_run = False
+
+
+class CustomDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setObjectName("content")
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.setMask(self.generateRoundedMask())
+
+    def generateRoundedMask(self):
+        rect = self.rect()
+        path = QPainterPath()
+        radius = 6
+        path.addRoundedRect(rect, radius, radius)
+        return QRegion(path.toFillPolygon().toPolygon())
 
 
 class CustomTitleBar(QWidget):
