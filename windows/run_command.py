@@ -1,6 +1,7 @@
 import subprocess
 import json
-from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QDialogButtonBox, QPlainTextEdit
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QDialogButtonBox, \
+    QPlainTextEdit, QCheckBox, QDialog
 from components.custom_window import CustomWindow, CustomDialog
 
 
@@ -24,17 +25,16 @@ class RunCmd(CustomWindow):
         dialog = AddCommandDialog(self)
         v = dialog.exec()
         if v:
-            cmd_name, cmd = dialog.get_command()
-            print(cmd_name, cmd)
+            cmd_name, cmd, show_output = dialog.get_command()
             if cmd and cmd_name:
-                self.commands.append((cmd_name, cmd))
-                self.add_command_to_layout(cmd_name, cmd)
+                self.commands.append((cmd_name, cmd, show_output))
+                self.add_command_to_layout(cmd_name, cmd, show_output)
                 self.save_commands()
 
-    def add_command_to_layout(self, cmd_name, cmd):
+    def add_command_to_layout(self, cmd_name, cmd, show_output):
         cmd_layout = QHBoxLayout()
         cmd_button = QPushButton(cmd_name)
-        cmd_button.clicked.connect(lambda _, c=cmd: self.run_cmd(c))
+        cmd_button.clicked.connect(lambda _, c=cmd, s=show_output: self.run_cmd(c, s))
         cmd_layout.addWidget(cmd_button)
 
         delete_button = QPushButton("\u274C")
@@ -52,12 +52,28 @@ class RunCmd(CustomWindow):
                 widget.setParent(None)
         self.save_commands()
 
-    def run_cmd(self, cmd):
+    def run_cmd(self, cmd, show_output):
         try:
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            print(result.stdout)
+            if show_output:
+                self.show_command_output(result.stdout)
         except Exception as e:
             print(f"An error occurred: {e}")
+
+    def show_command_output(self, res):
+        output_dialog = QDialog(self)
+        output_dialog.setWindowTitle("Command Output")
+        output_dialog.setGeometry(100, 100, 600, 400)
+
+        output_text = QPlainTextEdit(output_dialog)
+        output_text.setPlainText(res)
+        output_text.setReadOnly(True)
+
+        layout = QVBoxLayout()
+        layout.addWidget(output_text)
+
+        output_dialog.setLayout(layout)
+        output_dialog.exec()
 
     def save_commands(self):
         with open('commands.json', 'w') as f:
@@ -71,8 +87,8 @@ class RunCmd(CustomWindow):
             print("error :: ", e)
             self.commands = []
 
-        for cmd_name, cmd in self.commands:
-            self.add_command_to_layout(cmd_name, cmd)
+        for cmd_name, cmd, show_output in self.commands:
+            self.add_command_to_layout(cmd_name, cmd, show_output)
 
 
 class AddCommandDialog(CustomDialog):
@@ -94,11 +110,14 @@ class AddCommandDialog(CustomDialog):
         self.command_input = QPlainTextEdit(self)
         self.command_input.setPlaceholderText("command")
 
+        self.show_output_checkbox = QCheckBox("Show Output", self)
+
         layout = QVBoxLayout()
         layout.addWidget(QLabel("Command Name:"))
         layout.addWidget(self.command_name_input)
         layout.addWidget(QLabel("Command:"))
         layout.addWidget(self.command_input)
+        layout.addWidget(self.show_output_checkbox)
 
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
@@ -108,4 +127,4 @@ class AddCommandDialog(CustomDialog):
         self.setLayout(layout)
 
     def get_command(self):
-        return self.command_name_input.text(), self.command_input.toPlainText()
+        return self.command_name_input.text(), self.command_input.toPlainText(), self.show_output_checkbox.isChecked()
