@@ -1,6 +1,7 @@
 from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt
 from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog
+import random
 
 
 class CustomWindow(QWidget):
@@ -42,7 +43,17 @@ class CustomWindow(QWidget):
         self.geometry_bugfix()
         self.animation = QPropertyAnimation(self, b"pos")
         start_pos = self.pos()
-        end_pos = QPoint(self.geo.x(), self.geo.y() if is_hidden else 0 - self.geo.height())
+        screen_geometry = self.screen().geometry()
+        side = random.randint(0, 1)
+
+        if side:
+            random_x = random.randint(0, screen_geometry.width() - self.geo.width())
+            random_y = random.choice([-self.geo.height(), screen_geometry.height()])
+        else:
+            random_x = random.choice([-self.geo.width(), screen_geometry.width()])
+            random_y = random.randint(0, screen_geometry.height() - self.geo.height())
+
+        end_pos = QPoint(self.geo.x(), self.geo.y()) if is_hidden else QPoint(random_x, random_y)
 
         self.animation.setStartValue(start_pos)
         self.animation.setEndValue(end_pos)

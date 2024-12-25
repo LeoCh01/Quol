@@ -76,12 +76,12 @@ class RunCmd(CustomWindow):
         output_dialog.exec()
 
     def save_commands(self):
-        with open('commands.json', 'w') as f:
+        with open('res/commands.json', 'w') as f:
             json.dump(self.commands, f)
 
     def load_commands(self):
         try:
-            with open('commands.json', 'r') as f:
+            with open('res/commands.json', 'r') as f:
                 self.commands = json.load(f)
         except Exception as e:
             print("error :: ", e)

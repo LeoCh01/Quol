@@ -11,7 +11,7 @@
     font-weight: bold;
 }
 
-#content {
+#content, QCheckBox {
     background-color: #444;
     color: white;
 }
