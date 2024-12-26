@@ -9,8 +9,8 @@ import json
 
 
 class Info(CustomWindow):
-    def __init__(self, title, geometry):
-        super().__init__(title, geometry)
+    def __init__(self, geometry):
+        super().__init__("Info", geometry)
 
         self.ver = QPushButton(f"v{self.get_version(self)}")
         self.ver.clicked.connect(self.open_url)

@@ -1,7 +1,7 @@
 import keyboard
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication
-from windows.test import Test
+from windows.color_picker import ColorPicker
 from windows.run_command import RunCmd
 from windows.info import Info
 
@@ -12,9 +12,9 @@ class App(QObject):
     def __init__(self):
         super().__init__()
         self.windows = [
-            Info("Info", (10, 10, 200, 1)),
-            Test("Test Window", (10, 120, 200, 1)),
-            RunCmd("Run Command", (220, 10, 200, 1))
+            Info((10, 10, 200, 1)),
+            ColorPicker((10, 120, 200, 1)),
+            RunCmd((220, 10, 200, 1))
         ]
         self.is_hidden = False
 
