@@ -14,9 +14,9 @@ class RunCmd(CustomWindow):
         self.commands_groupbox.setLayout(self.commands_layout)
         self.layout.addWidget(self.commands_groupbox)
 
-        self.add_button = QPushButton("Add Command")
-        self.add_button.clicked.connect(self.open_add_command_dialog)
-        self.layout.addWidget(self.add_button)
+        self.add_btn = QPushButton("Add Command")
+        self.add_btn.clicked.connect(self.open_add_command_dialog)
+        self.layout.addWidget(self.add_btn)
 
         self.commands = []
         self.load_commands()
@@ -33,14 +33,14 @@ class RunCmd(CustomWindow):
 
     def add_command_to_layout(self, cmd_name, cmd, show_output):
         cmd_layout = QHBoxLayout()
-        cmd_button = QPushButton(cmd_name)
-        cmd_button.clicked.connect(lambda _, c=cmd, s=show_output: self.run_cmd(c, s))
-        cmd_layout.addWidget(cmd_button)
+        cmd_btn = QPushButton(cmd_name)
+        cmd_btn.clicked.connect(lambda _, c=cmd, s=show_output: self.run_cmd(c, s))
+        cmd_layout.addWidget(cmd_btn)
 
-        delete_button = QPushButton("\u274C")
-        delete_button.setFixedWidth(25)
-        delete_button.clicked.connect(lambda _, c=cmd, l=cmd_layout: self.delete_command(c, l))
-        cmd_layout.addWidget(delete_button)
+        delete_btn = QPushButton("\u274C")
+        delete_btn.setFixedWidth(25)
+        delete_btn.clicked.connect(lambda _, c=cmd, l=cmd_layout: self.delete_command(c, l))
+        cmd_layout.addWidget(delete_btn)
 
         self.commands_layout.addLayout(cmd_layout)
 
