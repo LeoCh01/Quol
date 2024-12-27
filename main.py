@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication
 from windows.color_picker import ColorPicker
 from windows.run_command import RunCmd
 from windows.info import Info
+import json
 
 
 class App(QObject):
@@ -22,7 +23,12 @@ class App(QObject):
             self.toggle.connect(window.toggle_windows)
             window.show()
 
-        keyboard.add_hotkey('`', self.toggle_windows, suppress=True)
+        with open('res/settings.json', 'r') as f:
+            settings = json.load(f)
+        
+        toggle_key = settings.get('toggle_key', '`')
+        print(f"Toggle key: {toggle_key}")
+        keyboard.add_hotkey(toggle_key, self.toggle_windows, suppress=True)
 
     def toggle_windows(self):
         self.toggle.emit(self.is_hidden)

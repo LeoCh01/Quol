@@ -48,7 +48,6 @@ class ColorPicker(CustomWindow):
         self.mouse_listener.start()
 
     def on_click(self, msg, data):
-        print(msg)
         if msg == 513 and self.select_btn.isChecked():
             self.timer.stop()
             self.select_btn.setChecked(False)
