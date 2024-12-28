@@ -18,4 +18,4 @@ v0.0.1
 
 For any inquiries or support, please reach out to leocheng333375749@gmail.com
 
-Thank you for using the PySide6 Helper Tool for Windows!
+:D
