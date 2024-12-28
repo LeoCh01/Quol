@@ -53,7 +53,7 @@ class App(QObject):
 if __name__ == "__main__":
     app = QApplication([])
 
-    with open('style.qss', 'r') as f:
+    with open('res/style.qss', 'r') as f:
         stylesheet = f.read()
     app.setStyleSheet(stylesheet)
 
