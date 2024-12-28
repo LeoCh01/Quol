@@ -48,6 +48,7 @@ class Info(CustomWindow):
             self.set_key.setChecked(False)
             self.key_label.setText(f' Key = {key}')
             self.set_toggle_key(key)
+            self.set_key.setText('Edit Toggle Key')
             keyboard.unhook(self.key_hook)
 
         self.set_key.setChecked(True)

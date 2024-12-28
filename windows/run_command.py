@@ -30,6 +30,7 @@ class RunCmd(CustomWindow):
                 self.commands.append((cmd_name, cmd, show_output))
                 self.add_command_to_layout(cmd_name, cmd, show_output)
                 self.save_commands()
+                self.setFixedHeight(self.height() + 30)
 
     def add_command_to_layout(self, cmd_name, cmd, show_output):
         cmd_layout = QHBoxLayout()
@@ -39,18 +40,21 @@ class RunCmd(CustomWindow):
 
         delete_btn = QPushButton("\u274C")
         delete_btn.setFixedWidth(25)
-        delete_btn.clicked.connect(lambda _, c=cmd, l=cmd_layout: self.delete_command(c, l))
+        delete_btn.clicked.connect(lambda _, c=cmd_name, l=cmd_layout: self.delete_command(c, l))
         cmd_layout.addWidget(delete_btn)
 
         self.commands_layout.addLayout(cmd_layout)
 
-    def delete_command(self, cmd, layout):
-        self.commands = [c for c in self.commands if c[1] != cmd]
+    def delete_command(self, cmd_name, layout):
+        self.commands = [c for c in self.commands if c[0] != cmd_name]
         for i in reversed(range(layout.count())):
             widget = layout.itemAt(i).widget()
             if widget is not None:
                 widget.setParent(None)
+
+        self.commands_layout.removeItem(layout)
         self.save_commands()
+        self.setFixedHeight(self.height() - 30)
 
     def run_cmd(self, cmd, show_output):
         try:
