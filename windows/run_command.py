@@ -112,7 +112,15 @@ class AddCommandDialog(CustomDialog):
         self.command_name_input.setPlaceholderText("name")
 
         self.command_input = QPlainTextEdit(self)
-        self.command_input.setPlaceholderText("command")
+        self.command_input.setPlaceholderText(
+            "add terminal command...\n\n"
+            "open webpage example:\n"
+            "start https://www.google.com\n\n"
+            "show ip address example (toggle checkbox):\n"
+            "ipconfig\n\n"
+            "concatenate commands example:\n"
+            "start https://www.google.com && ipconfig\n\n"
+        )
 
         self.show_output_checkbox = QCheckBox("Show Output", self)
 
