@@ -47,7 +47,7 @@ class App(QObject):
             settings = json.load(f)
         settings['toggle_key'] = key
         with open('res/settings.json', 'w') as f:
-            json.dump(settings, f, indent=4)
+            json.dump(settings, f, indent=2)
 
 
 if __name__ == "__main__":

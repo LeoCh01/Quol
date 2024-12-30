@@ -1,13 +1,13 @@
 import sys
-
+import json
 import keyboard
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QSettings, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QPushButton, QLabel
+from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 
 from components.custom_window import CustomWindow
-import json
-from PySide6.QtWidgets import QGridLayout
+
+RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 
 
 class Info(CustomWindow):
@@ -17,7 +17,7 @@ class Info(CustomWindow):
         self.grid_layout = QGridLayout()
         self.set_toggle_key = set_toggle_key
 
-        self.ver = QPushButton(f'v{self.get_version(self)}')
+        self.ver = QPushButton(f'v{self.get_version()}')
         self.ver.clicked.connect(self.open_url)
         self.grid_layout.addWidget(self.ver, 0, 0, 1, 2)
 
@@ -31,7 +31,8 @@ class Info(CustomWindow):
 
         self.startup = QPushButton('Startup App')
         self.startup.setCheckable(True)
-        self.startup.clicked.connect(self.add_startup)
+        self.startup.setChecked(self.get_startup())
+        self.startup.clicked.connect(self.toggle_startup)
         self.grid_layout.addWidget(self.startup, 3, 0)
 
         self.q = QPushButton('Quit')
@@ -41,6 +42,11 @@ class Info(CustomWindow):
         self.grid_layout.setColumnStretch(0, 3)
         self.grid_layout.setColumnStretch(1, 1)
         self.layout.addLayout(self.grid_layout)
+
+        # Check current startup status
+        self.settings = QSettings(RUN_PATH, QSettings.NativeFormat)
+        app_name = self.get_app_name()
+        self.startup.setChecked(self.settings.contains(app_name))
 
     def select_key(self):
         def on_key_press(event):
@@ -56,14 +62,21 @@ class Info(CustomWindow):
         self.key_hook = keyboard.on_press(on_key_press)
 
     @staticmethod
-    def get_version(self):
+    def get_version():
         with open('res/settings.json', 'r') as file:
             data = json.load(file)
             version = data.get('version', 'xxx')
         return version
 
     @staticmethod
-    def open_url(self):
+    def get_startup():
+        with open('res/settings.json', 'r') as file:
+            data = json.load(file)
+            startup = data.get('startup', False)
+        return startup
+
+    @staticmethod
+    def open_url():
         QDesktopServices.openUrl(QUrl('https://github.com/LeoCh01/windows-helper'))
 
     @staticmethod
@@ -71,8 +84,25 @@ class Info(CustomWindow):
         print('Quitting')
         sys.exit()
 
-    def add_startup(self):
+    def get_app_path(self):
+        return sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
+
+    def get_app_name(self):
+        return 'WindowsHelper'
+
+    def toggle_startup(self):
+        app_name = self.get_app_name()
+        app_path = self.get_app_path()
+
         if self.startup.isChecked():
-            print('Adding to startup')
+            self.settings.setValue(app_name, app_path)
+            print(f'Added {app_name} to startup with path: {app_path}')
         else:
-            print('Removing from startup')
+            self.settings.remove(app_name)
+            print(f'Removed {app_name} from startup')
+
+        with open('res/settings.json', 'r') as file:
+            data = json.load(file)
+            data['startup'] = self.startup.isChecked()
+        with open('res/settings.json', 'w') as file:
+            json.dump(data, file, indent=2)
