@@ -1,3 +1,7 @@
+import logging
+import os
+import sys
+
 import keyboard
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication
@@ -53,9 +57,23 @@ class App(QObject):
 if __name__ == "__main__":
     app = QApplication([])
 
-    with open('res/style.qss', 'r') as f:
-        stylesheet = f.read()
-    app.setStyleSheet(stylesheet)
+    # Set working directory
+    base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
+    os.chdir(base_dir)
 
-    application = App()
-    app.exec()
+    logging.basicConfig(
+        filename="res/error.log",
+        filemode='a',
+        level=logging.ERROR,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    )
+
+    try:
+        with open('res/style.qss', 'r') as f:
+            stylesheet = f.read()
+        app.setStyleSheet(stylesheet)
+
+        application = App()
+        app.exec()
+    except Exception as e:
+        logging.error(e, exc_info=True)
