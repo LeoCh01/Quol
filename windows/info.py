@@ -39,7 +39,7 @@ class Info(CustomWindow):
         self.q.clicked.connect(self.quit)
         self.grid_layout.addWidget(self.q, 3, 1)
 
-        self.grid_layout.setColumnStretch(0, 3)
+        self.grid_layout.setColumnStretch(0, 2)
         self.grid_layout.setColumnStretch(1, 1)
         self.layout.addLayout(self.grid_layout)
 

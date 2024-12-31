@@ -23,6 +23,7 @@ class ColorPicker(CustomWindow):
         self.box_layout.addWidget(self.hex, 0, 1)
 
         self.pixmap_label = QLabel()
+        self.pixmap_label.setFixedSize(70, 70)
         self.box_layout.addWidget(self.pixmap_label, 1, 0, 2, 2)
 
         self.copy_btn = QPushButton("copy")
