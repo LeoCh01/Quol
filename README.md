@@ -8,7 +8,7 @@ This project is a desktop application built using **PySide6**, designed to serve
 
 1. **Extract the ZIP file:**
 
-- Download the `windows-helper.zip` file from the repository.
+- Download the latest `windows-helper.zip` file from releases.
 - Extract the contents to your desired location on your computer.
 
 2. **Run the Application:**
@@ -21,10 +21,6 @@ This project is a desktop application built using **PySide6**, designed to serve
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **CMD Runner:** Save and execute custom command line instructions.
 - **Interface:** Runs at top layer and toggleable through hotkey. Adjustable layouts to fit your preferences.
-
-## Version
-
-v1.0.0
 
 ## Contact
 
