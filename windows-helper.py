@@ -5,9 +5,11 @@ import sys
 import keyboard
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication
+
+from windows.coin import Coin
 from windows.color_picker import ColorPicker
-from windows.run_command import RunCmd
 from windows.info import Info
+from windows.run_command import RunCmd
 import json
 
 
@@ -26,7 +28,8 @@ class App(QObject):
         self.windows = [
             Info((10, 10, 200, 1), set_toggle_key=self.set_toggle_key, key=self.toggle_key),
             ColorPicker((10, 150, 200, 1)),
-            RunCmd((220, 10, 200, 1))
+            RunCmd((220, 10, 200, 1)),
+            Coin((430, 10, 200, 1)),
         ]
         self.is_hidden = False
 
