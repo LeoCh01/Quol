@@ -6,7 +6,7 @@ import keyboard
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication
 
-from windows.coin import Coin
+from windows.chance import Chance
 from windows.color_picker import ColorPicker
 from windows.info import Info
 from windows.run_command import RunCmd
@@ -26,10 +26,10 @@ class App(QObject):
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
 
         self.windows = [
-            Info((10, 10, 200, 1), set_toggle_key=self.set_toggle_key, key=self.toggle_key),
-            ColorPicker((10, 150, 200, 1)),
-            RunCmd((220, 10, 200, 1)),
-            Coin((430, 10, 200, 1)),
+            Info((10, 10, 190, 1), set_toggle_key=self.set_toggle_key, key=self.toggle_key),
+            ColorPicker((10, 145, 190, 1)),
+            RunCmd((205, 10, 190, 1)),
+            Chance((400, 10, 190, 1)),
         ]
         self.is_hidden = False
 
@@ -79,4 +79,5 @@ if __name__ == "__main__":
         application = App()
         app.exec()
     except Exception as e:
+        print(e)
         logging.error(e, exc_info=True)
