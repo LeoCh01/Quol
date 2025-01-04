@@ -1,11 +1,9 @@
 from PySide6 import QtCore
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout, QApplication
 from PySide6.QtGui import QPixmap, Qt, QMovie
 import random
-
 from components.custom_window import CustomWindow
-from PySide6.QtCore import QTimer
 
 HEADS_IMAGE = 'res/img/coin-h.png'
 TAILS_IMAGE = 'res/img/coin-t.png'
@@ -63,22 +61,27 @@ class Chance(CustomWindow):
         self.is_running = True
 
         if self.is_coin_flip:
-            for i in range(1, 10):
-                self.result_label.setPixmap(QPixmap(HEADS_IMAGE))
-                QApplication.processEvents()
-                QThread.msleep(50 + i * 20)
-                self.result_label.setPixmap(QPixmap(TAILS_IMAGE))
-                QApplication.processEvents()
-                QThread.msleep(50 + i * 20)
-
-            if random.choice([True, False]):
-                self.result_label.setPixmap(QPixmap(HEADS_IMAGE))
-                QApplication.processEvents()
-                QThread.msleep(200)
+            self.flip_animation(random.sample([HEADS_IMAGE, TAILS_IMAGE], 2), random.choice([14, 15]))
         else:
             dice_value = random.randint(1, 6)
 
-        self.confetti()
+    def flip_animation(self, frames, total_flips, initial_interval=10):
+        def update_flip():
+            if self.flip_counter < total_flips:
+                current_frame = frames[self.flip_counter % len(frames)]
+                self.result_label.setPixmap(QPixmap(current_frame))
+                self.flip_counter += 1
+
+                new_interval = initial_interval + (self.flip_counter * 20)
+                self.flip_timer.setInterval(new_interval)
+            else:
+                self.flip_timer.stop()
+                self.confetti()
+
+        self.flip_counter = 0
+        self.flip_timer = QTimer(self)
+        self.flip_timer.timeout.connect(update_flip)
+        self.flip_timer.start(initial_interval)
 
     def confetti(self):
         self.confetti_label = QLabel(self)
