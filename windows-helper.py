@@ -26,10 +26,10 @@ class App(QObject):
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
 
         self.windows = [
-            Info((10, 10, 190, 1), set_toggle_key=self.set_toggle_key, key=self.toggle_key),
-            ColorPicker((10, 145, 190, 1)),
-            RunCmd((205, 10, 190, 1)),
-            Chance((400, 10, 190, 1)),
+            Info((10, 10, 180, 1), set_toggle_key=self.set_toggle_key, key=self.toggle_key),
+            RunCmd((10, 147, 180, 1)),
+            ColorPicker((200, 10, 180, 1)),
+            Chance((390, 10, 180, 1)),
         ]
         self.is_hidden = False
 

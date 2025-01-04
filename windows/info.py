@@ -36,6 +36,7 @@ class Info(CustomWindow):
         self.grid_layout.addWidget(self.startup, 3, 0)
 
         self.q = QPushButton('Quit')
+        self.q.setStyleSheet("background-color: #c44; color: white;")
         self.q.clicked.connect(self.quit)
         self.grid_layout.addWidget(self.q, 3, 1)
 

@@ -41,6 +41,9 @@ class ColorPicker(CustomWindow):
         clipboard.setText(self.hex.text())
 
     def select_color(self):
+        self.select_btn.setText("...")
+        self.select_btn.setStyleSheet("background-color: #eee; color: #000")
+        self.select_btn.setChecked(True)
         self.timer.timeout.connect(self.update_color)
         self.timer.start(100)
         self.mouse_listener = mouse.Listener(win32_event_filter=self.on_click)
@@ -49,6 +52,8 @@ class ColorPicker(CustomWindow):
     def on_click(self, msg, data):
         if msg == 513 and self.select_btn.isChecked():
             self.timer.stop()
+            self.select_btn.setText("pick color")
+            self.select_btn.setStyleSheet("")
             self.select_btn.setChecked(False)
             self.mouse_listener.stop()
             self.mouse_listener.suppress_event()
