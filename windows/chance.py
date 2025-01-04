@@ -5,8 +5,10 @@ from PySide6.QtGui import QPixmap, Qt, QMovie
 import random
 from components.custom_window import CustomWindow
 
-HEADS_IMAGE = 'res/img/coin-h.png'
-TAILS_IMAGE = 'res/img/coin-t.png'
+COIN = 'res/img/coin-x.png'
+COIN_IMAGES = ['res/img/coin-h.png', 'res/img/coin-t.png']
+DICE = 'res/img/dice-x.png'
+DICE_IMAGES = ['res/img/dice-1.png', 'res/img/dice-2.png', 'res/img/dice-3.png', 'res/img/dice-4.png', 'res/img/dice-5.png', 'res/img/dice-6.png']
 
 
 class Chance(CustomWindow):
@@ -16,7 +18,7 @@ class Chance(CustomWindow):
 
         self.grid_layout = QGridLayout()
         self.result_label = QLabel()
-        self.result_label.setPixmap(QPixmap(HEADS_IMAGE))
+        self.result_label.setPixmap(QPixmap(COIN))
         self.result_label.setAlignment(Qt.AlignCenter)
         self.coin_button = QPushButton('Coin')
         self.dice_button = QPushButton('Dice')
@@ -49,11 +51,11 @@ class Chance(CustomWindow):
         if self.is_coin_flip:
             self.coin_button.setStyleSheet('background-color: #696')
             self.dice_button.setStyleSheet('')
-            self.result_label.setPixmap(QPixmap(HEADS_IMAGE))
+            self.result_label.setPixmap(QPixmap(COIN))
         else:
             self.coin_button.setStyleSheet('')
             self.dice_button.setStyleSheet('background-color: #696')
-            self.result_label.setPixmap(QPixmap('path/to/dice/image.png'))
+            self.result_label.setPixmap(QPixmap(DICE))
 
     def perform_action(self, event):
         if self.is_running:
@@ -61,9 +63,9 @@ class Chance(CustomWindow):
         self.is_running = True
 
         if self.is_coin_flip:
-            self.flip_animation(random.sample([HEADS_IMAGE, TAILS_IMAGE], 2), random.choice([14, 15]))
+            self.flip_animation(random.sample(COIN_IMAGES, 2), random.randint(14, 15))
         else:
-            dice_value = random.randint(1, 6)
+            self.flip_animation(DICE_IMAGES, random.randint(12, 16))
 
     def flip_animation(self, frames, total_flips, initial_interval=10):
         def update_flip():
