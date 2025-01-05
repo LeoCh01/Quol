@@ -14,6 +14,7 @@ class CustomWindow(QWidget):
         self.geo = self.geometry()
         self.geo_old = self.geometry()
         self.first_run = True
+        self.wid = wid
 
         self.l1 = QVBoxLayout(self)
         self.l1.setContentsMargins(0, 0, 0, 0)
@@ -168,5 +169,16 @@ class CustomTitleBar(QWidget):
         self.parent.geo = self.parent.geometry()
         self.update()
 
-        # with open('res/settings.json', 'r') as f:
-        #     settings = json.load(f)
+        with open('res/settings.json', 'r') as f:
+            settings = json.load(f)
+            w = settings.get('windows', {}).get(self.parent.wid, {})
+            w['geometry'] = {
+                'x': self.parent.geo.x(),
+                'y': self.parent.geo.y(),
+                'width': self.parent.geo.width()
+            }
+            settings['windows'][self.parent.wid] = w
+
+        with open('res/settings.json', 'w') as f:
+            json.dump(settings, f, indent=2)
+

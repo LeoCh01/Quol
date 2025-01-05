@@ -12,6 +12,41 @@ from windows.info import Info
 from windows.run_command import RunCmd
 import json
 
+RESET_WINDOWS = {
+    "0": {
+        "type": "info",
+        "geometry": {
+            "x": 10,
+            "y": 10,
+            "width": 180
+        }
+    },
+    "1": {
+        "type": "cmd",
+        "geometry": {
+            "x": 10,
+            "y": 147,
+            "width": 180
+        }
+    },
+    "2": {
+        "type": "color",
+        "geometry": {
+            "x": 200,
+            "y": 10,
+            "width": 180
+        }
+    },
+    "3": {
+        "type": "chance",
+        "geometry": {
+            "x": 390,
+            "y": 10,
+            "width": 180
+        }
+    }
+}
+
 
 class App(QObject):
     toggle = Signal(bool)
@@ -27,6 +62,15 @@ class App(QObject):
         self.toggle_key = settings.get('toggle_key', '`')
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
         self.is_hidden = False
+
+        if settings.get('reset', True):
+            settings['windows'] = RESET_WINDOWS
+            settings['reset'] = False
+            with open('res/settings.json', 'w') as f:
+                json.dump(settings, f, indent=2)
+            with open('res/settings.json', 'r') as f:
+                settings = json.load(f)
+
 
         for i, d in settings.get('windows', {}).items():
             print(d)
