@@ -4,5 +4,15 @@
   "description": "test",
   "main": "index.js",
   "startup": false,
-  "toggle_key": "`"
+  "toggle_key": "`",
+  "windows": [
+    {
+      "type": "test",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 800
+      }
+    }
+  ]
 }
