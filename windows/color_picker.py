@@ -8,8 +8,8 @@ from components.custom_window import CustomWindow
 
 class ColorPicker(CustomWindow):
 
-    def __init__(self, geometry):
-        super().__init__("Color", geometry)
+    def __init__(self, geometry, wid):
+        super().__init__("Color", geometry, wid)
 
         self.grid_layout = QGridLayout()
 

@@ -7,7 +7,7 @@ import random
 
 
 class CustomWindow(QWidget):
-    def __init__(self, title="Custom Window", geometry=(0, 0, 0, 0)):
+    def __init__(self, title="Custom Window", geometry=(0, 0, 0, 0), wid=-1):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setGeometry(*geometry)

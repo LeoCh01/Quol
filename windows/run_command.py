@@ -6,8 +6,8 @@ from components.custom_window import CustomWindow, CustomDialog
 
 
 class RunCmd(CustomWindow):
-    def __init__(self, geometry):
-        super().__init__("Run Command", geometry)
+    def __init__(self, geometry, wid):
+        super().__init__("Run Command", geometry, wid)
 
         self.commands_groupbox = QGroupBox("Commands")
         self.commands_layout = QVBoxLayout()

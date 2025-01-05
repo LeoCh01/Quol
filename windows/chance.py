@@ -12,8 +12,8 @@ DICE_IMAGES = ['res/img/dice-1.png', 'res/img/dice-2.png', 'res/img/dice-3.png',
 
 
 class Chance(CustomWindow):
-    def __init__(self, geometry):
-        super().__init__('Chance', geometry)
+    def __init__(self, geometry, wid):
+        super().__init__('Chance', geometry, wid)
         self.is_coin_flip = True
 
         self.grid_layout = QGridLayout()

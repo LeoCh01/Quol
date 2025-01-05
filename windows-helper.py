@@ -28,7 +28,7 @@ class App(QObject):
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
         self.is_hidden = False
 
-        for d in settings.get('windows', {}).values():
+        for i, d in settings.get('windows', {}).items():
             print(d)
             if d['type'] == 'info':
                 self.windows.append(
@@ -36,6 +36,7 @@ class App(QObject):
                         d['geometry']['x'],
                         d['geometry']['y'],
                         d['geometry']['width'], 1),
+                        i,
                         set_toggle_key=self.set_toggle_key,
                         key=self.toggle_key
                     )
@@ -45,9 +46,9 @@ class App(QObject):
                     self.all_windows[d['type']]((
                         d['geometry']['x'],
                         d['geometry']['y'],
-                        d['geometry']['width'],
-                        1
-                    ))
+                        d['geometry']['width'], 1),
+                        i
+                    )
                 )
             else:
                 print(f"Invalid window name: {d['type']}")
