@@ -65,7 +65,7 @@ class Chance(CustomWindow):
         if self.is_coin_flip:
             self.flip_animation(random.sample(COIN_IMAGES, 2), random.randint(14, 15))
         else:
-            self.flip_animation(DICE_IMAGES, random.randint(12, 16))
+            self.flip_animation(random.sample(DICE_IMAGES, 6), random.randint(12, 16))
 
     def flip_animation(self, frames, total_flips, initial_interval=10):
         def update_flip():

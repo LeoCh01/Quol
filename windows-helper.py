@@ -15,6 +15,8 @@ import json
 
 class App(QObject):
     toggle = Signal(bool)
+    all_windows = {"info": Info, "cmd": RunCmd, "color": ColorPicker, "chance": Chance}
+    windows = []
 
     def __init__(self):
         super().__init__()
@@ -25,12 +27,29 @@ class App(QObject):
         self.toggle_key = settings.get('toggle_key', '`')
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
 
-        self.windows = [
-            Info((10, 10, 180, 1), set_toggle_key=self.set_toggle_key, key=self.toggle_key),
-            RunCmd((10, 147, 180, 1)),
-            ColorPicker((200, 10, 180, 1)),
-            Chance((390, 10, 180, 1)),
-        ]
+        for d in settings.get('windows', []):
+            if d['type'] == 'info':
+                self.windows.append(
+                    Info((
+                        d['geometry']['x'],
+                        d['geometry']['y'],
+                        d['geometry']['width'], 1),
+                        set_toggle_key=self.set_toggle_key,
+                        key=self.toggle_key
+                    )
+                )
+            elif d['type'] in self.all_windows:
+                self.windows.append(
+                    self.all_windows[d['type']]((
+                        d['geometry']['x'],
+                        d['geometry']['y'],
+                        d['geometry']['width'],
+                        1
+                    ))
+                )
+            else:
+                print(f"Invalid window name: {d['type']}")
+
         self.is_hidden = False
 
         for window in self.windows:
@@ -79,5 +98,5 @@ if __name__ == "__main__":
         application = App()
         app.exec()
     except Exception as e:
-        print(e)
+        print('error :: ', e)
         logging.error(e, exc_info=True)
