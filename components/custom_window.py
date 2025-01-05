@@ -168,6 +168,5 @@ class CustomTitleBar(QWidget):
         self.parent.geo = self.parent.geometry()
         self.update()
 
-
-
-
+        # with open('res/settings.json', 'r') as f:
+        #     settings = json.load(f)

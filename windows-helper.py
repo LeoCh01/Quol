@@ -26,8 +26,10 @@ class App(QObject):
 
         self.toggle_key = settings.get('toggle_key', '`')
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
+        self.is_hidden = False
 
-        for d in settings.get('windows', []):
+        for d in settings.get('windows', {}).values():
+            print(d)
             if d['type'] == 'info':
                 self.windows.append(
                     Info((
@@ -49,8 +51,6 @@ class App(QObject):
                 )
             else:
                 print(f"Invalid window name: {d['type']}")
-
-        self.is_hidden = False
 
         for window in self.windows:
             self.toggle.connect(window.toggle_windows)
