@@ -5,6 +5,7 @@
   "main": "index.js",
   "startup": false,
   "toggle_key": "`",
+  "toggle_direction": "down",
   "windows": [
     {
       "type": "info",
