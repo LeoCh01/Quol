@@ -5,7 +5,7 @@
   "main": "index.js",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "down",
+  "toggle_direction": "random",
   "reset": false,
   "windows": {
     "0": {
