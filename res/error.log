@@ -1,0 +1,5 @@
+2025-01-26 23:38:25,266 - root - ERROR - [Errno 2] No such file or directory: 'res/style.qss'
+Traceback (most recent call last):
+  File "D:\PycharmProjects\windows-helper\src\windows-helper.py", line 138, in <module>
+    with open('res/style.qss', 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'res/style.qss'
