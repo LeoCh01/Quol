@@ -1,0 +1,38 @@
+#title-bar {
+    color: transparent;
+    background-color: #222;
+}
+
+#title-bar * {
+    border: 10px solid transparent;
+    border-top: 0;
+    border-bottom: 0;
+    color: white;
+    font-weight: bold;
+}
+
+#content, QCheckBox {
+    background-color: #444;
+    color: white;
+}
+
+#content * {
+    color: white;
+}
+
+#content QPushButton {
+    background-color: #333;
+    border-radius: 4px;
+    border: 1px solid #444;
+    padding: 2px;
+    cursor: pointer;
+}
+
+#content QLineEdit, #content QPlainTextEdit {
+    background-color: #3d3d3d;
+    color: white;
+}
+
+#content QPushButton:hover {
+    background-color: #555;
+}
