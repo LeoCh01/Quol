@@ -34,24 +34,12 @@ class App(QObject):
                 if self.is_reset:
                     self.windows.append(Info(i, set_toggle_key=self.set_toggle_key, key=self.toggle_key))
                 else:
-                    self.windows.append(
-                        Info(
-                            i,
-                            d['geometry'],
-                            set_toggle_key=self.set_toggle_key,
-                            key=self.toggle_key
-                        )
-                    )
+                    self.windows.append(Info(i, d['geometry'], set_toggle_key=self.set_toggle_key, key=self.toggle_key))
             elif d['type'] in self.all_windows:
                 if self.is_reset:
                     self.windows.append(self.all_windows[d['type']](i))
                 else:
-                    self.windows.append(
-                        self.all_windows[d['type']](
-                            i,
-                            d['geometry'],
-                        )
-                    )
+                    self.windows.append(self.all_windows[d['type']](i, d['geometry']))
             else:
                 print(f"Invalid window name: {d['type']}")
 

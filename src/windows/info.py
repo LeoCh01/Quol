@@ -11,7 +11,7 @@ RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
 
 
 class Info(CustomWindow):
-    def __init__(self, wid, geometry=[10, 10, 180, 1], set_toggle_key=None, key='`'):
+    def __init__(self, wid, geometry=(10, 10, 180, 1), set_toggle_key=None, key='`'):
         super().__init__('Info', wid, geometry)
 
         self.grid_layout = QGridLayout()

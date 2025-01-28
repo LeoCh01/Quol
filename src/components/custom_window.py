@@ -7,7 +7,7 @@ import random
 
 
 class CustomWindow(QWidget):
-    def __init__(self, title="Custom Window", wid=-1, geometry=[0, 0, 0, 0]):
+    def __init__(self, title="Custom Window", wid=-1, geometry=(0, 0, 0, 0)):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setGeometry(*geometry)
@@ -172,12 +172,7 @@ class CustomTitleBar(QWidget):
         with open('res/settings.json', 'r') as f:
             settings = json.load(f)
             w = settings.get('windows', [])[self.parent.wid]
-            # w['geometry'] = {
-            #     'x': self.parent.geo.x(),
-            #     'y': self.parent.geo.y(),
-            #     'width': self.parent.geo.width()
-            # }
-            w['geometry'] = (self.parent.geo.x(), self.parent.geo.y(), self.parent.geo.width(), self.parent.geo.height())
+            w['geometry'] = [self.parent.geo.x(), self.parent.geo.y(), self.parent.geo.width(), self.parent.geo.height()]
             settings['windows'][self.parent.wid] = w
 
         with open('res/settings.json', 'w') as f:

@@ -1,12 +1,12 @@
 {
   "name": "test",
-  "version": "0.1.1",
+  "version": "1.2.0",
   "description": "test",
   "main": "index.js",
   "startup": false,
   "toggle_key": "`",
   "toggle_direction": "random",
-  "reset": false,
+  "reset": true,
   "windows": [
     {
       "type": "info",
@@ -29,8 +29,8 @@
     {
       "type": "color",
       "geometry": [
-        196,
-        72,
+        358,
+        390,
         180,
         155
       ]
@@ -38,8 +38,8 @@
     {
       "type": "chance",
       "geometry": [
-        394,
-        150,
+        460,
+        228,
         180,
         160
       ]
