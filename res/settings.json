@@ -1,44 +1,48 @@
 {
   "name": "test",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "test",
   "main": "index.js",
   "startup": false,
   "toggle_key": "`",
   "toggle_direction": "random",
   "reset": false,
-  "windows": {
-    "0": {
+  "windows": [
+    {
       "type": "info",
-      "geometry": {
-        "x": 10,
-        "y": 10,
-        "width": 180
-      }
+      "geometry": [
+        10,
+        10,
+        180,
+        1
+      ]
     },
-    "1": {
+    {
       "type": "cmd",
-      "geometry": {
-        "x": 10,
-        "y": 147,
-        "width": 180
-      }
+      "geometry": [
+        10,
+        147,
+        180,
+        1
+      ]
     },
-    "2": {
+    {
       "type": "color",
-      "geometry": {
-        "x": 200,
-        "y": 10,
-        "width": 180
-      }
+      "geometry": [
+        196,
+        72,
+        180,
+        155
+      ]
     },
-    "3": {
+    {
       "type": "chance",
-      "geometry": {
-        "x": 390,
-        "y": 10,
-        "width": 180
-      }
+      "geometry": [
+        394,
+        150,
+        180,
+        160
+      ]
     }
-  }
+  ]
 }

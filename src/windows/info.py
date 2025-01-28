@@ -5,14 +5,14 @@ from PySide6.QtCore import QSettings, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 
-from components.custom_window import CustomWindow
+from src.components.custom_window import CustomWindow
 
 RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 
 
 class Info(CustomWindow):
-    def __init__(self, geometry, wid, set_toggle_key=None, key='`'):
-        super().__init__('Info', geometry, wid)
+    def __init__(self, wid, geometry=[10, 10, 180, 1], set_toggle_key=None, key='`'):
+        super().__init__('Info', wid, geometry)
 
         self.grid_layout = QGridLayout()
         self.set_toggle_key = set_toggle_key

@@ -1,15 +1,15 @@
 from pynput import mouse
 from PySide6.QtCore import QTimer, QSize
-from PySide6.QtGui import QPixmap, QColor, QGuiApplication, QCursor, QPainter, Qt
-from PySide6.QtWidgets import QLabel, QGroupBox, QGridLayout, QPushButton
+from PySide6.QtGui import QPixmap, QColor, QGuiApplication, QCursor, QPainter
+from PySide6.QtWidgets import QLabel, QGridLayout, QPushButton
 
-from components.custom_window import CustomWindow
+from src.components.custom_window import CustomWindow
 
 
 class ColorPicker(CustomWindow):
 
-    def __init__(self, geometry, wid):
-        super().__init__("Color", geometry, wid)
+    def __init__(self, wid, geometry=[200, 10, 180, 1]):
+        super().__init__("Color", wid, geometry)
 
         self.grid_layout = QGridLayout()
 

@@ -2,12 +2,12 @@ import subprocess
 import json
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QDialogButtonBox, \
     QPlainTextEdit, QCheckBox, QDialog
-from components.custom_window import CustomWindow, CustomDialog
+from src.components.custom_window import CustomWindow, CustomDialog
 
 
 class RunCmd(CustomWindow):
-    def __init__(self, geometry, wid):
-        super().__init__("Run Command", geometry, wid)
+    def __init__(self, wid, geometry=[10, 147, 180, 1]):
+        super().__init__("Run Command", wid, geometry)
 
         self.commands_groupbox = QGroupBox("Commands")
         self.commands_layout = QVBoxLayout()

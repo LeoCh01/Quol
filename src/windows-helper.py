@@ -12,41 +12,6 @@ from windows.info import Info
 from windows.run_command import RunCmd
 import json
 
-RESET_WINDOWS = {
-    "0": {
-        "type": "info",
-        "geometry": {
-            "x": 10,
-            "y": 10,
-            "width": 180
-        }
-    },
-    "1": {
-        "type": "cmd",
-        "geometry": {
-            "x": 10,
-            "y": 147,
-            "width": 180
-        }
-    },
-    "2": {
-        "type": "color",
-        "geometry": {
-            "x": 200,
-            "y": 10,
-            "width": 180
-        }
-    },
-    "3": {
-        "type": "chance",
-        "geometry": {
-            "x": 390,
-            "y": 10,
-            "width": 180
-        }
-    }
-}
-
 
 class App(QObject):
     toggle = Signal(bool)
@@ -62,38 +27,31 @@ class App(QObject):
         self.toggle_key = settings.get('toggle_key', '`')
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
         self.is_hidden = False
+        self.is_reset = settings.get('reset', True)
 
-        if settings.get('reset', True):
-            settings['windows'] = RESET_WINDOWS
-            settings['reset'] = False
-            with open('res/settings.json', 'w') as f:
-                json.dump(settings, f, indent=2)
-            with open('res/settings.json', 'r') as f:
-                settings = json.load(f)
-
-
-        for i, d in settings.get('windows', {}).items():
-            print(d)
+        for i, d in enumerate(settings.get('windows', [])):
             if d['type'] == 'info':
-                self.windows.append(
-                    Info((
-                        d['geometry']['x'],
-                        d['geometry']['y'],
-                        d['geometry']['width'], 1),
-                        i,
-                        set_toggle_key=self.set_toggle_key,
-                        key=self.toggle_key
+                if self.is_reset:
+                    self.windows.append(Info(i, set_toggle_key=self.set_toggle_key, key=self.toggle_key))
+                else:
+                    self.windows.append(
+                        Info(
+                            i,
+                            d['geometry'],
+                            set_toggle_key=self.set_toggle_key,
+                            key=self.toggle_key
+                        )
                     )
-                )
             elif d['type'] in self.all_windows:
-                self.windows.append(
-                    self.all_windows[d['type']]((
-                        d['geometry']['x'],
-                        d['geometry']['y'],
-                        d['geometry']['width'], 1),
-                        i
+                if self.is_reset:
+                    self.windows.append(self.all_windows[d['type']](i))
+                else:
+                    self.windows.append(
+                        self.all_windows[d['type']](
+                            i,
+                            d['geometry'],
+                        )
                     )
-                )
             else:
                 print(f"Invalid window name: {d['type']}")
 
@@ -126,6 +84,7 @@ if __name__ == "__main__":
 
     # Set working directory
     base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
+    base_dir = os.path.abspath(os.path.join(base_dir, os.pardir))
     os.chdir(base_dir)
 
     logging.basicConfig(
@@ -135,13 +94,20 @@ if __name__ == "__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     )
 
-    try:
-        with open('res/style.qss', 'r') as f:
-            stylesheet = f.read()
-        app.setStyleSheet(stylesheet)
+    # try:
+    #     with open('res/style.qss', 'r') as f:
+    #         stylesheet = f.read()
+    #     app.setStyleSheet(stylesheet)
+    #
+    #     application = App()
+    #     app.exec()
+    # except Exception as e:
+    #     print('error :: ', e)
+    #     logging.error(e, exc_info=True)
 
-        application = App()
-        app.exec()
-    except Exception as e:
-        print('error :: ', e)
-        logging.error(e, exc_info=True)
+    with open('res/style.qss', 'r') as f:
+        stylesheet = f.read()
+    app.setStyleSheet(stylesheet)
+
+    application = App()
+    app.exec()

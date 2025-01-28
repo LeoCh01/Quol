@@ -1,4 +1,4 @@
-from components.custom_window import CustomWindow
+from src.components.custom_window import CustomWindow
 
 
 class Temp(CustomWindow):

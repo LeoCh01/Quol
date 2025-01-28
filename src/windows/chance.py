@@ -1,9 +1,9 @@
 from PySide6 import QtCore
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout, QApplication
+from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 from PySide6.QtGui import QPixmap, Qt, QMovie
 import random
-from components.custom_window import CustomWindow
+from src.components.custom_window import CustomWindow
 
 COIN = 'res/img/coin-x.png'
 COIN_IMAGES = ['res/img/coin-h.png', 'res/img/coin-t.png']
@@ -12,8 +12,8 @@ DICE_IMAGES = ['res/img/dice-1.png', 'res/img/dice-2.png', 'res/img/dice-3.png',
 
 
 class Chance(CustomWindow):
-    def __init__(self, geometry, wid):
-        super().__init__('Chance', geometry, wid)
+    def __init__(self, wid, geometry=[390, 10, 180, 1]):
+        super().__init__('Chance', wid, geometry)
         self.is_coin_flip = True
 
         self.grid_layout = QGridLayout()
