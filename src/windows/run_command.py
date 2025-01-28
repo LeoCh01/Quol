@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, 
 from src.components.custom_window import CustomWindow, CustomDialog
 
 
-class RunCmd(CustomWindow):
+class MainWindow(CustomWindow):
     def __init__(self, wid, geometry=(10, 147, 180, 1)):
         super().__init__("Run Command", wid, geometry)
 

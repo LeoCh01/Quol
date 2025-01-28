@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QLabel, QGridLayout, QPushButton
 from src.components.custom_window import CustomWindow
 
 
-class ColorPicker(CustomWindow):
+class MainWindow(CustomWindow):
 
     def __init__(self, wid, geometry=(200, 10, 180, 1)):
         super().__init__("Color", wid, geometry)

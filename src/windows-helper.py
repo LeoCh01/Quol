@@ -6,20 +6,22 @@ import keyboard
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication
 
-from windows.chance import Chance
-from windows.color_picker import ColorPicker
-from windows.info import Info
-from windows.run_command import RunCmd
+import importlib
 import json
 
 
 class App(QObject):
     toggle = Signal(bool)
-    all_windows = {"info": Info, "cmd": RunCmd, "color": ColorPicker, "chance": Chance}
+    all_windows = {}
     windows = []
 
     def __init__(self):
         super().__init__()
+
+        for f in os.listdir('src/windows'):
+            if f.endswith('.py'):
+                c = getattr(importlib.import_module(f'src.windows.{f[:-3]}'), 'MainWindow')
+                self.all_windows[f] = c
 
         with open('res/settings.json', 'r') as f:
             settings = json.load(f)
@@ -30,16 +32,18 @@ class App(QObject):
         self.is_reset = settings.get('reset', True)
 
         for i, d in enumerate(settings.get('windows', [])):
-            if d['type'] == 'info':
-                if self.is_reset:
-                    self.windows.append(Info(i, set_toggle_key=self.set_toggle_key, key=self.toggle_key))
+            if d['type'] in self.all_windows:
+                class_obj = self.all_windows[d['type']]
+                if d['type'] == 'info':
+                    if self.is_reset:
+                        self.windows.append(class_obj(i, set_toggle_key=self.set_toggle_key, key=self.toggle_key))
+                    else:
+                        self.windows.append(class_obj(i, d['geometry'], set_toggle_key=self.set_toggle_key, key=self.toggle_key))
                 else:
-                    self.windows.append(Info(i, d['geometry'], set_toggle_key=self.set_toggle_key, key=self.toggle_key))
-            elif d['type'] in self.all_windows:
-                if self.is_reset:
-                    self.windows.append(self.all_windows[d['type']](i))
-                else:
-                    self.windows.append(self.all_windows[d['type']](i, d['geometry']))
+                    if self.is_reset:
+                        self.windows.append(class_obj(i))
+                    else:
+                        self.windows.append(class_obj(i, d['geometry']))
             else:
                 print(f"Invalid window name: {d['type']}")
 

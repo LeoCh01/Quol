@@ -11,7 +11,7 @@ DICE = 'res/img/dice-x.png'
 DICE_IMAGES = ['res/img/dice-1.png', 'res/img/dice-2.png', 'res/img/dice-3.png', 'res/img/dice-4.png', 'res/img/dice-5.png', 'res/img/dice-6.png']
 
 
-class Chance(CustomWindow):
+class MainWindow(CustomWindow):
     def __init__(self, wid, geometry=(390, 10, 180, 1)):
         super().__init__('Chance', wid, geometry)
         self.is_coin_flip = True

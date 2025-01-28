@@ -9,7 +9,7 @@
   "reset": true,
   "windows": [
     {
-      "type": "info",
+      "type": "info.py",
       "geometry": [
         10,
         10,
@@ -18,7 +18,7 @@
       ]
     },
     {
-      "type": "cmd",
+      "type": "run_command.py",
       "geometry": [
         10,
         147,
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "type": "color",
+      "type": "color_picker.py",
       "geometry": [
         358,
         390,
@@ -36,7 +36,7 @@
       ]
     },
     {
-      "type": "chance",
+      "type": "chance.py",
       "geometry": [
         460,
         228,
