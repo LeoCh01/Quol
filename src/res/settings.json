@@ -6,10 +6,10 @@
   "startup": false,
   "toggle_key": "`",
   "toggle_direction": "random",
-  "reset": true,
+  "reset_on_load": true,
   "windows": [
     {
-      "type": "info.py",
+      "script": "info.py",
       "geometry": [
         10,
         10,
@@ -18,7 +18,7 @@
       ]
     },
     {
-      "type": "run_command.py",
+      "script": "run_command.py",
       "geometry": [
         10,
         147,
@@ -27,19 +27,19 @@
       ]
     },
     {
-      "type": "color_picker.py",
+      "script": "color_picker.py",
       "geometry": [
-        200,
-        10,
+        303,
+        203,
         180,
         155
       ]
     },
     {
-      "type": "chance.py",
+      "script": "chance.py",
       "geometry": [
-        390,
-        10,
+        383,
+        49,
         180,
         160
       ]

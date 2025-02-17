@@ -8,7 +8,8 @@ This project is a desktop application built using **PySide6**, designed to serve
 
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **CMD Runner:** Save and execute custom command line instructions.
-- **Chance:** flip a coin, roll a dice
+- **Chance:** Flip a coin, roll a dice
+- **Customize:** Create and Add custom windows without rebuilding
 - **Interface:** Runs at top layer and toggleable through hotkey. Adjustable layouts to fit your preferences.
 
   ![Color Picker Demo](demo/color.gif)
@@ -69,6 +70,31 @@ To run the application locally or build it as a standalone executable, follow th
      pyinstaller windows-helper.spec
      ```
    - The `.exe` file will be generated in the `dist` folder inside the project directory.
+   - Make sure to copy the `src` folder into the `dist` folder to use the resources and windows.
+
+### Adding Custom Windows
+
+To create a new window, you can add a Python script to the `src/windows` directory and enable it in the `src/res/settings.json` file. You can use the template provided in `src/windows/temp.py` as a starting point.
+
+1. **Add your Python script:**
+
+   - Create a new Python file in the `src/windows` directory. For example, `my_custom_window.py`.
+   - Use the template in `src/windows/temp.py` to structure your new window script.
+
+2. **Enable the new window:**
+   - Open the `src/res/settings.json` file.
+   - Add an entry for your new window in the JSON configuration. For example:
+     ```json
+     {
+       "windows": [
+         {
+           "script": "my_custom_window.py"
+         }
+       ]
+     }
+     ```
+
+By following these steps, you can easily add and enable custom windows without rebuilding the entire application.
 
 ## Contact
 

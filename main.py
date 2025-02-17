@@ -3,9 +3,10 @@ import os
 import sys
 
 import keyboard
+from PySide6.QtGui import QIcon
 from pynput import mouse
 from PySide6.QtCore import Signal, QObject
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidgetAction
 
 import importlib
 import json
@@ -26,22 +27,26 @@ class App(QObject):
         self.toggle_key = settings.get('toggle_key', '`')
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
         self.is_hidden = False
-        self.is_reset = settings.get('reset', True)
+        self.is_reset = settings.get('reset_on_load', True)
 
+        self.load_windows(settings)
+        self.setup_tray_icon()
+
+    def load_windows(self, settings):
         for i, d in enumerate(settings.get('windows', [])):
             try:
-                class_obj = App.load_script(d['type']).MainWindow
-                print(f"Loading {d['type'][:-3]}")
+                class_obj = App.load_script(d['script']).MainWindow
+                print(f"Loading {d['script'][:-3]}")
             except Exception as e:
-                logging.error(f"Error loading {d['type'][:-3]} :: {e}", exc_info=True)
+                logging.error(f"Error loading {d['script'][:-3]} :: {e}", exc_info=True)
                 continue
-            if d['type'] == 'info':
-                if self.is_reset:
+            if d['script'] == 'info':
+                if self.is_reset or not d.get('geometry'):
                     self.windows.append(class_obj(i, set_toggle_key=self.set_toggle_key, key=self.toggle_key))
                 else:
                     self.windows.append(class_obj(i, d['geometry'], set_toggle_key=self.set_toggle_key, key=self.toggle_key))
             else:
-                if self.is_reset:
+                if self.is_reset or not d.get('geometry'):
                     self.windows.append(class_obj(i))
                 else:
                     self.windows.append(class_obj(i, d['geometry']))
@@ -68,6 +73,20 @@ class App(QObject):
         settings['toggle_key'] = key
         with open(RES_PATH + 'settings.json', 'w') as f:
             json.dump(settings, f, indent=2)
+
+    def setup_tray_icon(self):
+        self.tray_icon = QSystemTrayIcon(QIcon(RES_PATH + 'icon.ico'), parent=self)
+        self.tray_icon.setToolTip("Windows Helper")
+
+        tray_menu = QMenu()
+
+        quit_action = QWidgetAction(self)
+        quit_action.setText("Quit")
+        quit_action.triggered.connect(lambda _: sys.exit())
+        tray_menu.addAction(quit_action)
+
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
 
     @staticmethod
     def load_script(script_name):

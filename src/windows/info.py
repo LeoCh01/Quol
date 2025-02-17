@@ -37,7 +37,7 @@ class MainWindow(CustomWindow):
 
         self.q = QPushButton('Quit')
         self.q.setStyleSheet("background-color: #c44; color: white;")
-        self.q.clicked.connect(self.quit)
+        self.q.clicked.connect(lambda _: sys.exit())
         self.grid_layout.addWidget(self.q, 3, 1)
 
         self.grid_layout.setColumnStretch(0, 2)
@@ -81,14 +81,11 @@ class MainWindow(CustomWindow):
         QDesktopServices.openUrl(QUrl('https://github.com/LeoCh01/windows-helper'))
 
     @staticmethod
-    def quit(self):
-        print('Quitting')
-        sys.exit()
-
-    def get_app_path(self):
+    def get_app_path():
         return sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
 
-    def get_app_name(self):
+    @staticmethod
+    def get_app_name():
         return 'WindowsHelper'
 
     def toggle_startup(self):
@@ -103,7 +100,7 @@ class MainWindow(CustomWindow):
             print(f'Removed {app_name} from startup')
 
         with open(RES_PATH + 'settings.json', 'r') as file:
-            data = json.load(file)
-            data['startup'] = self.startup.isChecked()
+            settings = json.load(file)
+            settings['startup'] = self.startup.isChecked()
         with open(RES_PATH + 'settings.json', 'w') as file:
-            json.dump(data, file, indent=2)
+            json.dump(settings, file, indent=2)
