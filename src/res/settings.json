@@ -1,8 +1,8 @@
 {
-  "name": "test",
+  "name": "Windows Helper",
   "version": "1.2.0",
   "description": "test",
-  "main": "index.js",
+  "main": "main.py",
   "startup": false,
   "toggle_key": "`",
   "toggle_direction": "random",
@@ -14,7 +14,7 @@
         10,
         10,
         180,
-        1
+        130
       ]
     },
     {
@@ -23,14 +23,14 @@
         10,
         147,
         180,
-        1
+        166
       ]
     },
     {
       "type": "color_picker.py",
       "geometry": [
-        358,
-        390,
+        200,
+        10,
         180,
         155
       ]
@@ -38,8 +38,8 @@
     {
       "type": "chance.py",
       "geometry": [
-        460,
-        228,
+        390,
+        10,
         180,
         160
       ]

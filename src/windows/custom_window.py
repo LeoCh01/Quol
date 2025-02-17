@@ -5,6 +5,7 @@ from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog
 import random
 
+RES_PATH = 'src/res/'
 
 class CustomWindow(QWidget):
     def __init__(self, title="Custom Window", wid=-1, geometry=(0, 0, 0, 0)):
@@ -31,7 +32,7 @@ class CustomWindow(QWidget):
         self.layout = QVBoxLayout(self.w1)
         self.layout.setAlignment(Qt.AlignTop)
 
-        with open('res/settings.json', 'r') as f:
+        with open(RES_PATH + 'settings.json', 'r') as f:
             settings = json.load(f)
             self.toggle_direction = settings.get('toggle_direction', 'random')
 
@@ -169,12 +170,12 @@ class CustomTitleBar(QWidget):
         self.parent.geo = self.parent.geometry()
         self.update()
 
-        with open('res/settings.json', 'r') as f:
+        with open(RES_PATH + 'settings.json', 'r') as f:
             settings = json.load(f)
             w = settings.get('windows', [])[self.parent.wid]
             w['geometry'] = [self.parent.geo.x(), self.parent.geo.y(), self.parent.geo.width(), self.parent.geo.height()]
             settings['windows'][self.parent.wid] = w
 
-        with open('res/settings.json', 'w') as f:
+        with open(RES_PATH + 'settings.json', 'w') as f:
             json.dump(settings, f, indent=2)
 

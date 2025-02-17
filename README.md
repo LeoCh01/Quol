@@ -66,7 +66,7 @@ To run the application locally or build it as a standalone executable, follow th
 5. **Convert to Executable (Optional):**
    - If you want to convert the application into a standalone `.exe` file, run the following command:
      ```bash
-     pyinstaller --noconsole --onefile --icon=res/icon.ico src/windows-helper.py
+     pyinstaller --noconsole --onefile --icon=src/res/icon.ico --add-data "src;src" main.py
      ```
    - The `.exe` file will be generated in the `dist` folder inside the project directory.
 

@@ -3,12 +3,13 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 from PySide6.QtGui import QPixmap, Qt, QMovie
 import random
-from src.components.custom_window import CustomWindow
+from src.windows.custom_window import CustomWindow, RES_PATH
 
-COIN = 'res/img/coin-x.png'
-COIN_IMAGES = ['res/img/coin-h.png', 'res/img/coin-t.png']
-DICE = 'res/img/dice-x.png'
-DICE_IMAGES = ['res/img/dice-1.png', 'res/img/dice-2.png', 'res/img/dice-3.png', 'res/img/dice-4.png', 'res/img/dice-5.png', 'res/img/dice-6.png']
+COIN = 'img/coin-x.png'
+COIN_IMAGES = ['img/coin-h.png', 'img/coin-t.png']
+DICE = 'img/dice-x.png'
+DICE_IMAGES = ['img/dice-1.png', 'img/dice-2.png', 'img/dice-3.png', 'img/dice-4.png', 'img/dice-5.png', 'img/dice-6.png']
+CONFETTI = 'img/confetti2.gif'
 
 
 class MainWindow(CustomWindow):
@@ -18,7 +19,7 @@ class MainWindow(CustomWindow):
 
         self.grid_layout = QGridLayout()
         self.result_label = QLabel()
-        self.result_label.setPixmap(QPixmap(COIN))
+        self.result_label.setPixmap(QPixmap(RES_PATH + COIN))
         self.result_label.setAlignment(Qt.AlignCenter)
         self.coin_button = QPushButton('Coin')
         self.dice_button = QPushButton('Dice')
@@ -51,11 +52,11 @@ class MainWindow(CustomWindow):
         if self.is_coin_flip:
             self.coin_button.setStyleSheet('background-color: #696')
             self.dice_button.setStyleSheet('')
-            self.result_label.setPixmap(QPixmap(COIN))
+            self.result_label.setPixmap(QPixmap(RES_PATH + COIN))
         else:
             self.coin_button.setStyleSheet('')
             self.dice_button.setStyleSheet('background-color: #696')
-            self.result_label.setPixmap(QPixmap(DICE))
+            self.result_label.setPixmap(QPixmap(RES_PATH + DICE))
 
     def perform_action(self, event):
         if self.is_running:
@@ -71,7 +72,7 @@ class MainWindow(CustomWindow):
         def update_flip():
             if self.flip_counter < total_flips:
                 current_frame = frames[self.flip_counter % len(frames)]
-                self.result_label.setPixmap(QPixmap(current_frame))
+                self.result_label.setPixmap(QPixmap(RES_PATH + current_frame))
                 self.flip_counter += 1
 
                 new_interval = initial_interval + (self.flip_counter * 20)
@@ -90,7 +91,7 @@ class MainWindow(CustomWindow):
         self.confetti_label.setAlignment(Qt.AlignCenter)
         self.grid_layout.addWidget(self.confetti_label, 0, 0, 1, 2)
 
-        confetti_movie = QMovie("res/img/confetti2.gif")
+        confetti_movie = QMovie(RES_PATH + CONFETTI)
         confetti_movie.setSpeed(150)
         confetti_movie.setScaledSize(QtCore.QSize(160, 80))
 
