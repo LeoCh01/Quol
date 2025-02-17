@@ -28,11 +28,10 @@ class App(QObject):
         self.is_hidden = False
         self.is_reset = settings.get('reset', True)
 
-        logging.error(os.getcwd())
-
         for i, d in enumerate(settings.get('windows', [])):
             try:
                 class_obj = App.load_script(d['type']).MainWindow
+                print(f"Loading {d['type'][:-3]}")
             except Exception as e:
                 logging.error(f"Error loading {d['type'][:-3]} :: {e}", exc_info=True)
                 continue
@@ -91,10 +90,10 @@ if __name__ == "__main__":
     app = QApplication([])
 
     # Set working directory
-    # base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
-    # base_dir = os.path.abspath(os.path.join(base_dir, os.pardir))
-    # os.chdir(base_dir)
     print('Current working directory:', os.getcwd())
+    base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
+    os.chdir(base_dir)
+    print('Switched working directory:', os.getcwd())
 
     logging.basicConfig(
         filename=RES_PATH + "error.log",
