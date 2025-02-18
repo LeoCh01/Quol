@@ -29,9 +29,7 @@ class MainWindow(CustomWindow):
         self.key_label = QLabel(' Key = ' + key)
         self.grid_layout.addWidget(self.key_label, 1, 1)
 
-        self.startup = QPushButton('Startup App')
-        self.startup.setCheckable(True)
-        self.startup.setChecked(self.get_startup())
+        self.startup = QPushButton('Disable Startup' if self.get_startup() else 'Enable Startup')
         self.startup.clicked.connect(self.toggle_startup)
         self.grid_layout.addWidget(self.startup, 3, 0)
 
@@ -65,15 +63,15 @@ class MainWindow(CustomWindow):
     @staticmethod
     def get_version():
         with open(RES_PATH + 'settings.json', 'r') as file:
-            data = json.load(file)
-            version = data.get('version', 'xxx')
+            settings = json.load(file)
+            version = settings.get('version', 'xxx')
         return version
 
     @staticmethod
     def get_startup():
         with open(RES_PATH + 'settings.json', 'r') as file:
-            data = json.load(file)
-            startup = data.get('startup', False)
+            settings = json.load(file)
+            startup = settings.get('startup', False)
         return startup
 
     @staticmethod
@@ -91,16 +89,19 @@ class MainWindow(CustomWindow):
     def toggle_startup(self):
         app_name = self.get_app_name()
         app_path = self.get_app_path()
+        is_startup = self.get_startup()
 
-        if self.startup.isChecked():
+        if not is_startup:
             self.settings.setValue(app_name, app_path)
+            self.startup.setText('Disable Startup')
             print(f'Added {app_name} to startup with path: {app_path}')
         else:
             self.settings.remove(app_name)
+            self.startup.setText('Enable Startup')
             print(f'Removed {app_name} from startup')
 
         with open(RES_PATH + 'settings.json', 'r') as file:
             settings = json.load(file)
-            settings['startup'] = self.startup.isChecked()
+            settings['startup'] = not is_startup
         with open(RES_PATH + 'settings.json', 'w') as file:
             json.dump(settings, file, indent=2)

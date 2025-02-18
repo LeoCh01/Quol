@@ -77,7 +77,6 @@ class App(QObject):
     def setup_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(QIcon(RES_PATH + 'icon.ico'), parent=self)
         self.tray_icon.setToolTip("Windows Helper")
-
         tray_menu = QMenu()
 
         quit_action = QWidgetAction(self)
