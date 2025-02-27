@@ -3,7 +3,9 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 from PySide6.QtGui import QPixmap, Qt, QMovie
 import random
-from src.windows.custom_window import CustomWindow, RES_PATH
+
+from app.res.paths import RES_PATH
+from app.windows.lib.custom_window import CustomWindow
 
 COIN = 'img/coin-x.png'
 COIN_IMAGES = ['img/coin-h.png', 'img/coin-t.png']

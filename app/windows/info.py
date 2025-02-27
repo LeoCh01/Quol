@@ -5,7 +5,8 @@ from PySide6.QtCore import QSettings, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 
-from src.windows.custom_window import CustomWindow, RES_PATH
+from app.res.paths import SETTINGS_PATH
+from app.windows.lib.custom_window import CustomWindow
 
 RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 
@@ -62,14 +63,14 @@ class MainWindow(CustomWindow):
 
     @staticmethod
     def get_version():
-        with open(RES_PATH + 'settings.json', 'r') as file:
+        with open(SETTINGS_PATH, 'r') as file:
             settings = json.load(file)
             version = settings.get('version', 'xxx')
         return version
 
     @staticmethod
     def get_startup():
-        with open(RES_PATH + 'settings.json', 'r') as file:
+        with open(SETTINGS_PATH, 'r') as file:
             settings = json.load(file)
             startup = settings.get('startup', False)
         return startup
@@ -100,8 +101,8 @@ class MainWindow(CustomWindow):
             self.startup.setText('Enable Startup')
             print(f'Removed {app_name} from startup')
 
-        with open(RES_PATH + 'settings.json', 'r') as file:
+        with open(SETTINGS_PATH, 'r') as file:
             settings = json.load(file)
             settings['startup'] = not is_startup
-        with open(RES_PATH + 'settings.json', 'w') as file:
+        with open(SETTINGS_PATH, 'w') as file:
             json.dump(settings, file, indent=2)

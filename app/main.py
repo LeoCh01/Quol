@@ -4,14 +4,13 @@ import sys
 
 import keyboard
 from PySide6.QtGui import QIcon
-from pynput import mouse
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidgetAction
 
 import importlib
 import json
 
-from src.windows.custom_window import RES_PATH
+from app.res.paths import SETTINGS_PATH, RES_PATH, STYLES_PATH
 
 
 class App(QObject):
@@ -21,7 +20,7 @@ class App(QObject):
     def __init__(self):
         super().__init__()
 
-        with open(RES_PATH + '/settings.json', 'r') as f:
+        with open(SETTINGS_PATH, 'r') as f:
             settings = json.load(f)
 
         self.toggle_key = settings.get('toggle_key', '`')
@@ -68,10 +67,10 @@ class App(QObject):
         self.toggle_key = key
 
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
-        with open(RES_PATH + 'settings.json', 'r') as f:
+        with open(SETTINGS_PATH, 'r') as f:
             settings = json.load(f)
         settings['toggle_key'] = key
-        with open(RES_PATH + 'settings.json', 'w') as f:
+        with open(SETTINGS_PATH, 'w') as f:
             json.dump(settings, f, indent=2)
 
     def setup_tray_icon(self):
@@ -89,7 +88,7 @@ class App(QObject):
 
     @staticmethod
     def load_script(script_name):
-        script_path = os.path.join(os.getcwd() + '\\src\\windows', script_name)
+        script_path = os.path.join(os.getcwd() + '\\windows', script_name)
         print(script_path)
 
         if os.path.exists(script_path):
@@ -121,7 +120,7 @@ if __name__ == "__main__":
     )
 
     try:
-        with open('src/res/style.qss', 'r') as f:
+        with open(STYLES_PATH, 'r') as f:
             stylesheet = f.read()
         app.setStyleSheet(stylesheet)
 
@@ -130,7 +129,3 @@ if __name__ == "__main__":
     except Exception as e:
         print('error :: ', e)
         logging.error(e, exc_info=True)
-
-    # with open('res/style.qss', 'r') as f:
-    #     stylesheet = f.read()
-    # app.setStyleSheet(stylesheet)
