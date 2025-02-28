@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidgetActio
 import importlib
 import json
 
-from app.res.paths import SETTINGS_PATH, RES_PATH, STYLES_PATH
+from res.paths import SETTINGS_PATH, RES_PATH, STYLES_PATH, IMG_PATH
 
 
 class App(QObject):
@@ -74,7 +74,7 @@ class App(QObject):
             json.dump(settings, f, indent=2)
 
     def setup_tray_icon(self):
-        self.tray_icon = QSystemTrayIcon(QIcon(RES_PATH + 'icon.ico'), parent=self)
+        self.tray_icon = QSystemTrayIcon(QIcon(IMG_PATH + 'icon.ico'), parent=self)
         self.tray_icon.setToolTip("Windows Helper")
         tray_menu = QMenu()
 

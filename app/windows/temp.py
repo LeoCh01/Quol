@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QLabel
 
-from app.windows.lib.custom_window import CustomWindow
+from res.paths import RES_PATH
+from windows.lib.custom_window import CustomWindow
 
 
 class MainWindow(CustomWindow):

@@ -1,53 +1,44 @@
-2025-02-27 01:20:19,993 - root - ERROR - Script info.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\info.py.
-2025-02-27 01:20:19,993 - root - ERROR - Error loading info :: 'NoneType' object has no attribute 'MainWindow'
+2025-02-28 17:18:17,993 - root - ERROR - Error loading chance :: No module named 'lib'
 Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 37, in load_windows
     class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:20:19,993 - root - ERROR - Script run_command.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\run_command.py.
-2025-02-27 01:20:19,993 - root - ERROR - Error loading run_command :: 'NoneType' object has no attribute 'MainWindow'
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 98, in load_script
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\chance.py", line 8, in <module>
+    from lib.custom_window import CustomWindow
+ModuleNotFoundError: No module named 'lib'
+2025-02-28 17:19:35,821 - root - ERROR - Error loading chance :: No module named 'lib'
 Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 37, in load_windows
     class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:20:19,993 - root - ERROR - Script color_picker.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\color_picker.py.
-2025-02-27 01:20:19,993 - root - ERROR - Error loading color_picker :: 'NoneType' object has no attribute 'MainWindow'
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 98, in load_script
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\chance.py", line 8, in <module>
+    from lib.custom_window import CustomWindow
+ModuleNotFoundError: No module named 'lib'
+2025-02-28 17:19:54,213 - root - ERROR - Error loading chance :: No module named 'lib'
 Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 37, in load_windows
     class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:20:19,993 - root - ERROR - Script chance.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\chance.py.
-2025-02-27 01:20:19,993 - root - ERROR - Error loading chance :: 'NoneType' object has no attribute 'MainWindow'
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 98, in load_script
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\chance.py", line 8, in <module>
+    import lib.custom_window as cw
+ModuleNotFoundError: No module named 'lib'
+2025-02-28 17:19:57,552 - root - ERROR - Error loading chance :: No module named 'lib'
 Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 37, in load_windows
     class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:24:17,226 - root - ERROR - Script info.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\info.py.
-2025-02-27 01:24:17,226 - root - ERROR - Error loading info :: 'NoneType' object has no attribute 'MainWindow'
-Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
-    class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:24:17,226 - root - ERROR - Script run_command.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\run_command.py.
-2025-02-27 01:24:17,226 - root - ERROR - Error loading run_command :: 'NoneType' object has no attribute 'MainWindow'
-Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
-    class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:24:17,226 - root - ERROR - Script color_picker.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\color_picker.py.
-2025-02-27 01:24:17,226 - root - ERROR - Error loading color_picker :: 'NoneType' object has no attribute 'MainWindow'
-Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
-    class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:24:17,226 - root - ERROR - Script chance.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\src\windows\chance.py.
-2025-02-27 01:24:17,226 - root - ERROR - Error loading chance :: 'NoneType' object has no attribute 'MainWindow'
-Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 38, in load_windows
-    class_obj = App.load_script(d['script']).MainWindow
-AttributeError: 'NoneType' object has no attribute 'MainWindow'
-2025-02-27 01:48:14,267 - root - ERROR - [Errno 2] No such file or directory: 'res/styles.qss'
-Traceback (most recent call last):
-  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 123, in <module>
-    with open(STYLES_PATH, 'r') as f:
-FileNotFoundError: [Errno 2] No such file or directory: 'res/styles.qss'
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 98, in load_script
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\chance.py", line 8, in <module>
+    import lib.custom_window as cw
+ModuleNotFoundError: No module named 'lib'

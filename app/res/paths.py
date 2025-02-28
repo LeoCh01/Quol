@@ -1,4 +1,5 @@
 RES_PATH = 'res/'
+IMG_PATH = 'res/img/'
 SETTINGS_PATH = 'res/settings.json'
 CMDS_PATH = 'res/commands.json'
 STYLES_PATH = 'res/styles.qss'

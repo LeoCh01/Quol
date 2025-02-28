@@ -5,7 +5,7 @@ from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog
 import random
 
-from app.res.paths import SETTINGS_PATH
+from res.paths import SETTINGS_PATH
 
 
 class CustomWindow(QWidget):

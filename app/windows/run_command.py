@@ -3,8 +3,8 @@ import json
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QDialogButtonBox, \
     QPlainTextEdit, QCheckBox, QDialog
 
-from app.res.paths import CMDS_PATH
-from app.windows.lib.custom_window import CustomWindow, CustomDialog
+from res.paths import CMDS_PATH
+from windows.lib.custom_window import CustomWindow, CustomDialog
 
 
 class MainWindow(CustomWindow):
