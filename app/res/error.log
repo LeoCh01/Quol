@@ -1,0 +1,11 @@
+2025-03-04 16:34:34,212 - root - ERROR - name 'width' is not defined
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 127, in <module>
+    application = App()
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 49, in load_windows
+    self.windows.append(class_obj(i))
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\chance.py", line 21, in __init__
+    print(width())
+NameError: name 'width' is not defined

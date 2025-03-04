@@ -15,7 +15,7 @@ CONFETTI = 'confetti2.gif'
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(390, 10, 180, 1)):
+    def __init__(self, wid, geometry=(390, 10, 150, 1)):
         super().__init__('Chance', wid, geometry)
         self.is_coin_flip = True
 
@@ -95,7 +95,7 @@ class MainWindow(CustomWindow):
 
         confetti_movie = QMovie(IMG_PATH + CONFETTI)
         confetti_movie.setSpeed(150)
-        confetti_movie.setScaledSize(QtCore.QSize(160, 80))
+        confetti_movie.setScaledSize(QtCore.QSize(self.width() - 10, 80))
 
         self.confetti_label.setMovie(confetti_movie)
         confetti_movie.start()
