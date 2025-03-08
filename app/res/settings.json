@@ -5,16 +5,16 @@
   "main": "main.py",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "random",
+  "toggle_direction": "down",
   "reset_on_load": true,
   "windows": [
     {
       "script": "info.py",
       "geometry": [
-        10,
-        10,
+        1109,
+        91,
         180,
-        130
+        68
       ]
     },
     {
@@ -38,9 +38,9 @@
     {
       "script": "chance.py",
       "geometry": [
-        419,
-        24,
-        180,
+        390,
+        10,
+        150,
         160
       ]
     },

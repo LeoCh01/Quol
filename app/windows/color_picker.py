@@ -3,7 +3,7 @@ from PySide6.QtCore import QTimer, QSize, Signal
 from PySide6.QtGui import QPixmap, QColor, QGuiApplication, QCursor, QPainter
 from PySide6.QtWidgets import QLabel, QGridLayout, QPushButton
 
-from windows.lib.custom_window import CustomWindow
+from windows.lib.custom_widgets import CustomWindow
 
 
 class MainWindow(CustomWindow):

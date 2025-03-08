@@ -8,12 +8,14 @@ This project is a desktop application built using **PySide6**, designed to serve
 
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **CMD Runner:** Save and execute custom command line instructions.
-- **Chance:** Flip a coin, roll a dice
-- **Customize:** Create and Add custom windows without rebuilding
-- **Interface:** Runs at top layer and toggleable through hotkey. Adjustable layouts to fit your preferences.
+- **Chance:** Flip a coin, roll a dice.
+- **Notes:** Store quick and temporary data, including copy history.
+- **Customize:** Create and Add custom windows without rebuilding.
 
-  ![Color Picker Demo](demo/color.gif)
-  ![CMD Runner Demo](demo/cmd.gif)
+This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
+
+![Color Picker Demo](demo/color.gif)
+![CMD Runner Demo](demo/cmd.gif)
 
 ## Installation
 
@@ -63,14 +65,6 @@ To run the application locally or build it as a standalone executable, follow th
      ```bash
      python windows-helper.py
      ```
-
-5. **Convert to Executable (Optional):**
-   - If you want to convert the application into a standalone `.exe` file, run the following command:
-     ```bash
-     pyinstaller windows-helper.spec
-     ```
-   - The `.exe` file will be generated in the `dist` folder inside the project directory.
-   - Make sure to copy the `src` folder into the `dist` folder to use the resources and windows.
 
 ### Adding Custom Windows
 

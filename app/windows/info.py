@@ -6,7 +6,7 @@ from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 
 from res.paths import SETTINGS_PATH
-from windows.lib.custom_window import CustomWindow
+from windows.lib.custom_widgets import CustomWindow
 
 RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 

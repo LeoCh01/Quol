@@ -5,7 +5,7 @@ from PySide6.QtGui import QPixmap, Qt, QMovie
 import random
 
 from res.paths import IMG_PATH
-from windows.lib.custom_window import CustomWindow
+from windows.lib.custom_widgets import CustomWindow
 
 COIN = 'coin-x.png'
 COIN_IMAGES = ['coin-h.png', 'coin-t.png']

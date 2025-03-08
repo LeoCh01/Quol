@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, 
     QPlainTextEdit, QCheckBox, QDialog
 
 from res.paths import CMDS_PATH
-from windows.lib.custom_window import CustomWindow, CustomDialog
+from windows.lib.custom_widgets import CustomWindow, CustomDialog
 
 
 class MainWindow(CustomWindow):
