@@ -29,8 +29,8 @@
     {
       "script": "color_picker.py",
       "geometry": [
-        210,
-        8,
+        695,
+        315,
         180,
         155
       ]
@@ -38,14 +38,20 @@
     {
       "script": "chance.py",
       "geometry": [
-        390,
-        10,
+        3,
+        356,
         150,
         160
       ]
     },
     {
-      "script": "notes.py"
+      "script": "notes.py",
+      "geometry": [
+        550,
+        10,
+        140,
+        164
+      ]
     }
   ]
 }

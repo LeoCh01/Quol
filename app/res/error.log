@@ -1,0 +1,45 @@
+2025-03-09 17:30:55,571 - pynput.keyboard.Listener - ERROR - Unhandled exception in listener callback
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\_util\__init__.py", line 229, in inner
+    return f(self, *args, **kwargs)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\keyboard\_win32.py", line 319, in _process
+    self.on_release(key)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\_util\__init__.py", line 145, in inner
+    if f(*args) is False:
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\notes.py", line 62, in on_copy
+    print(set(key))
+TypeError: 'KeyCode' object is not iterable
+2025-03-09 17:32:16,483 - pynput.keyboard.Listener - ERROR - Unhandled exception in listener callback
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\_util\__init__.py", line 229, in inner
+    return f(self, *args, **kwargs)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\keyboard\_win32.py", line 319, in _process
+    self.on_release(key)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\_util\__init__.py", line 145, in inner
+    if f(*args) is False:
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\notes.py", line 64, in on_copy
+    for i in key:
+TypeError: 'KeyCode' object is not iterable
+2025-03-09 17:32:30,180 - pynput.keyboard.Listener - ERROR - Unhandled exception in listener callback
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\_util\__init__.py", line 229, in inner
+    return f(self, *args, **kwargs)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\keyboard\_win32.py", line 319, in _process
+    self.on_release(key)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\.venv\lib\site-packages\pynput\_util\__init__.py", line 145, in inner
+    if f(*args) is False:
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\notes.py", line 64, in on_copy
+    for i in key:
+TypeError: 'KeyCode' object is not iterable
+2025-03-09 18:02:22,771 - root - ERROR - Error loading notes :: No module named 'pyperclip'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 37, in load_windows
+    class_obj = App.load_script(d['script']).MainWindow
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 98, in load_script
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\notes.py", line 3, in <module>
+    import pyperclip
+ModuleNotFoundError: No module named 'pyperclip'
