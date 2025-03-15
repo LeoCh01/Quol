@@ -26,7 +26,7 @@ class App(QObject):
         self.toggle_key = settings.get('toggle_key', '`')
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
         self.is_hidden = False
-        self.is_reset = settings.get('reset_on_load', True)
+        self.is_reset = settings.get('default_pos', True)
 
         self.load_windows(settings)
         self.setup_tray_icon()

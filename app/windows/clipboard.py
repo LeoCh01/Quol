@@ -3,11 +3,10 @@ import json
 from PySide6 import QtGui, QtCore
 from pynput import keyboard
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QLabel, QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QCheckBox, QSlider, \
-    QApplication
+from PySide6.QtWidgets import QLabel, QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QCheckBox, QSlider, QApplication
 
 from res.paths import CLIPBOARD_PATH, IMG_PATH
-from windows.lib.custom_widgets import CustomWindow, TestWin
+from windows.lib.custom_widgets import CustomWindow
 
 
 class MainWindow(CustomWindow):

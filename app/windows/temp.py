@@ -16,7 +16,7 @@ class MainWindow(CustomWindow):
         Initialize a window at the top left of the screen.
 
         Args:
-            wid (int): The window ID. (can ignore)
+            wid (int): The window ID.
             geometry (tuple): A tuple containing the geometry of the window (x, y, width, height).
         """
         super().__init__('Temp', wid, geometry)

@@ -6,52 +6,25 @@
   "startup": false,
   "toggle_key": "`",
   "toggle_direction": "down",
-  "reset_on_load": true,
+  "default_pos": true,
   "windows": [
     {
-      "script": "info.py",
-      "geometry": [
-        1109,
-        91,
-        180,
-        68
-      ]
+      "script": "info.py"
     },
     {
-      "script": "run_command.py",
-      "geometry": [
-        10,
-        147,
-        180,
-        166
-      ]
+      "script": "run_command.py"
     },
     {
-      "script": "color_picker.py",
-      "geometry": [
-        200,
-        10,
-        180,
-        155
-      ]
+      "script": "color_picker.py"
     },
     {
-      "script": "chance.py",
-      "geometry": [
-        540,
-        9,
-        150,
-        160
-      ]
+      "script": "chance.py"
     },
     {
-      "script": "clipboard.py",
-      "geometry": [
-        550,
-        10,
-        170,
-        138
-      ]
+      "script": "clipboard.py"
+    },
+    {
+      "script": "chat.py"
     }
   ]
 }
