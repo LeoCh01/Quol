@@ -1,7 +1,7 @@
 {
   "name": "Windows Helper",
-  "version": "1.2.0",
-  "description": "test",
+  "version": "2.0.0",
+  "description": "versatile tool for windows.",
   "main": "main.py",
   "startup": false,
   "toggle_key": "`",
@@ -29,8 +29,8 @@
     {
       "script": "color_picker.py",
       "geometry": [
-        695,
-        315,
+        200,
+        10,
         180,
         155
       ]
@@ -38,19 +38,19 @@
     {
       "script": "chance.py",
       "geometry": [
-        3,
-        356,
+        540,
+        9,
         150,
         160
       ]
     },
     {
-      "script": "notes.py",
+      "script": "clipboard.py",
       "geometry": [
         550,
         10,
-        140,
-        164
+        170,
+        138
       ]
     }
   ]

@@ -95,7 +95,7 @@ class MainWindow(CustomWindow):
 
         confetti_movie = QMovie(IMG_PATH + CONFETTI)
         confetti_movie.setSpeed(150)
-        confetti_movie.setScaledSize(QtCore.QSize(self.width() - 10, 80))
+        confetti_movie.setScaledSize(QtCore.QSize(self.width() - 20, 80))
 
         self.confetti_label.setMovie(confetti_movie)
         confetti_movie.start()

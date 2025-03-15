@@ -39,7 +39,7 @@ class App(QObject):
             except Exception as e:
                 logging.error(f"Error loading {d['script'][:-3]} :: {e}", exc_info=True)
                 continue
-            if d['script'] == 'info':
+            if d['script'] == 'info.py':
                 if self.is_reset or not d.get('geometry'):
                     self.windows.append(class_obj(i, set_toggle_key=self.set_toggle_key, key=self.toggle_key))
                 else:

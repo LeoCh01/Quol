@@ -2,8 +2,7 @@ import json
 
 from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt
 from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog, QMainWindow, \
-    QSpinBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog
 import random
 
 from res.paths import SETTINGS_PATH
@@ -180,40 +179,3 @@ class CustomTitleBar(QWidget):
 
         with open(SETTINGS_PATH, 'w') as f:
             json.dump(settings, f, indent=2)
-
-
-class CustomWindow2(QWidget):
-    def __init__(self, geometry=(0, 0, 0, 0)):
-        super().__init__()
-        print(geometry)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
-        self.setGeometry(*geometry)
-
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-
-        self.title_bar = QHBoxLayout()
-        self.close_btn = QPushButton("X")
-        self.close_btn.clicked.connect(self.close)
-        self.title_bar.addWidget(self.close_btn)
-        self.layout.addLayout(self.title_bar)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.setMask(self.generateRoundedMask())
-
-    def generateRoundedMask(self):
-        rect = self.rect()
-        path = QPainterPath()
-        radius = 6
-        path.addRoundedRect(rect, radius, radius)
-        return QRegion(path.toFillPolygon().toPolygon())
-
-
-class TestWin(QWidget):
-    def __init__(self):
-        super().__init__()
-        print("TestWin")
-        self.setWindowTitle("My App")
-        self.show()

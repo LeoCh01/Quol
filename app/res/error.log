@@ -43,3 +43,17 @@ Traceback (most recent call last):
   File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\notes.py", line 3, in <module>
     import pyperclip
 ModuleNotFoundError: No module named 'pyperclip'
+2025-03-14 21:59:37,830 - root - ERROR - Script notes.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\notes.py.
+2025-03-14 21:59:37,832 - root - ERROR - Error loading notes :: 'NoneType' object has no attribute 'MainWindow'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 37, in load_windows
+    class_obj = App.load_script(d['script']).MainWindow
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'MainWindow'
+2025-03-14 22:00:32,084 - root - ERROR - Script notes.py does not exist at C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\notes.py.
+2025-03-14 22:00:32,084 - root - ERROR - Error loading notes :: 'NoneType' object has no attribute 'MainWindow'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 37, in load_windows
+    class_obj = App.load_script(d['script']).MainWindow
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'MainWindow'

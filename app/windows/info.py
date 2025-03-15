@@ -51,13 +51,12 @@ class MainWindow(CustomWindow):
     def select_key(self):
         def on_key_press(event):
             key = event.name
-            self.set_key.setChecked(False)
+            print(self.set_toggle_key)
             self.key_label.setText(f' Key = {key}')
             self.set_toggle_key(key)
             self.set_key.setText('Edit Toggle Key')
             keyboard.unhook(self.key_hook)
 
-        self.set_key.setChecked(True)
         self.set_key.setText('Press a key')
         self.key_hook = keyboard.on_press(on_key_press)
 

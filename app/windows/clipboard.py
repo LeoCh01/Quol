@@ -1,28 +1,29 @@
 import json
 
+from PySide6 import QtGui, QtCore
 from pynput import keyboard
-from PySide6.QtCore import Qt, QTimer, QMetaObject, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QLabel, QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QCheckBox, QSlider, \
-    QApplication, QWidget
+    QApplication
 
-from res.paths import NOTES_PATH
+from res.paths import CLIPBOARD_PATH, IMG_PATH
 from windows.lib.custom_widgets import CustomWindow, TestWin
 
 
 class MainWindow(CustomWindow):
     copy_signal = Signal()
 
-    def __init__(self, wid, geometry=(550, 10, 140, 1)):
-        super().__init__('Notes', wid, geometry)
+    def __init__(self, wid, geometry=(550, 10, 170, 1)):
+        super().__init__('Clipboard', wid, geometry)
         self.copy_signal.connect(self.update_clipboard)
 
         self.copy_params = QHBoxLayout()
         self.disable = QCheckBox("Disable")
         self.disable.stateChanged.connect(self.on_disable_change)
         self.copy_params.addWidget(self.disable)
-        self.hide = QCheckBox("Hide")
-        self.hide.stateChanged.connect(self.on_hide_change)
-        self.copy_params.addWidget(self.hide)
+        self.clear = QPushButton("Clear")
+        self.clear.clicked.connect(self.on_clear)
+        self.copy_params.addWidget(self.clear)
         self.layout.addLayout(self.copy_params)
 
         self.copy_params2 = QHBoxLayout()
@@ -40,12 +41,8 @@ class MainWindow(CustomWindow):
         self.clip_groupbox.setLayout(self.clip_layout)
         self.layout.addWidget(self.clip_groupbox)
 
-        self.add_btn = QPushButton("Create Note")
-        self.add_btn.clicked.connect(self.create_note)
-        self.layout.addWidget(self.add_btn)
-
         self.copy_thread = None
-        self.load_notes()
+        self.load_config()
         self.on_disable_change()
 
     def on_disable_change(self):
@@ -62,39 +59,40 @@ class MainWindow(CustomWindow):
         if str(key) == r"'\x03'":
             self.copy_signal.emit()
 
-    def create_copy_btn(self, text):
-        if len(text) > 15:
-            text = text[:12] + '...'
+    @staticmethod
+    def create_copy_btn(text):
+        fulltext = text
+        if len(text) > 16:
+            text = text[:14] + '...'
 
-        layout = QHBoxLayout()
-        label = QLabel(text)
-        button = QPushButton("+")
-        button.clicked.connect(lambda: self.on_clipboard_button_click(text))
+        button = QPushButton(QtGui.QIcon(IMG_PATH + 'copy.png'), text)
+        button.setIconSize(QtCore.QSize(12, 12))
+        button.setFixedHeight(24)
+        button.setStyleSheet("text-align: left;")
+        button.clicked.connect(lambda: QApplication.clipboard().setText(fulltext))
 
-        layout.addWidget(label)
-        layout.addWidget(button)
-
-        return layout
+        return button
 
     def update_clipboard(self):
         self.clipboard.append(QApplication.clipboard().text())
+        self.setFixedHeight(self.height() + 24)
 
         while len(self.clipboard) > self.copy_len.value():
             self.clipboard.pop(0)
+            self.clip_layout.itemAt(self.copy_len.value() - 1).widget().deleteLater()
+            self.setFixedHeight(self.height() - 24)
 
-            sec = self.clip_layout.itemAt(self.copy_len.value() - 1).layout()
-            for i in reversed(range(sec.count())):
-                sec.itemAt(i).widget().deleteLater()
-            sec.deleteLater()
+        self.clip_layout.insertWidget(0, self.create_copy_btn(self.clipboard[-1]))
+        self.save_config()
 
-        self.clip_layout.insertLayout(0, self.create_copy_btn(self.clipboard[-1]))
-        self.save_notes()
+    def on_clear(self):
+        self.clipboard = []
+        for i in reversed(range(self.clip_layout.count())):
+            self.clip_layout.itemAt(i).widget().deleteLater()
+            self.setFixedHeight(self.height() - 24)
 
-    def on_clipboard_button_click(self, text):
-        pass
-
-    def on_hide_change(self):
-        self.set_config('hide', self.hide.isChecked())
+        self.set_config('clipboard', self.clipboard)
+        self.save_config()
 
     def on_slider_change(self):
         self.copy_lab.setText(f' {self.copy_len.value():<3}')
@@ -102,44 +100,29 @@ class MainWindow(CustomWindow):
 
         while len(self.clipboard) > self.copy_len.value():
             self.clipboard.pop(0)
-            self.clip_layout.itemAt(self.copy_len.value() - 1).layout().deleteLater()
-
-    def create_note(self):
-        pass
+            self.clip_layout.itemAt(self.copy_len.value() - 1).widget().deleteLater()
+            self.setFixedHeight(self.height() - 24)
 
     def set_config(self, k, v):
         self.config[k] = v
-        self.save_notes()
+        self.save_config()
 
-    def load_notes(self):
-        self.notes = []
+    def load_config(self):
         self.clipboard = []
 
         try:
-            with open(NOTES_PATH, 'r') as f:
+            with open(CLIPBOARD_PATH, 'r') as f:
                 self.config = json.load(f)
-
-                self.notes = self.config['notes']
                 self.clipboard = self.config['clipboard']
                 self.disable.setChecked(self.config['disable'])
-                self.hide.setChecked(self.config['hide'])
-                self.copy_len.setValue(self.config['length'])
-
-                for note in self.notes:
-                    pass
+                self.copy_len.setValue(max(self.config['length'], len(self.clipboard)))
 
                 for clip in self.clipboard:
-                    self.clip_layout.insertLayout(0, self.create_copy_btn(clip))
+                    self.clip_layout.insertWidget(0, self.create_copy_btn(clip))
+
         except Exception as e:
             print("error :: ", e)
 
-    def save_notes(self):
-        with open(NOTES_PATH, 'w') as f:
+    def save_config(self):
+        with open(CLIPBOARD_PATH, 'w') as f:
             json.dump(self.config, f)
-
-
-class Note(TestWin):
-    def __init__(self, geometry=(300, 300, 200, 200)):
-        super().__init__()
-
-
