@@ -21,5 +21,4 @@ class MainWindow(CustomWindow):
         """
         super().__init__('Temp', wid, geometry)
 
-        self.layout.addWidget(QLabel('Temp'))
         self.layout.addWidget(QLabel('Hello'))

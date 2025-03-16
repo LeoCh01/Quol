@@ -36,3 +36,13 @@
 #content QPushButton:hover {
     background-color: #555;
 }
+
+#content QComboBox {
+    background-color: #333;
+    color: white;
+}
+
+#content QAbstractItemView {
+    background-color: #333;
+    color: white;
+}

@@ -14,7 +14,7 @@ from res.paths import SETTINGS_PATH, RES_PATH, STYLES_PATH, IMG_PATH
 
 
 class App(QObject):
-    toggle = Signal(bool)
+    toggle = Signal(bool, bool)
     windows = []
 
     def __init__(self):
@@ -40,23 +40,26 @@ class App(QObject):
                 logging.error(f"Error loading {d['script'][:-3]} :: {e}", exc_info=True)
                 continue
             if d['script'] == 'info.py':
-                if self.is_reset or not d.get('geometry'):
-                    self.windows.append(class_obj(i, set_toggle_key=self.set_toggle_key, key=self.toggle_key))
-                else:
-                    self.windows.append(class_obj(i, d['geometry'], set_toggle_key=self.set_toggle_key, key=self.toggle_key))
+                class_obj.set_toggle_key = self.set_toggle_key
+                class_obj.key = self.toggle_key
+            elif d['script'] == 'chat.py':
+                class_obj.toggle_windows_2 = self.toggle_windows_2
+
+            if self.is_reset or not d.get('geometry'):
+                self.windows.append(class_obj(i))
             else:
-                if self.is_reset or not d.get('geometry'):
-                    self.windows.append(class_obj(i))
-                else:
-                    self.windows.append(class_obj(i, d['geometry']))
+                self.windows.append(class_obj(i, d['geometry']))
 
         for window in self.windows:
             self.toggle.connect(window.toggle_windows)
             window.show()
 
     def toggle_windows(self):
-        self.toggle.emit(self.is_hidden)
+        self.toggle.emit(self.is_hidden, False)
         self.is_hidden = not self.is_hidden
+
+    def toggle_windows_2(self, show):
+        self.toggle.emit(show, True)
 
     def set_toggle_key(self, key):
         print(f"Changing toggle key from {self.toggle_key} to {key}")

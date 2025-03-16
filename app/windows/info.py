@@ -12,11 +12,10 @@ RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(10, 10, 180, 1), set_toggle_key=None, key='`'):
+    def __init__(self, wid, geometry=(10, 10, 180, 1)):
         super().__init__('Info', wid, geometry)
 
         self.grid_layout = QGridLayout()
-        self.set_toggle_key = set_toggle_key
 
         self.ver = QPushButton(f'v{self.get_version()}')
         self.ver.clicked.connect(self.open_url)
@@ -27,7 +26,7 @@ class MainWindow(CustomWindow):
         self.set_key.clicked.connect(self.select_key)
         self.grid_layout.addWidget(self.set_key, 1, 0)
 
-        self.key_label = QLabel(' Key = ' + key)
+        self.key_label = QLabel(' Key = ' + self.key)
         self.grid_layout.addWidget(self.key_label, 1, 1)
 
         self.startup = QPushButton('Disable Startup' if self.get_startup() else 'Enable Startup')

@@ -24,7 +24,13 @@
       "script": "clipboard.py"
     },
     {
-      "script": "chat.py"
+      "script": "chat.py",
+      "geometry": [
+        727,
+        11,
+        108,
+        90
+      ]
     }
   ]
 }

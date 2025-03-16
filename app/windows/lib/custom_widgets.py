@@ -75,7 +75,14 @@ class CustomWindow(QWidget):
 
         return QPoint(x, y)
 
-    def toggle_windows(self, is_hidden):
+    def toggle_windows(self, is_hidden, is_instant=False):
+        if is_instant:
+            if is_hidden:
+                self.hide()
+            else:
+                self.show()
+            return
+
         self.geometry_bugfix()
         self.animation = QPropertyAnimation(self, b"pos")
         start_pos = self.pos()
