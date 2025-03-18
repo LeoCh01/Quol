@@ -1,13 +1,10 @@
-import time
-
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout
+from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QLabel, QApplication, QScrollArea
 
 from res.paths import IMG_PATH
 from windows.lib.custom_widgets import CustomWindow
 
-import asyncio
 import ollama
 
 
@@ -33,10 +30,14 @@ class MainWindow(CustomWindow):
         self.layout.addLayout(self.prompt_layout)
 
         self.btn = QPushButton("Send")
-        self.btn.clicked.connect(self.get_screen_text)
+        self.btn.clicked.connect(self.prompt_screen)
         self.layout.addWidget(self.btn)
 
-    def get_screen_text(self):
+        screen_geometry = QGuiApplication.primaryScreen().geometry()
+        self.chat_window = ChatWindow(geometry=(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600))
+        self.toggle_signal.connect(self.chat_window.toggle_windows)
+
+    def prompt_screen(self):
         screen = QGuiApplication.primaryScreen()
         self.toggle_windows_2(True)
         screenshot = screen.grabWindow(0).toImage()
@@ -53,6 +54,9 @@ class MainWindow(CustomWindow):
             self.activate_ollama()
 
         print('Question:', self.prompt.text())
+        self.chat_window.show()
+        self.chat_window.clear_text()
+
         response = self.ollama_client.chat(
             model='gemma3',
             stream=True,
@@ -64,4 +68,30 @@ class MainWindow(CustomWindow):
         )
 
         for chunk in response:
-            print(chunk['message']['content'], end='', flush=True)
+            self.chat_window.add_text(chunk['message']['content'])
+
+
+class ChatWindow(CustomWindow):
+    def __init__(self, geometry=(0, 0, 0, 0)):
+        super().__init__("Chat", add_close_btn=True)
+        self.setObjectName("content")
+        self.setGeometry(*geometry)
+
+        self.chat_response = QLabel()
+        self.chat_response.setWordWrap(True)
+        self.chat_response.setAlignment(Qt.AlignTop)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidget(self.chat_response)
+        self.scroll_area.setWidgetResizable(True)
+        self.layout.addWidget(self.scroll_area)
+
+    def add_text(self, text):
+        self.chat_response.setText(self.chat_response.text() + text)
+        self.chat_response.repaint()
+        QApplication.processEvents()
+
+    def clear_text(self):
+        self.chat_response.setText('')
+        self.chat_response.repaint()
+        QApplication.processEvents()

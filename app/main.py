@@ -44,6 +44,7 @@ class App(QObject):
                 class_obj.key = self.toggle_key
             elif d['script'] == 'chat.py':
                 class_obj.toggle_windows_2 = self.toggle_windows_2
+                class_obj.toggle_signal = self.toggle
 
             if self.is_reset or not d.get('geometry'):
                 self.windows.append(class_obj(i))

@@ -9,7 +9,7 @@ from res.paths import SETTINGS_PATH
 
 
 class CustomWindow(QWidget):
-    def __init__(self, title="Custom Window", wid=-1, geometry=(0, 0, 0, 0)):
+    def __init__(self, title="Custom Window", wid=-1, geometry=(0, 0, 0, 0), add_close_btn=False):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setGeometry(*geometry)
@@ -22,7 +22,7 @@ class CustomWindow(QWidget):
         self.l1.setContentsMargins(0, 0, 0, 0)
         self.l1.setSpacing(0)
 
-        self.title_bar = CustomTitleBar(title, self)
+        self.title_bar = CustomTitleBar(title, self, add_close_btn)
         self.l1.addWidget(self.title_bar)
 
         self.w1 = QWidget()
@@ -129,7 +129,7 @@ class CustomDialog(QDialog):
 
 
 class CustomTitleBar(QWidget):
-    def __init__(self, title="Custom Title Bar", parent: CustomWindow = None):
+    def __init__(self, title="Custom Title Bar", parent: CustomWindow=None, add_close_btn=False):
         super().__init__(parent)
         self.parent = parent
 
@@ -142,9 +142,14 @@ class CustomTitleBar(QWidget):
         self.title_label = QLabel(title)
         self.l1.addWidget(self.title_label, stretch=10)
 
-        self.collapse_btn = QPushButton("▼")
-        self.collapse_btn.clicked.connect(self.toggleCollapse)
-        self.l1.addWidget(self.collapse_btn, stretch=1)
+        if add_close_btn:
+            self.close_btn = QPushButton("×")
+            self.close_btn.clicked.connect(self.parent.close)
+            self.l1.addWidget(self.close_btn, stretch=1)
+        else:
+            self.collapse_btn = QPushButton("▼")
+            self.collapse_btn.clicked.connect(self.toggleCollapse)
+            self.l1.addWidget(self.collapse_btn, stretch=1)
 
     def paintEvent(self, event):
         painter = QPainter(self)

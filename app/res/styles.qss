@@ -46,3 +46,8 @@
     background-color: #333;
     color: white;
 }
+
+#content QFrame {
+    background-color: #333;
+    color: white;
+}
