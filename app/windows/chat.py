@@ -1,47 +1,34 @@
+import time
+
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QLabel, QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout
+from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout
 
 from res.paths import IMG_PATH
 from windows.lib.custom_widgets import CustomWindow
 
-import requests
+import asyncio
+import ollama
 
 
 class MainWindow(CustomWindow):
 
     def __init__(self, wid, geometry=(730, 10, 170, 1)):
         super().__init__('Chat', wid, geometry)
-
-        # self.api_key_label = QLabel("API Key:")
-        # self.api_key = QLineEdit()
-        # self.api_key.setEchoMode(QLineEdit.Password)
-        # self.api_key_label2 = QLabel("API key 2")
-        # self.api_key2 = QLineEdit()
-        # self.api_key.setEchoMode(QLineEdit.Password)
-        #
-        # self.apis_layout = QVBoxLayout()
-        # self.api_name_layout = QHBoxLayout()
-        # self.api_name_layout.addWidget(self.api_key_label)
-        # self.api_name_layout.addWidget(self.api_key_label2)
-        # self.api_input_layout = QHBoxLayout()
-        # self.api_input_layout.addWidget(self.api_key)
-        # self.api_input_layout.addWidget(self.api_key2)
-        # self.apis_layout.addLayout(self.api_name_layout)
-        # self.apis_layout.addLayout(self.api_input_layout)
-        # self.layout.addLayout(self.apis_layout)
+        self.ollama_client = None
 
         self.prompt_layout = QVBoxLayout()
-        self.row_layout = QHBoxLayout()
+        self.config_layout = QHBoxLayout()
 
-        self.prompt_label = QLabel("Prompt:")
+        self.ollama_btn = QPushButton("Activate")
         self.ai_list = QComboBox()
-        self.ai_list.addItems(['GPT', 'Gemini', 'aaa'])
+        self.ai_list.addItems(['GPT', 'Gemini', 'ollama'])
         self.prompt = QLineEdit()
         self.prompt.setPlaceholderText("prompt...")
 
-        self.row_layout.addWidget(self.prompt_label)
-        self.row_layout.addWidget(self.ai_list)
-        self.prompt_layout.addLayout(self.row_layout)
+        self.config_layout.addWidget(self.ollama_btn)
+        self.config_layout.addWidget(self.ai_list)
+        self.prompt_layout.addLayout(self.config_layout)
         self.prompt_layout.addWidget(self.prompt)
         self.layout.addLayout(self.prompt_layout)
 
@@ -55,13 +42,26 @@ class MainWindow(CustomWindow):
         screenshot = screen.grabWindow(0).toImage()
         self.toggle_windows_2(False)
         screenshot.save(IMG_PATH + 'screenshot.png')
+        QTimer.singleShot(0, self.ollama_chat)
 
-        files = {'file': open(IMG_PATH + 'screenshot.png', 'rb')}
-        payload = {
-            'apikey': 'K81022411788957',
-            'language': 'eng',
-        }
+    def activate_ollama(self):
+        self.ollama_client = ollama.Client(host='http://localhost:11434')
+        print('connected')
 
-        # res = requests.post('https://api.ocr.space/parse/image', data=payload, files=files)
-        # text = res.json()
-        # return text
+    def ollama_chat(self):
+        if not self.ollama_client:
+            self.activate_ollama()
+
+        print('Question:', self.prompt.text())
+        response = self.ollama_client.chat(
+            model='gemma3',
+            stream=True,
+            messages=[{
+                'role': 'user',
+                'content': self.prompt.text(),
+                'images': [IMG_PATH + 'screenshot.png']
+            }]
+        )
+
+        for chunk in response:
+            print(chunk['message']['content'], end='', flush=True)

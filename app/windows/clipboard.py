@@ -35,7 +35,7 @@ class MainWindow(CustomWindow):
         self.copy_params2.addWidget(self.copy_len)
         self.layout.addLayout(self.copy_params2)
 
-        self.clip_groupbox = QGroupBox("Ctrl+C")
+        self.clip_groupbox = QGroupBox("History")
         self.clip_layout = QVBoxLayout()
         self.clip_groupbox.setLayout(self.clip_layout)
         self.layout.addWidget(self.clip_groupbox)

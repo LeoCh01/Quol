@@ -1,4 +1,4 @@
 PySide6
 keyboard
 pynput
-pillow
+ollama
