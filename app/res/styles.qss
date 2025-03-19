@@ -47,7 +47,7 @@
     color: white;
 }
 
-#content QFrame {
+#content QScrollArea QFrame {
     background-color: #333;
     color: white;
 }

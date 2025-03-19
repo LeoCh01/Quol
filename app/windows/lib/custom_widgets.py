@@ -143,7 +143,7 @@ class CustomTitleBar(QWidget):
         self.l1.addWidget(self.title_label, stretch=10)
 
         if add_close_btn:
-            self.close_btn = QPushButton("×")
+            self.close_btn = QPushButton("✕")
             self.close_btn.clicked.connect(self.parent.close)
             self.l1.addWidget(self.close_btn, stretch=1)
         else:

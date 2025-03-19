@@ -73,9 +73,7 @@ class MainWindow(CustomWindow):
 
 class ChatWindow(CustomWindow):
     def __init__(self, geometry=(0, 0, 0, 0)):
-        super().__init__("Chat", add_close_btn=True)
-        self.setObjectName("content")
-        self.setGeometry(*geometry)
+        super().__init__("Chat", geometry=geometry, add_close_btn=True)
 
         self.chat_response = QLabel()
         self.chat_response.setWordWrap(True)
