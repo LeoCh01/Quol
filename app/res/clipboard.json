@@ -1,1 +1,8 @@
-{"disable": false, "length": 3, "clipboard": []}
+{
+  "lock": false,
+  "length": 2,
+  "clipboard": [
+    "url = f\"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}\"\n        headers = {'Content-Type': 'application/json'}\n        data = {\n            \"contents\": [{\n                \"parts\": [\n                    {\"text\": \"Caption this image.\"},\n                    {\n                        \"inline_data\": {\n                            \"mime_type\": \"image/jpeg\",\n                            \"data\": img_data\n                        }\n                    }\n                ]\n            }]\n        }\n\n        response = requests.post(url, headers=headers, json=data)\n        window.show()\n\n        print(response.json())\n        for chunk in response:\n            print(chunk)\n            window.add_text()",
+    "class Solution:\n    def maximumTripletValue(self, nums: List[int]) -> int:\n        n = len(nums)\n        max_value = 0\n        for i in range(n):\n            for j in range(i + 1, n):\n                for k in range(j + 1, n):\n                    value = (nums[i] - nums[j]) * nums[k]\n                    max_value = max(max_value, value)\n        return max_value"
+  ]
+}

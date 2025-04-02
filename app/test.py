@@ -1,24 +1,31 @@
-import asyncio
-import ollama
-from res.paths import IMG_PATH
+import re
 
+import requests
+import json
+import os
 
-async def chat():
-    client = ollama.AsyncClient(host='http://localhost:11434')
-    print('connected')
+API_KEY = ''
+MODEL_NAME = "gemini-2.0-flash" # Or your preferred model
+API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={API_KEY}"
 
-    response = await client.chat(
-        model='gemma3',
-        stream=True,
-        messages=[{
-            'role': 'user',
-            'content': 'give me a brief description of this image',
-            'images': [IMG_PATH + 'screenshot.png']
-        }]
-    )
+headers = {
+    'Content-Type': 'application/json'
+}
 
-    async for chunk in response:
-        print(chunk['message']['content'], end='', flush=True)
+data = {
+  "contents": [
+    {
+      "role": "user",
+      "parts": [
+        {"text": "Write a poem about the moon."}
+      ]
+    }
+  ]
+  # Optional: "generationConfig": {...}
+}
 
-
-asyncio.run(chat())
+# Use stream=True to enable streaming
+response = requests.post(API_URL, headers=headers, json=data).json()
+chunks = re.split(r'(\s+)', response['candidates'][0]['content']['parts'][0]['text'])
+for chunk in chunks:
+    print(chunk, end='')

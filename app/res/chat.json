@@ -1,0 +1,8 @@
+{
+  "ollama": {
+    "model": "gemma3"
+  },
+  "Gemini": {
+    "model": "gemini-2.0-flash"
+  }
+}

@@ -17,7 +17,7 @@ class MainWindow(CustomWindow):
         self.copy_signal.connect(self.update_clipboard)
 
         self.copy_params = QHBoxLayout()
-        self.disable = QCheckBox("Disable")
+        self.disable = QCheckBox("Lock")
         self.disable.stateChanged.connect(self.on_disable_change)
         self.copy_params.addWidget(self.disable)
         self.clear = QPushButton("Clear")
@@ -45,7 +45,7 @@ class MainWindow(CustomWindow):
         self.on_disable_change()
 
     def on_disable_change(self):
-        self.set_config('disable', self.disable.isChecked())
+        self.set_config('lock', self.disable.isChecked())
 
         if self.disable.isChecked() and self.copy_thread:
             self.copy_thread.stop()
@@ -113,7 +113,7 @@ class MainWindow(CustomWindow):
             with open(CLIPBOARD_PATH, 'r') as f:
                 self.config = json.load(f)
                 self.clipboard = self.config['clipboard']
-                self.disable.setChecked(self.config['disable'])
+                self.disable.setChecked(self.config['lock'])
                 self.copy_len.setValue(max(self.config['length'], len(self.clipboard)))
 
                 for clip in self.clipboard:
@@ -124,4 +124,4 @@ class MainWindow(CustomWindow):
 
     def save_config(self):
         with open(CLIPBOARD_PATH, 'w') as f:
-            json.dump(self.config, f)
+            json.dump(self.config, f, indent=2)

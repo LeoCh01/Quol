@@ -83,7 +83,7 @@ class MainWindow(CustomWindow):
 
     def save_commands(self):
         with open(CMDS_PATH, 'w') as f:
-            json.dump(self.commands, f)
+            json.dump(self.commands, f, indent=2)
 
     def load_commands(self):
         try:
