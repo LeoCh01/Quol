@@ -4,9 +4,10 @@ import re
 
 import requests
 
-from PySide6.QtCore import QTimer, Qt, QPropertyAnimation, QEasingCurve, QRect, QThread, QSize
-from PySide6.QtGui import QGuiApplication, QIcon, QMovie
-from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QLabel, QApplication, QScrollArea
+from PySide6.QtCore import QTimer, Qt, QPropertyAnimation, QEasingCurve, QRect
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, \
+    QScrollArea, QMessageBox, QTextEdit
 
 from res.paths import IMG_PATH, CHAT_PATH
 from windows.lib.custom_widgets import CustomWindow
@@ -25,7 +26,7 @@ class MainWindow(CustomWindow):
 
         self.model = QLineEdit()
         self.model.setPlaceholderText("model...")
-        self.model.textChanged.connect(lambda: self.set_config(self.ai_list.currentText(), {'model': self.model.text()}))
+        self.model.textChanged.connect(self.on_model_change)
 
         self.ai_list = QComboBox()
         self.ai_list.addItems(['Gemini', 'ollama', 'GPT'])
@@ -39,6 +40,7 @@ class MainWindow(CustomWindow):
 
         self.prompt = QLineEdit()
         self.prompt.setPlaceholderText("prompt...")
+        self.prompt.returnPressed.connect(self.send_prompt)
 
         self.config_layout.addWidget(self.model)
         self.config_layout.addWidget(self.ai_list)
@@ -47,28 +49,26 @@ class MainWindow(CustomWindow):
         self.layout.addLayout(self.prompt_layout)
 
         self.btn = QPushButton("Send")
-        self.btn.clicked.connect(self.prompt_screen)
+        self.btn.clicked.connect(self.send_prompt)
         self.layout.addWidget(self.btn)
-
-        self.loading_movie = QMovie(IMG_PATH + 'loading.gif')
-        self.loading_movie.setScaledSize(QSize(50, 50))
-        self.loading_label = QLabel()
-        self.loading_label.setMovie(self.loading_movie)
-        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.ai = AI()
         self.chat_window = ChatWindow(wid)
         self.load_config()
 
+    def on_model_change(self):
+        self.config[self.ai_list.currentText()]['model'] = self.model.text()
+        self.save_config()
+
     def on_ai_change(self, index):
         if self.ai_list.currentText() == 'Gemini':
-            self.model.setText(self.config['gemini']['model'])
+            self.model.setText(self.config['Gemini']['model'])
         elif self.ai_list.currentText() == 'ollama':
             self.model.setText(self.config['ollama']['model'])
         elif self.ai_list.currentText() == 'GPT':
             pass
 
-    def prompt_screen(self):
+    def send_prompt(self):
         screen = QGuiApplication.primaryScreen()
         self.toggle_windows_2(True)
         screenshot = screen.grabWindow(0).toImage()
@@ -76,9 +76,9 @@ class MainWindow(CustomWindow):
         screenshot.save(IMG_PATH + 'screenshot.png')
 
         self.set_button_loading_state(True)
-        QTimer.singleShot(0, self.send_prompt)
+        QTimer.singleShot(0, self.start_chat)
 
-    def send_prompt(self):
+    def start_chat(self):
         print('Question:', self.prompt.text())
         self.set_button_loading_state(False)
 
@@ -87,20 +87,18 @@ class MainWindow(CustomWindow):
         elif self.ai_list.currentText() == 'GPT':
             pass
         elif self.ai_list.currentText() == 'Gemini':
-            self.ai.gemini(self.config['Gemini']['model'], self.prompt.text(), self.chat_window)
+            if self.config['Gemini']['apikey'] == '':
+                QMessageBox.warning(self, "API Key Missing", "Please set your Gemini API key in the res/chat.json file.")
+                return
+            self.ai.gemini(self.config['Gemini']['model'], self.prompt.text(), self.config['Gemini']['apikey'], self.chat_window)
+
+        self.prompt.setText('')
 
     def set_button_loading_state(self, is_loading):
         if is_loading:
-            self.btn.setText("")
-            self.loading_movie.start()
+            self.btn.setText("loading...")
         else:
             self.btn.setText("Send")
-            self.btn.setIcon(QIcon())
-            self.loading_movie.stop()
-
-    def set_config(self, k, v):
-        self.config[k] = v
-        self.save_config()
 
     def load_config(self):
         try:
@@ -140,12 +138,12 @@ class AI:
 
         window.show()
 
+        text = ''
         for chunk in response:
-            window.add_text(chunk['message']['content'])
+            text += chunk['message']['content']
+            window.set_text(text)
 
-    def gemini(self, model, prompt, window):
-        key = ''
-
+    def gemini(self, model, prompt, key, window):
         with open(IMG_PATH + 'screenshot.png', 'rb') as img_file:
             img_data = base64.b64encode(img_file.read()).decode('utf-8')
 
@@ -166,23 +164,26 @@ class AI:
         }
 
         response = requests.post(url, headers=headers, json=data).json()
-        chunks = re.split(r'(\s+)', response['candidates'][0]['content']['parts'][0]['text'])
         window.set_text('')
         window.show()
 
+        text = ''
+        chunks = re.split(r'(\s+)', response['candidates'][0]['content']['parts'][0]['text'])
         for chunk in chunks:
-            window.add_text(chunk)
+            text += chunk
+            window.set_text(text)
+
+        # window.add_text(response['candidates'][0]['content']['parts'][0]['text'])
 
 
 class ChatWindow(CustomWindow):
     def __init__(self, wid):
         screen_geometry = QGuiApplication.primaryScreen().geometry()
         self.g = (screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
-        super().__init__("Chat", wid, geometry=self.g, add_close_btn=True)
+        super().__init__("Chat", -1, geometry=self.g, add_close_btn=True)
 
-        self.chat_response = QLabel()
-        self.chat_response.setWordWrap(True)
-        self.chat_response.setAlignment(Qt.AlignTop)
+        # self.chat_response = QTextBrowser()
+        self.chat_response = QTextEdit(readOnly=True)
         self.chat_response.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
 
         self.scroll_area = QScrollArea()
@@ -190,13 +191,8 @@ class ChatWindow(CustomWindow):
         self.scroll_area.setWidgetResizable(True)
         self.layout.addWidget(self.scroll_area)
 
-    def add_text(self, text):
-        self.chat_response.setText(self.chat_response.text() + text)
-        self.chat_response.repaint()
-        QApplication.processEvents()
-
     def set_text(self, text):
-        self.chat_response.setText(text)
+        self.chat_response.setMarkdown(text)
         self.chat_response.repaint()
         QApplication.processEvents()
 
@@ -213,3 +209,34 @@ class ChatWindow(CustomWindow):
         super().closeEvent(event)
         self.set_text('')
         self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
+
+    @staticmethod
+    def get_styled_html(html):
+        return f"""
+        <html>
+        <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+            }}
+            .code-container {{
+                max-width: 100%;
+                overflow-x: auto;  /* Scrollbar only inside the code block */
+                padding: 10px;
+                border-radius: 5px;
+            }}
+            pre {{
+                white-space: pre;  /* Keeps newlines */
+                margin: 0;  /* Prevents extra spacing */
+                font-family: monospace;
+            }}
+            code {{
+                font-family: monospace;
+            }}
+        </style>
+        </head>
+        <body>
+        {html}
+        </body>
+        </html>
+        """
