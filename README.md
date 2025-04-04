@@ -15,8 +15,10 @@ This project is a desktop application built using **PySide6**, designed to serve
 
 This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
 
-![Color Picker Demo](demo/color.gif)
-![CMD Runner Demo](demo/cmd.gif)
+<img src="demo/wh-chat.gif" width="250">
+<img src="demo/wh-color.gif" width="250">
+<img src="demo/wh-cmd.gif" width="250">
+<img src="demo/wh-chance.gif" width="250">
 
 ## Installation
 
