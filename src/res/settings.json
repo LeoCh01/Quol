@@ -1,0 +1,48 @@
+{
+  "name": "Windows Helper",
+  "version": "1.2.0",
+  "description": "test",
+  "main": "main.py",
+  "startup": false,
+  "toggle_key": "`",
+  "toggle_direction": "random",
+  "reset_on_load": true,
+  "windows": [
+    {
+      "script": "info.py",
+      "geometry": [
+        10,
+        10,
+        180,
+        130
+      ]
+    },
+    {
+      "script": "run_command.py",
+      "geometry": [
+        10,
+        147,
+        180,
+        166
+      ]
+    },
+    {
+      "script": "color_picker.py",
+      "geometry": [
+        303,
+        203,
+        180,
+        155
+      ]
+    },
+    {
+      "script": "chance.py",
+      "geometry": [
+        383,
+        49,
+        180,
+        160
+      ]
+    }
+  ]
+}
