@@ -6,11 +6,11 @@ This project is a desktop application built using **PySide6**, designed to serve
 
 ## Features
 
-- **Chat:**
 - **CMD Runner:** Save and execute custom command line instructions.
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **Chance:** Flip a coin, roll a dice.
 - **Clipboard:** Store copy history.
+- **Chat:** run AI prompts on your screen. Depending on the type, you may need to add your api key in the `res/chat.json` file.
 - **Customize:** Create and Add custom windows without rebuilding.
 
 This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
@@ -110,4 +110,4 @@ By following these steps, you can easily add custom windows without rebuilding t
 
 ## Contact
 
-For any support, please reach out to leocheng333375749@gmail.com
+For any support, please reach out to ch3.leoo@gmail.com
