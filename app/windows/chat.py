@@ -87,9 +87,6 @@ class MainWindow(CustomWindow):
         elif self.ai_list.currentText() == 'GPT':
             pass
         elif self.ai_list.currentText() == 'Gemini':
-            if self.config['Gemini']['apikey'] == '':
-                QMessageBox.warning(self, "API Key Missing", "Please set your Gemini API key in the res/chat.json file.")
-                return
             self.ai.gemini(self.config['Gemini']['model'], self.prompt.text(), self.config['Gemini']['apikey'], self.chat_window)
 
         self.prompt.setText('')
@@ -133,7 +130,8 @@ class AI:
                 }]
             )
         except Exception as e:
-            print('Error:', e)
+            window.set_text(f"Error: {e}")
+            window.show()
             return
 
         window.show()
@@ -147,6 +145,7 @@ class AI:
         with open(IMG_PATH + 'screenshot.png', 'rb') as img_file:
             img_data = base64.b64encode(img_file.read()).decode('utf-8')
 
+        key = key or 'APIKEY'
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         headers = {'Content-Type': 'application/json'}
         data = {
@@ -163,17 +162,17 @@ class AI:
             }]
         }
 
-        response = requests.post(url, headers=headers, json=data).json()
-        window.set_text('')
+        try:
+            response = requests.post(url, headers=headers, json=data)
+            if response.status_code != 200:
+                raise Exception(f"{response.status_code}\n\n{response.text}")
+            response = response.json()
+            window.set_text('')
+            window.set_text(response['candidates'][0]['content']['parts'][0]['text'])
+        except Exception as e:
+            window.set_text(f"Error: {e}")
+
         window.show()
-
-        # text = ''
-        # chunks = re.split(r'(\s+)', response['candidates'][0]['content']['parts'][0]['text'])
-        # for chunk in chunks:
-        #     text += chunk
-        #     window.set_text(text)
-
-        window.set_text(response['candidates'][0]['content']['parts'][0]['text'])
 
 
 class ChatWindow(CustomWindow):

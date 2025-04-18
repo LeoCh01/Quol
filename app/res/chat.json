@@ -4,6 +4,6 @@
   },
   "Gemini": {
     "model": "gemini-2.0-flash",
-    "apikey": "AIzaSyAHhsOMrpky6icx2UuzHyopdMAUdMMoVAI"
+    "apikey": ""
   }
 }
