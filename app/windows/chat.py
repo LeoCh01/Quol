@@ -167,13 +167,13 @@ class AI:
         window.set_text('')
         window.show()
 
-        text = ''
-        chunks = re.split(r'(\s+)', response['candidates'][0]['content']['parts'][0]['text'])
-        for chunk in chunks:
-            text += chunk
-            window.set_text(text)
+        # text = ''
+        # chunks = re.split(r'(\s+)', response['candidates'][0]['content']['parts'][0]['text'])
+        # for chunk in chunks:
+        #     text += chunk
+        #     window.set_text(text)
 
-        # window.add_text(response['candidates'][0]['content']['parts'][0]['text'])
+        window.set_text(response['candidates'][0]['content']['parts'][0]['text'])
 
 
 class ChatWindow(CustomWindow):
