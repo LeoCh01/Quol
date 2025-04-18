@@ -1,13 +1,11 @@
 import base64
 import json
-import re
 
-import requests
-
-from PySide6.QtCore import QTimer, Qt, QPropertyAnimation, QEasingCurve, QRect
+from PySide6.QtCore import QTimer, Qt, QRect, QUrl, QByteArray
 from PySide6.QtGui import QGuiApplication
+from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, \
-    QScrollArea, QMessageBox, QTextEdit
+    QScrollArea, QTextEdit
 
 from res.paths import IMG_PATH, CHAT_PATH
 from windows.lib.custom_widgets import CustomWindow
@@ -16,7 +14,6 @@ import ollama
 
 
 class MainWindow(CustomWindow):
-
     def __init__(self, wid, geometry=(730, 10, 170, 1)):
         super().__init__('Chat', wid, geometry)
         self.ollama_client = None
@@ -52,15 +49,23 @@ class MainWindow(CustomWindow):
         self.btn.clicked.connect(self.send_prompt)
         self.layout.addWidget(self.btn)
 
-        self.ai = AI()
-        self.chat_window = ChatWindow(wid)
+        self.network_manager = QNetworkAccessManager(self)
+
+        self.chat_window = ChatWindow()
+        self.toggle_signal.connect(self.chat_window.toggle_windows)
+        self.chat_window.toggle_windows_2 = self.toggle_windows_2
+
+        self.ai = AI(self.network_manager, self.chat_window)
+
         self.load_config()
+
+
 
     def on_model_change(self):
         self.config[self.ai_list.currentText()]['model'] = self.model.text()
         self.save_config()
 
-    def on_ai_change(self, index):
+    def on_ai_change(self):
         if self.ai_list.currentText() == 'Gemini':
             self.model.setText(self.config['Gemini']['model'])
         elif self.ai_list.currentText() == 'ollama':
@@ -80,20 +85,20 @@ class MainWindow(CustomWindow):
 
     def start_chat(self):
         print('Question:', self.prompt.text())
-        self.set_button_loading_state(False)
 
         if self.ai_list.currentText() == 'ollama':
-            self.ai.ollama(self.config['ollama']['model'], self.prompt.text(), self.chat_window)
+            self.ai.ollama(self.config['ollama']['model'], self.prompt.text())
         elif self.ai_list.currentText() == 'GPT':
             pass
         elif self.ai_list.currentText() == 'Gemini':
-            self.ai.gemini(self.config['Gemini']['model'], self.prompt.text(), self.config['Gemini']['apikey'], self.chat_window)
+            self.ai.gemini(self.config['Gemini']['model'], self.prompt.text(), self.config['Gemini']['apikey'])
 
+        self.set_button_loading_state(False)
         self.prompt.setText('')
 
     def set_button_loading_state(self, is_loading):
         if is_loading:
-            self.btn.setText("loading...")
+            self.btn.setText("")
         else:
             self.btn.setText("Send")
 
@@ -112,10 +117,15 @@ class MainWindow(CustomWindow):
 
 
 class AI:
-    def __init__(self):
+    def __init__(self, network_manager, chat_window):
         self.ollama_client = None
+        self.network_manager = network_manager
+        self.network_manager.finished.connect(self.handle_response)
+        self.chat_window = chat_window
+        self.current_type = None
 
-    def ollama(self, model, prompt, window):
+    def ollama(self, model, prompt):
+        self.chat_window.set_text('Loading...')
         if not self.ollama_client:
             self.ollama_client = ollama.Client(host='http://localhost:11434')
 
@@ -129,19 +139,18 @@ class AI:
                     'images': [IMG_PATH + 'screenshot.png']
                 }]
             )
+
+            text = ''
+            for chunk in response:
+                text += chunk['message']['content']
+                self.chat_window.set_text(text)
         except Exception as e:
-            window.set_text(f"Error: {e}")
-            window.show()
-            return
+            self.chat_window.set_text(f"Error: {e}")
+        finally:
+            self.chat_window.show()
 
-        window.show()
-
-        text = ''
-        for chunk in response:
-            text += chunk['message']['content']
-            window.set_text(text)
-
-    def gemini(self, model, prompt, key, window):
+    def gemini(self, model, prompt, key):
+        self.chat_window.set_text('Loading...')
         with open(IMG_PATH + 'screenshot.png', 'rb') as img_file:
             img_data = base64.b64encode(img_file.read()).decode('utf-8')
 
@@ -162,21 +171,39 @@ class AI:
             }]
         }
 
-        try:
-            response = requests.post(url, headers=headers, json=data)
-            if response.status_code != 200:
-                raise Exception(f"{response.status_code}\n\n{response.text}")
-            response = response.json()
-            window.set_text('')
-            window.set_text(response['candidates'][0]['content']['parts'][0]['text'])
-        except Exception as e:
-            window.set_text(f"Error: {e}")
+        request = QNetworkRequest(QUrl(url))
+        for header, value in headers.items():
+            request.setRawHeader(header.encode(), value.encode())
 
-        window.show()
+        json_data = json.dumps(data).encode('utf-8')
+        self.current_type = "gemini"
+        self.network_manager.post(request, QByteArray(json_data))
+
+    def handle_response(self, reply: QNetworkReply):
+        response_data = reply.readAll()
+        response_str = str(response_data, "utf-8")
+
+        if self.current_type == "gemini":
+            self.handle_gemini_response(response_str)
+
+        reply.deleteLater()
+
+    def handle_gemini_response(self, response_str):
+        try:
+            response_json = json.loads(response_str)
+            if 'error' in response_json:
+                raise Exception(f"Error: {response_json['error']['message']}")
+            text_content = response_json['candidates'][0]['content']['parts'][0]['text']
+            self.chat_window.set_text(text_content)
+        except Exception as e:
+            print("Error parsing Gemini response:", e)
+            self.chat_window.set_text(str(e))
+        finally:
+            self.chat_window.show()
 
 
 class ChatWindow(CustomWindow):
-    def __init__(self, wid):
+    def __init__(self):
         screen_geometry = QGuiApplication.primaryScreen().geometry()
         self.g = (screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
         super().__init__("Chat", -1, geometry=self.g, add_close_btn=True)
@@ -194,14 +221,6 @@ class ChatWindow(CustomWindow):
         self.chat_response.setMarkdown(text)
         self.chat_response.repaint()
         QApplication.processEvents()
-
-    def animate_up(self):
-        self.animation = QPropertyAnimation(self, b'geometry')
-        self.animation.setDuration(1000)
-        self.animation.setStartValue(self.geometry())
-        self.animation.setEndValue(self.geometry().translated(0, -610))
-        self.animation.setEasingCurve(QEasingCurve.OutCubic)
-        self.animation.start()
 
     def closeEvent(self, event):
         print("Window closed")
