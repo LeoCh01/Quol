@@ -1,0 +1,14 @@
+{
+  "ollama": {
+    "model": "gemma3"
+  },
+  "Gemini": {
+    "model": "gemini-2.0-flash",
+    "apikey": "AIzaSyAHhsOMrpky6icx2UuzHyopdMAUdMMoVAI"
+  },
+  "config": {
+    "image": true,
+    "history": true,
+    "max_history": 3
+  }
+}

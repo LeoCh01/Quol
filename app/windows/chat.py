@@ -1,25 +1,37 @@
 import base64
+import datetime
 import json
 
 from PySide6.QtCore import QTimer, Qt, QRect, QUrl, QByteArray
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, \
-    QScrollArea, QTextEdit
+    QScrollArea, QTextEdit, QCheckBox
 
 from res.paths import IMG_PATH, CHAT_PATH
 from windows.lib.custom_widgets import CustomWindow
 
 import ollama
 
+HISTORY = []
+
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(730, 10, 170, 1)):
+    def __init__(self, wid, geometry=(730, 10, 190, 1)):
         super().__init__('Chat', wid, geometry)
         self.ollama_client = None
 
+        self.network_manager = QNetworkAccessManager(self)
+
+        self.chat_window = ChatWindow()
+        self.toggle_signal.connect(self.chat_window.toggle_windows)
+        self.chat_window.toggle_windows_2 = self.toggle_windows_2
+
+        self.ai = AI(self.network_manager, self.chat_window)
+
         self.prompt_layout = QVBoxLayout()
         self.config_layout = QHBoxLayout()
+        self.c2_layout = QHBoxLayout()
 
         self.model = QLineEdit()
         self.model.setPlaceholderText("model...")
@@ -39,27 +51,23 @@ class MainWindow(CustomWindow):
         self.prompt.setPlaceholderText("prompt...")
         self.prompt.returnPressed.connect(self.send_prompt)
 
-        self.config_layout.addWidget(self.model)
-        self.config_layout.addWidget(self.ai_list)
-        self.prompt_layout.addLayout(self.config_layout)
-        self.prompt_layout.addWidget(self.prompt)
-        self.layout.addLayout(self.prompt_layout)
-
         self.btn = QPushButton("Send")
         self.btn.clicked.connect(self.send_prompt)
+
+        self.img_cb = QCheckBox("Image")
+        self.hist_cb = QCheckBox("History")
+
+        self.config_layout.addWidget(self.model)
+        self.config_layout.addWidget(self.ai_list)
+        self.c2_layout.addWidget(self.img_cb)
+        self.c2_layout.addWidget(self.hist_cb)
+        self.prompt_layout.addLayout(self.config_layout)
+        self.prompt_layout.addLayout(self.c2_layout)
+        self.prompt_layout.addWidget(self.prompt)
+        self.layout.addLayout(self.prompt_layout)
         self.layout.addWidget(self.btn)
 
-        self.network_manager = QNetworkAccessManager(self)
-
-        self.chat_window = ChatWindow()
-        self.toggle_signal.connect(self.chat_window.toggle_windows)
-        self.chat_window.toggle_windows_2 = self.toggle_windows_2
-
-        self.ai = AI(self.network_manager, self.chat_window)
-
         self.load_config()
-
-
 
     def on_model_change(self):
         self.config[self.ai_list.currentText()]['model'] = self.model.text()
@@ -74,12 +82,15 @@ class MainWindow(CustomWindow):
             pass
 
     def send_prompt(self):
-        screen = QGuiApplication.primaryScreen()
-        self.toggle_windows_2(True)
-        screenshot = screen.grabWindow(0).toImage()
-        self.toggle_windows_2(False)
-        screenshot.save(IMG_PATH + 'screenshot.png')
+        if self.img_cb.isChecked():
+            screen = QGuiApplication.primaryScreen()
+            self.toggle_windows_2(True)
+            screenshot = screen.grabWindow(0).toImage()
+            self.toggle_windows_2(False)
+            screenshot.save(IMG_PATH + 'screenshot.png')
 
+        self.ai.is_img = self.img_cb.isChecked()
+        self.ai.is_hist = self.hist_cb.isChecked()
         self.set_button_loading_state(True)
         QTimer.singleShot(0, self.start_chat)
 
@@ -104,15 +115,17 @@ class MainWindow(CustomWindow):
 
     def load_config(self):
         try:
-            with open(CHAT_PATH, 'r') as f:
+            with open(CHAT_PATH + 'chat.json', 'r') as f:
                 self.config = json.load(f)
                 self.model.setText(self.config['Gemini']['model'])
+                self.img_cb.setChecked(self.config['config']['image'])
+                self.hist_cb.setChecked(self.config['config']['history'])
 
         except Exception as e:
             print("error :: ", e)
 
     def save_config(self):
-        with open(CHAT_PATH, 'w') as f:
+        with open(CHAT_PATH + 'chat.json', 'w') as f:
             json.dump(self.config, f, indent=2)
 
 
@@ -123,6 +136,13 @@ class AI:
         self.network_manager.finished.connect(self.handle_response)
         self.chat_window = chat_window
         self.current_type = None
+
+        self.is_img = True
+        self.is_hist = True
+
+        with open(CHAT_PATH + 'chat.json', 'r') as f:
+            self.config = json.load(f)
+            self.max_hist = self.config['config']['max_history']
 
     def ollama(self, model, prompt):
         self.chat_window.set_text('Loading...')
@@ -151,25 +171,31 @@ class AI:
 
     def gemini(self, model, prompt, key):
         self.chat_window.set_text('Loading...')
-        with open(IMG_PATH + 'screenshot.png', 'rb') as img_file:
-            img_data = base64.b64encode(img_file.read()).decode('utf-8')
+
+        if len(HISTORY) > self.max_hist * 2:
+            HISTORY.pop(0)
+            HISTORY.pop(0)
 
         key = key or 'APIKEY'
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         headers = {'Content-Type': 'application/json'}
         data = {
-            "contents": [{
-                "parts": [
-                    {"text": prompt},
-                    {
-                        "inline_data": {
-                            "mime_type": "image/jpeg",
-                            "data": img_data
-                        }
-                    }
-                ]
-            }]
+            'contents': HISTORY
         }
+
+        cur = {'role': 'user', 'parts': [{'text': prompt}]}
+
+        if self.is_img:
+            with open(IMG_PATH + 'screenshot.png', 'rb') as img_file:
+                img_data = base64.b64encode(img_file.read()).decode('utf-8')
+                cur['parts'].append({'inline_data': {'mime_type': 'image/jpeg', 'data': img_data}})
+
+        data['contents'].append(cur)
+
+        if self.is_hist:
+            HISTORY.append(cur)
+        with open(CHAT_PATH + 'gemini.log', 'a') as f:
+            f.write(f"{datetime.datetime.now()}\nQ: {prompt}\n")
 
         request = QNetworkRequest(QUrl(url))
         for header, value in headers.items():
@@ -189,17 +215,21 @@ class AI:
         reply.deleteLater()
 
     def handle_gemini_response(self, response_str):
+        text_content = ''
         try:
             response_json = json.loads(response_str)
             if 'error' in response_json:
                 raise Exception(f"Error: {response_json['error']['message']}")
             text_content = response_json['candidates'][0]['content']['parts'][0]['text']
-            self.chat_window.set_text(text_content)
         except Exception as e:
-            print("Error parsing Gemini response:", e)
-            self.chat_window.set_text(str(e))
+            text_content = e
         finally:
             self.chat_window.show()
+            self.chat_window.set_text(text_content)
+            if self.is_hist:
+                HISTORY.append({'role': 'model', 'parts': [{'text': text_content}]})
+            with open(CHAT_PATH + 'gemini.log', 'a') as f:
+                f.write(f"A: {text_content.replace('\n\n', '\n')}\n\n")
 
 
 class ChatWindow(CustomWindow):
@@ -218,7 +248,7 @@ class ChatWindow(CustomWindow):
         self.layout.addWidget(self.scroll_area)
 
     def set_text(self, text):
-        self.chat_response.setMarkdown(text)
+        self.chat_response.setMarkdown(str(text))
         self.chat_response.repaint()
         QApplication.processEvents()
 
@@ -227,6 +257,7 @@ class ChatWindow(CustomWindow):
         super().closeEvent(event)
         self.set_text('')
         self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
+        HISTORY.clear()
 
     @staticmethod
     def get_styled_html(html):

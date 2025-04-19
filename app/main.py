@@ -123,13 +123,13 @@ if __name__ == "__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     )
 
-    # try:
-    with open(STYLES_PATH, 'r') as f:
-        stylesheet = f.read()
-    app.setStyleSheet(stylesheet)
+    try:
+        with open(STYLES_PATH, 'r') as f:
+            stylesheet = f.read()
+        app.setStyleSheet(stylesheet)
 
-    application = App()
-    app.exec()
-    # except Exception as e:
-    #     print('error :: ', e)
-    #     logging.error(e, exc_info=True)
+        application = App()
+        app.exec()
+    except Exception as e:
+        print('error :: ', e)
+        logging.error(e, exc_info=True)

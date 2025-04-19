@@ -1,0 +1,14 @@
+2025-04-19 14:59:58,181 - root - ERROR - 'MainWindow' object has no attribute 'clear_btn'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 131, in <module>
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 50, in load_windows
+    self.windows.append(class_obj(i))
+                        ^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\chat.py", line 57, in __init__
+    self.clear_btn.clicked.connect(self.ai.gemini_hist.clear)
+    ^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'clear_btn'
