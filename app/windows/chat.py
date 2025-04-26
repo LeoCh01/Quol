@@ -81,8 +81,8 @@ class MainWindow(CustomWindow):
             screen = QGuiApplication.primaryScreen()
             self.toggle_windows_2(True)
             screenshot = screen.grabWindow(0).toImage()
-            self.toggle_windows_2(False)
             screenshot.save(IMG_PATH + 'screenshot.png')
+        self.toggle_windows_2(False)
 
         self.ai.is_img = self.img_cb.isChecked()
         self.ai.is_hist = True
@@ -196,7 +196,9 @@ class AI:
         data['contents'].append(cur)
 
         if self.is_hist:
-            HISTORY.append({'role': 'user', 'text': prompt, 'image': img_data})
+            HISTORY.append({'role': 'user', 'text': prompt})
+            if self.is_img:
+                HISTORY[-1]['image'] = img_data
         with open(CHAT_PATH + 'gemini.log', 'a') as f:
             f.write(f"{datetime.datetime.now()}\nQ: {prompt}\n")
 
@@ -239,7 +241,9 @@ class AI:
         data['messages'].append(cur)
 
         if self.is_hist:
-            HISTORY.append({'role': 'user', 'text': prompt, 'image': img_data})
+            HISTORY.append({'role': 'user', 'text': prompt})
+            if self.is_img:
+                HISTORY[-1]['image'] = img_data
         with open(CHAT_PATH + 'groq.log', 'a') as f:
             f.write(f"{datetime.datetime.now()}\nQ: {prompt}\n")
 
@@ -266,6 +270,7 @@ class AI:
         self.text_content = ''
         try:
             res = json.loads(res)
+            print(res)
             if 'error' in res:
                 raise Exception(f"Error: {res['error']['message']}")
             self.text_content = res['candidates'][0]['content']['parts'][0]['text']
@@ -321,34 +326,3 @@ class ChatWindow(CustomWindow):
         self.set_text('')
         self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
         HISTORY.clear()
-
-    @staticmethod
-    def get_styled_html(html):
-        return f"""
-        <html>
-        <head>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-            }}
-            .code-container {{
-                max-width: 100%;
-                overflow-x: auto;  /* Scrollbar only inside the code block */
-                padding: 10px;
-                border-radius: 5px;
-            }}
-            pre {{
-                white-space: pre;  /* Keeps newlines */
-                margin: 0;  /* Prevents extra spacing */
-                font-family: monospace;
-            }}
-            code {{
-                font-family: monospace;
-            }}
-        </style>
-        </head>
-        <body>
-        {html}
-        </body>
-        </html>
-        """
