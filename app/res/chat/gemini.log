@@ -58,3 +58,45 @@ A: Here's a breakdown of what's visible in the image:
 **5. Overall:**
 *   It seems like a project involving chat functionality, possibly with integration to Gemini and Groq. The code handles network requests, decodes data and processes responses based on the "type" of the response.
 
+2025-04-26 15:31:38.253281
+Q: wh
+2025-04-26 15:33:27.982773
+Q: 
+A: Here are the bounding box detections:
+```json
+[
+  {"box_2d": [43, 201, 62, 293], "label": "text"},
+  {"box_2d": [43, 571, 62, 616], "label": "text"},
+  {"box_2d": [43, 421, 62, 457], "label": "text"},
+  {"box_2d": [43, 334, 62, 367], "label": "text"},
+  {"box_2d": [43, 490, 62, 536], "label": "text"},
+  {"box_2d": [673, 47, 695, 100], "label": "text"},
+  {"box_2d": [720, 47, 742, 148], "label": "text"},
+  {"box_2d": [927, 47, 949, 107], "label": "text"},
+  {"box_2d": [760, 47, 782, 137], "label": "text"},
+  {"box_2d": [801, 47, 823, 121], "label": "text"},
+  {"box_2d": [842, 47, 863, 133], "label": "text"},
+  {"box_2d": [885, 47, 907, 109], "label": "text"},
+  {"box_2d": [698, 47, 720, 390], "label": "text"},
+  {"box_2d": [740, 47, 761, 390], "label": "text"},
+  {"box_2d": [781, 47, 803, 390], "label": "text"},
+  {"box_2d": [821, 47, 842, 390], "label": "text"},
+  {"box_2d": [863, 47, 885, 390], "label": "text"},
+  {"box_2d": [927, 47, 949, 390], "label": "text"}
+]
+```
+
+2025-04-26 15:33:52.910344
+Q: 
+A: Here are the bounding box detections:
+```json
+[
+  {"box_2d": [42, 114, 68, 120], "label": "project"},
+  {"box_2d": [594, 14, 637, 76], "label": "run"},
+  {"box_2d": [640, 14, 889, 134], "label": "list"},
+  {"box_2d": [584, 217, 599, 652], "label": "text"},
+  {"box_2d": [937, 647, 952, 718], "label": "text"},
+  {"box_2d": [965, 956, 993, 990], "label": "time"}
+]
+```
+

@@ -137,8 +137,6 @@ class AI:
         self.is_img = True
         self.is_hist = True
         self.text_content = ''
-        self.buffer = b""
-        self.reply = None
 
         with open(CHAT_PATH + 'chat.json', 'r') as f:
             self.config = json.load(f)
@@ -247,14 +245,13 @@ class AI:
         with open(CHAT_PATH + 'groq.log', 'a') as f:
             f.write(f"{datetime.datetime.now()}\nQ: {prompt}\n")
 
-        print('sending groq')
         request = QNetworkRequest(QUrl(url))
         for header, value in headers.items():
             request.setRawHeader(header.encode(), value.encode())
 
         json_data = json.dumps(data).encode('utf-8')
         self.current_type = "groq"
-        self.reply = self.network_manager.post(request, QByteArray(json_data))
+        self.network_manager.post(request, QByteArray(json_data))
 
     def handle_response(self, reply: QNetworkReply):
         res = reply.readAll()
@@ -275,7 +272,7 @@ class AI:
                 raise Exception(f"Error: {res['error']['message']}")
             self.text_content = res['candidates'][0]['content']['parts'][0]['text']
         except Exception as e:
-            self.text_content = e
+            self.text_content = str(e)
         finally:
             self.chat_window.set_text(self.text_content)
             if self.is_hist:
@@ -286,12 +283,14 @@ class AI:
     def handle_groq_response(self, res):
         self.text_content = ''
         try:
-            for chunk in res:
-                self.text_content += chunk.choices[0]['delta']['content']
-                self.chat_window.set_text(self.text_content)
+            res = json.loads(res)
+            if 'error' in res:
+                raise Exception(f"Error: {res['error']['message']}")
+            self.text_content = res['choices'][0]['message']['content']
         except Exception as e:
-            self.chat_window.set_text(f"Error: {e}")
+            self.text_content = str(e)
         finally:
+            self.chat_window.set_text(self.text_content)
             if self.is_hist:
                 HISTORY.append({'role': 'model', 'text': self.text_content})
             with open(CHAT_PATH + 'groq.log', 'a') as f:
