@@ -2,9 +2,13 @@
   "ollama": {
     "model": "gemma3"
   },
-  "Gemini": {
+  "gemini": {
     "model": "gemini-2.0-flash",
     "apikey": "AIzaSyAHhsOMrpky6icx2UuzHyopdMAUdMMoVAI"
+  },
+  "groq": {
+    "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+    "apikey": "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"
   },
   "config": {
     "image": true,
