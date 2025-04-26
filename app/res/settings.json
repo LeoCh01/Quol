@@ -5,7 +5,7 @@
   "main": "main.py",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "down",
+  "toggle_direction": "random",
   "default_pos": true,
   "windows": [
     {
