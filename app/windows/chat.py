@@ -276,6 +276,7 @@ class AI:
             self.text_content = res['candidates'][0]['content']['parts'][0]['text']
         except Exception as e:
             self.text_content = str(e)
+            HISTORY.clear()
         finally:
             self.chat_window.set_text(self.text_content)
             if self.is_hist:
@@ -292,6 +293,7 @@ class AI:
             self.text_content = res['choices'][0]['message']['content']
         except Exception as e:
             self.text_content = str(e)
+            HISTORY.clear()
         finally:
             self.chat_window.set_text(self.text_content)
             if self.is_hist:

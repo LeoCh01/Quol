@@ -1,6 +1,6 @@
 CURRENT 
 - fix no image initially
-- fix win10
+- fix issue in windows 10
 - fix cert
 
 TODO
