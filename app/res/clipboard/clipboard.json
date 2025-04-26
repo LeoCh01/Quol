@@ -1,8 +1,5 @@
 {
   "lock": false,
   "length": 2,
-  "clipboard": [
-    "QNetworkAccessManager",
-    "with requests.post(url, headers=headers, json=payload, stream=True) as response:\n            for line in response.iter_lines(decode_unicode=True):\n                if line and line.startswith(\"data: \"):\n                    try:\n                        data = json.loads(line[6:])\n                        content = data[\"choices\"][0][\"delta\"].get(\"content\", \"\")\n                        if content:\n                            self.new_text.emit(content)\n                    except (json.JSONDecodeError, KeyError):\n                        continue"
-  ]
+  "clipboard": []
 }
