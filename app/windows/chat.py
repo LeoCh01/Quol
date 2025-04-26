@@ -270,7 +270,6 @@ class AI:
         self.text_content = ''
         try:
             res = json.loads(res)
-            print(res)
             if 'error' in res:
                 raise Exception(f"Error: {res['error']['message']}")
             self.text_content = res['candidates'][0]['content']['parts'][0]['text']
