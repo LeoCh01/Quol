@@ -1,0 +1,15 @@
+CURRENT 
+- fix async freezing issues with api requests
+- display errors in chat box
+- remove gemini text stream (wasn't actually streamed anyways)
+- organize resources
+- add chat history
+- add groq api
+
+TODO
+- add drawing tool
+- add dynamic settings from json
+- clean up chat code
+- stream api calls
+- make markdown better
+- tooltips

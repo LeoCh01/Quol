@@ -1,11 +1,11 @@
 {
   "name": "Windows Helper",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "versatile tool for windows.",
   "main": "main.py",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "down",
+  "toggle_direction": "random",
   "default_pos": true,
   "windows": [
     {
@@ -24,13 +24,7 @@
       "script": "clipboard.py"
     },
     {
-      "script": "chat.py",
-      "geometry": [
-        1179,
-        379,
-        500,
-        600
-      ]
+      "script": "chat.py"
     }
   ]
 }
