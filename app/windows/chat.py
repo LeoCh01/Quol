@@ -2,8 +2,6 @@ import base64
 import datetime
 import json
 
-import requests
-
 from PySide6.QtCore import QTimer, Qt, QRect, QUrl, QByteArray
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply

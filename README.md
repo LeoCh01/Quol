@@ -10,7 +10,7 @@ This project is a desktop application built using **PySide6**, designed to serve
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **Chance:** Flip a coin, roll a dice.
 - **Clipboard:** Store copy history.
-- **Chat:** run AI prompts on your screen. Depending on the type, you may need to add your api key in the `res/chat.json` file.
+- **Chat:** run AI prompts on your screen. (may require api keys in `res/chat/chat.json`).
 - **Customize:** Create and Add custom windows without rebuilding.
 
 This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
@@ -35,7 +35,7 @@ To quickly set up and run the application:
    - Navigate to the extracted folder.
    - Double-click on `windows-helper.exe` to launch the application.
 
-### Option 2: Running Locally and Building the Executable
+### Option 2: Running Locally
 
 To run the application locally or build it as a standalone executable, follow these steps:
 
@@ -48,13 +48,16 @@ To run the application locally or build it as a standalone executable, follow th
 2. **Set up the Python environment:**
 
    - Create a virtual environment in project directory:
-     ```bash
-     python -m venv venv
-     ```
+
+   ```bash
+   python -m venv venv
+   ```
+
    - Activate the virtual environment:
-     ```bash
-     venv\Scripts\activate
-     ```
+
+   ```bash
+   venv\Scripts\activate
+   ```
 
 3. **Install the required dependencies:**
 
@@ -65,9 +68,18 @@ To run the application locally or build it as a standalone executable, follow th
 4. **Run the application locally:**
 
    - Once the environment is set up, you can run the app by executing:
-     ```bash
-     python windows-helper.py
-     ```
+
+   ```bash
+   python windows-helper.py
+   ```
+
+5. **Building the Executable (Optional):**
+
+   - you can also build the exe yourself by installing `pyinstaller` and using the `windows-helper.spec` file
+
+   ```bash
+     pyinstaller windows-helper.spec
+   ```
 
 ## Settings Config
 
