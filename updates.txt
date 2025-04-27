@@ -1,7 +1,5 @@
-CURRENT 
-- fix no image initially
-- fix issue in windows 10
-- fix cert
+CURRENT
+- snap windows every 10px
 
 TODO
 - fix window loading

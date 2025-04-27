@@ -4,8 +4,8 @@
   "description": "versatile tool for windows.",
   "main": "main.py",
   "startup": false,
-  "toggle_key": "`",
-  "toggle_direction": "random",
+  "toggle_key": "home",
+  "toggle_direction": "down",
   "default_pos": true,
   "windows": [
     {
