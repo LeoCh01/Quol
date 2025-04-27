@@ -2,6 +2,8 @@ import base64
 import datetime
 import json
 
+import requests
+
 from PySide6.QtCore import QTimer, Qt, QRect, QUrl, QByteArray
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
@@ -17,7 +19,7 @@ HISTORY = []
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(730, 10, 190, 1)):
+    def __init__(self, wid, geometry=(890, 10, 190, 1)):
         super().__init__('Chat', wid, geometry)
         self.ollama_client = None
 
@@ -296,7 +298,7 @@ class AI:
         finally:
             self.chat_window.set_text(self.text_content)
             if self.is_hist:
-                HISTORY.append({'role': 'model', 'text': self.text_content})
+                HISTORY.append({'role': 'system', 'text': self.text_content})
             with open(CHAT_PATH + 'groq.log', 'a') as f:
                 f.write(f"A: {self.text_content.replace('\n\n', '\n')}\n\n")
 

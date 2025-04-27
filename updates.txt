@@ -4,6 +4,7 @@ CURRENT
 - fix cert
 
 TODO
+- fix window loading
 - add drawing tool
 - add dynamic settings from json
 - clean up chat code
