@@ -1,24 +1,42 @@
 import sys
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QColorDialog
-from PySide6.QtGui import QPainter, QPen, QMouseEvent, QColor, QPixmap
+from PySide6.QtGui import QPainter, QPen, QMouseEvent, QColor, QPixmap, QKeySequence, QShortcut
 from PySide6.QtCore import Qt, QPoint
 
 class DrawingWidget(QWidget):
-    def __init__(self):
+    def __init__(self, toggle_windows2):
         super().__init__()
         self.setAttribute(Qt.WidgetAttribute.WA_StaticContents)
         self.setFixedSize(600, 400)
-        self.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent)  # Ensures the drawing is not cleared
         self.drawing = False
         self.last_point = QPoint()
-        self.pen_color = QColor("black")  # Default pen color is black
+        self.pen_color = QColor("black")
         self.pen_width = 2
 
         self.image = QPixmap(self.size())
-        self.image.fill(Qt.transparent)  # Use transparent background for the pixmap
+        self.image.fill(Qt.white)
+
+        self.undo_stack = []
+        self.max_undo = 20  # Optional: limit undo history
+
+        # Add Ctrl+Z shortcut
+        self.undo_shortcut = QShortcut(QKeySequence("Ctrl+Z"), self)
+        self.undo_shortcut.activated.connect(self.undo)
+
+    def save_undo_state(self):
+        # Save a copy of the current image
+        if len(self.undo_stack) >= self.max_undo:
+            self.undo_stack.pop(0)  # Keep stack size under control
+        self.undo_stack.append(self.image.copy())
+
+    def undo(self):
+        if self.undo_stack:
+            self.image = self.undo_stack.pop()
+            self.update()
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
+            self.save_undo_state()  # Save state before drawing
             self.drawing = True
             self.last_point = event.position().toPoint()
 
@@ -41,7 +59,8 @@ class DrawingWidget(QWidget):
         canvas_painter.drawPixmap(self.rect(), self.image)
 
     def clear_canvas(self):
-        self.image.fill(Qt.transparent)  # Clear to transparent background
+        self.save_undo_state()  # Save state before clearing
+        self.image.fill(Qt.white)
         self.update()
 
     def change_pen_color(self):
@@ -49,12 +68,12 @@ class DrawingWidget(QWidget):
         if color.isValid():
             self.pen_color = color
 
+
 class DrawingApp(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Simple PySide6 Drawing App")
         layout = QVBoxLayout()
-
         self.drawing_widget = DrawingWidget()
         layout.addWidget(self.drawing_widget)
 
@@ -68,8 +87,6 @@ class DrawingApp(QWidget):
 
         self.setLayout(layout)
 
-        # Set the window opacity here (for the whole app window, not just the drawing widget)
-        self.setWindowOpacity(1.0)  # Keep window fully opaque to prevent affecting drawing lines
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

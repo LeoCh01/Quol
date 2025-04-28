@@ -39,12 +39,11 @@ class App(QObject):
             except Exception as e:
                 logging.error(f"Error loading {d['script'][:-3]} :: {e}", exc_info=True)
                 continue
-            if d['script'] == 'info.py':
-                class_obj.set_toggle_key = self.set_toggle_key
-                class_obj.key = self.toggle_key
-            elif d['script'] == 'chat.py':
-                class_obj.toggle_windows_2 = self.toggle_windows_2
-                class_obj.toggle_signal = self.toggle
+
+            class_obj.set_toggle_key = self.set_toggle_key
+            class_obj.key = self.toggle_key
+            class_obj.toggle_windows_2 = self.toggle_windows_2
+            class_obj.toggle_signal = self.toggle
 
             if self.is_reset or not d.get('geometry'):
                 self.windows.append(class_obj(i))

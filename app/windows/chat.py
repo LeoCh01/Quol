@@ -81,8 +81,8 @@ class MainWindow(CustomWindow):
             screen = QGuiApplication.primaryScreen()
             self.toggle_windows_2(True)
             screenshot = screen.grabWindow(0).toImage()
+            self.toggle_windows_2(False)
             screenshot.save(IMG_PATH + 'screenshot.png')
-        self.toggle_windows_2(False)
 
         self.ai.is_img = self.img_cb.isChecked()
         self.ai.is_hist = True
@@ -142,6 +142,7 @@ class AI:
 
     def ollama(self, model, prompt):
         self.chat_window.set_text('Loading...')
+        self.chat_window.show()
         if not self.ollama_client:
             self.ollama_client = ollama.Client(host='http://localhost:11434')
 
@@ -167,6 +168,7 @@ class AI:
 
     def gemini(self, model, prompt, key):
         self.chat_window.set_text('Loading...')
+        self.chat_window.show()
 
         if len(HISTORY) > self.max_hist * 2:
             HISTORY.pop(0)
@@ -212,6 +214,7 @@ class AI:
 
     def groq(self, model, prompt, key):
         self.chat_window.set_text('Loading...')
+        self.chat_window.show()
 
         if len(HISTORY) > self.max_hist * 2:
             HISTORY.pop(0)

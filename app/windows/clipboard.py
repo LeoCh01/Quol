@@ -1,8 +1,9 @@
 import json
 
-from PySide6 import QtGui, QtCore
 from pynput import keyboard
-from PySide6.QtCore import Qt, Signal
+
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtWidgets import QLabel, QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QCheckBox, QSlider, QApplication
 
 from res.paths import CLIPBOARD_PATH, IMG_PATH
@@ -64,8 +65,8 @@ class MainWindow(CustomWindow):
         if len(text) > 16:
             text = text[:14] + '...'
 
-        button = QPushButton(QtGui.QIcon(IMG_PATH + 'copy.png'), text)
-        button.setIconSize(QtCore.QSize(12, 12))
+        button = QPushButton(QIcon(IMG_PATH + 'copy.png'), text)
+        button.setIconSize(QSize(12, 12))
         button.setFixedHeight(24)
         button.setStyleSheet("text-align: left;")
         button.clicked.connect(lambda: QApplication.clipboard().setText(fulltext))

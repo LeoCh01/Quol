@@ -79,7 +79,7 @@ class CustomWindow(QWidget):
         if is_instant:
             if is_hidden:
                 self.hide()
-            else:
+            elif self.wid != -1:
                 self.show()
             return
 
