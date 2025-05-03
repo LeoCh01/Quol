@@ -1,6 +1,6 @@
 import json
 
-from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt
+from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt, QRect
 from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog
 import random
@@ -79,7 +79,7 @@ class CustomWindow(QWidget):
         if is_instant:
             if is_hidden:
                 self.hide()
-            else:
+            elif self.wid != -1:
                 self.show()
             return
 
@@ -180,14 +180,22 @@ class CustomTitleBar(QWidget):
     def mouseReleaseEvent(self, event):
         self.bar_color = self.bar_color_default
         self.parent.setWindowOpacity(1)
-        self.parent.geo = self.parent.geometry()
+        self.parent.geo = QRect(
+            round(self.parent.geometry().x() / 10) * 10,
+            round(self.parent.geometry().y() / 10) * 10,
+            self.parent.geometry().width(),
+            self.parent.geometry().height()
+        )
+
+        self.parent.setGeometry(self.parent.geo)
         self.update()
 
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-            w = settings.get('windows', [])[self.parent.wid]
-            w['geometry'] = [self.parent.geo.x(), self.parent.geo.y(), self.parent.geo.width(), self.parent.geo.height()]
-            settings['windows'][self.parent.wid] = w
+        if self.parent.wid != -1:
+            with open(SETTINGS_PATH, 'r') as f:
+                settings = json.load(f)
+                w = settings.get('windows', [])[self.parent.wid]
+                w['geometry'] = [self.parent.geo.x(), self.parent.geo.y(), self.parent.geo.width(), self.parent.geo.height()]
+                settings['windows'][self.parent.wid] = w
 
-        with open(SETTINGS_PATH, 'w') as f:
-            json.dump(settings, f, indent=2)
+            with open(SETTINGS_PATH, 'w') as f:
+                json.dump(settings, f, indent=2)

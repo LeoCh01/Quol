@@ -81,8 +81,8 @@ class MainWindow(CustomWindow):
             screen = QGuiApplication.primaryScreen()
             self.toggle_windows_2(True)
             screenshot = screen.grabWindow(0).toImage()
+            self.toggle_windows_2(False)
             screenshot.save(IMG_PATH + 'screenshot.png')
-        self.toggle_windows_2(False)
 
         self.ai.is_img = self.img_cb.isChecked()
         self.ai.is_hist = True
@@ -142,6 +142,7 @@ class AI:
 
     def ollama(self, model, prompt):
         self.chat_window.set_text('Loading...')
+        self.chat_window.show()
         if not self.ollama_client:
             self.ollama_client = ollama.Client(host='http://localhost:11434')
 
@@ -167,6 +168,7 @@ class AI:
 
     def gemini(self, model, prompt, key):
         self.chat_window.set_text('Loading...')
+        self.chat_window.show()
 
         if len(HISTORY) > self.max_hist * 2:
             HISTORY.pop(0)
@@ -212,6 +214,7 @@ class AI:
 
     def groq(self, model, prompt, key):
         self.chat_window.set_text('Loading...')
+        self.chat_window.show()
 
         if len(HISTORY) > self.max_hist * 2:
             HISTORY.pop(0)
@@ -224,12 +227,15 @@ class AI:
 
         if self.is_hist:
             for h in HISTORY:
-                data['messages'].append({'role': h['role'], 'content': [{'type': 'text', 'text': h['text']}]})
+                if h['role'] == 'user':
+                    data['messages'].append({'role': 'user', 'content': [{'type': 'text', 'text': h['text']}]})
 
-                if 'image' in h:
-                    data['messages'][-1]['content'].append(
-                        {'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{h["image"]}'}}
-                    )
+                    if 'image' in h:
+                        data['messages'][-1]['content'].append(
+                            {'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{h["image"]}'}}
+                        )
+                else:
+                    data['messages'].append({'role': 'assistant', 'content': h['text']})
 
         cur = {"role": "user", "content": [{"type": "text", "text": prompt}]}
 
@@ -296,7 +302,7 @@ class AI:
         finally:
             self.chat_window.set_text(self.text_content)
             if self.is_hist:
-                HISTORY.append({'role': 'model', 'text': self.text_content})
+                HISTORY.append({'role': 'assistant', 'text': self.text_content})
             with open(CHAT_PATH + 'groq.log', 'a') as f:
                 f.write(f"A: {self.text_content.replace('\n\n', '\n')}\n\n")
 

@@ -1,10 +1,11 @@
-CURRENT 
-- fix no image initially
-- fix issue in windows 10
-- fix cert
+CURRENT
+- snap windows every 10px
+- color wheel
+- screen draw tool
+- fix groq history
 
 TODO
-- add drawing tool
+- fix window loading
 - add dynamic settings from json
 - clean up chat code
 - stream api calls
