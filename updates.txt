@@ -2,6 +2,7 @@ CURRENT
 - snap windows every 10px
 - color wheel
 - screen draw tool
+- fix groq history
 
 TODO
 - fix window loading
