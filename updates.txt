@@ -1,9 +1,10 @@
 CURRENT
 - snap windows every 10px
+- color wheel
+- screen draw tool
 
 TODO
 - fix window loading
-- add drawing tool
 - add dynamic settings from json
 - clean up chat code
 - stream api calls

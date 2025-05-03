@@ -1,15 +1,15 @@
+import collections
 import math
 
-from PySide6.QtGui import QColor, QMouseEvent, QPainter, Qt, QPixmap, QPen, QShortcut, QKeySequence
-from PySide6.QtWidgets import QPushButton, QColorDialog, QHBoxLayout, QWidget, QApplication
+from PySide6.QtGui import QColor, QMouseEvent, QPainter, Qt, QPixmap, QPen, QShortcut, QKeySequence, QCursor
+from PySide6.QtWidgets import QPushButton, QHBoxLayout, QWidget, QApplication
 from PySide6.QtCore import QPoint, QRectF, Signal
 
-from res.paths import IMG_PATH
 from windows.lib.custom_widgets import CustomWindow
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(730, 10, 150, 1)):
+    def __init__(self, wid, geometry=(930, 10, 130, 1)):
         super().__init__('Draw', wid, geometry)
 
         self.drawing_widget = DrawingWidget(self.toggle_windows_2)
@@ -27,6 +27,7 @@ class MainWindow(CustomWindow):
         self.start_button = QPushButton("Start")
         self.button_layout.addWidget(self.start_button)
         self.start_button.clicked.connect(self.on_start_clicked)
+        self.drawing_widget.close_sc.activated.connect(self.on_start_clicked)
 
         self.layout.addLayout(self.button_layout)
 
@@ -55,8 +56,7 @@ class DrawingWidget(QWidget):
 
         self.image = QPixmap(self.size())
 
-        self.undo_stack = []
-        self.max_undo = 20
+        self.undo_stack = collections.deque(maxlen=20)
 
         self.undo_sc = QShortcut(QKeySequence("Ctrl+Z"), self)
         self.undo_sc.activated.connect(self.undo)
@@ -64,6 +64,7 @@ class DrawingWidget(QWidget):
         self.close_sc.activated.connect(self.hide)
 
         self.screenshot = QPixmap()
+        self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
@@ -100,8 +101,6 @@ class DrawingWidget(QWidget):
         self.update()
 
     def save_undo_state(self):
-        if len(self.undo_stack) >= self.max_undo:
-            self.undo_stack.pop(0)
         self.undo_stack.append(self.image.copy())
 
     def undo(self):
@@ -134,7 +133,7 @@ class DrawingWidget(QWidget):
 class ColorWheel(QWidget):
     color_changed = Signal(QColor)
 
-    def __init__(self, circle_radius=60, square_size=55, thickness=13):
+    def __init__(self, circle_radius=45, square_size=40, thickness=13):
         super().__init__()
         self.setMinimumSize(circle_radius * 2, circle_radius * 2)
         self.hue = 0

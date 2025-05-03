@@ -17,7 +17,7 @@ HISTORY = []
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(890, 10, 190, 1)):
+    def __init__(self, wid, geometry=(730, 10, 190, 1)):
         super().__init__('Chat', wid, geometry)
         self.ollama_client = None
 

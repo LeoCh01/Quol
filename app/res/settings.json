@@ -1,11 +1,10 @@
 {
   "name": "Windows Helper",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "description": "versatile tool for windows.",
-  "main": "main.py",
   "startup": false,
-  "toggle_key": "home",
-  "toggle_direction": "down",
+  "toggle_key": "`",
+  "toggle_direction": "random",
   "default_pos": true,
   "windows": [
     {
@@ -56,7 +55,7 @@
     {
       "script": "chat.py",
       "geometry": [
-        890,
+        730,
         10,
         190,
         159
@@ -65,10 +64,10 @@
     {
       "script": "draw.py",
       "geometry": [
-        730,
+        930,
         10,
-        150,
-        102
+        130,
+        170
       ]
     }
   ]

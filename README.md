@@ -6,15 +6,17 @@ This project is a desktop application built using **PySide6**, designed to serve
 
 ## Features
 
-- **CMD Runner:** Save and execute custom command line instructions.
+- **Chat:** run AI prompts on your screen.
+- **Draw:** Draw and annotate on your screen.
 - **Color Picker:** Select and copy HEX color values on your screen.
-- **Chance:** Flip a coin, roll a dice.
+- **CMD Runner:** Save and execute custom command line instructions.
 - **Clipboard:** Store copy history.
-- **Chat:** run AI prompts on your screen. (may require api keys in `res/chat/chat.json`).
+- **Chance:** Flip a coin, roll a dice.
 - **Customize:** Create and Add custom windows without rebuilding.
 
 This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
 
+<img src="demo/wh-draw.gif" width="250">
 <img src="demo/wh-chat.gif" width="250">
 <img src="demo/wh-color.gif" width="250">
 <img src="demo/wh-cmd.gif" width="250">
