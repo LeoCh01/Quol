@@ -9,5 +9,5 @@ TODO
 - clean up chat code
 - stream api calls
 - make markdown better
-- fix QNetworkManager for some devices
 - tooltips
+- fix QNetworkManager for some devices
