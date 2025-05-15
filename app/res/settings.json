@@ -1,74 +1,18 @@
 {
   "name": "Windows Helper",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "versatile tool for windows.",
   "startup": false,
   "toggle_key": "`",
   "toggle_direction": "random",
-  "default_pos": true,
+  "is_default_pos": true,
   "windows": [
-    {
-      "script": "info.py",
-      "geometry": [
-        10,
-        10,
-        180,
-        130
-      ]
-    },
-    {
-      "script": "run_command.py",
-      "geometry": [
-        10,
-        150,
-        180,
-        168
-      ]
-    },
-    {
-      "script": "color_picker.py",
-      "geometry": [
-        200,
-        10,
-        180,
-        155
-      ]
-    },
-    {
-      "script": "chance.py",
-      "geometry": [
-        390,
-        10,
-        150,
-        160
-      ]
-    },
-    {
-      "script": "clipboard.py",
-      "geometry": [
-        550,
-        10,
-        170,
-        138
-      ]
-    },
-    {
-      "script": "chat.py",
-      "geometry": [
-        730,
-        10,
-        190,
-        159
-      ]
-    },
-    {
-      "script": "draw.py",
-      "geometry": [
-        930,
-        10,
-        130,
-        170
-      ]
-    }
+    "info",
+    "run_command",
+    "color_picker",
+    "chance",
+    "clipboard",
+    "chat",
+    "draw"
   ]
 }

@@ -1,13 +1,13 @@
 CURRENT
-- snap windows every 10px
-- color wheel
-- screen draw tool
-- fix groq history
+- add dynamic json settings
+- add restart button in tray menu
+- fix clipboard window size change
+- restructure plugins
+- cleanup deprecated code
 
 TODO
-- fix window loading
-- add dynamic settings from json
 - clean up chat code
 - stream api calls
 - make markdown better
+- fix QNetworkManager for some devices
 - tooltips

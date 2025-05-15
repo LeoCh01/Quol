@@ -92,35 +92,47 @@ Some application configurations can be modified in the `res/settings.json` file.
   "startup": true,
   "toggle_key": "`",
   "toggle_direction": "random",
-  "default_pos": true
+  "is_default_pos": true
 }
 ```
 
 - **startup:** Run the application at startup. (`true`/`false`)
 - **toggle_key:** The hotkey to toggle the application.
 - **toggle_direction:** (`up`/`down`/`left`/`right`/`random`).
-- **default_pos:** Disable custom window positions (`true`/`false`)
+- **is_default_pos:** Disable custom window positions (`true`/`false`)
 
 ## Adding Custom Windows
 
-To create a new window, you can add a Python script to the `windows` directory and enable it in the `res/settings.json` file. You can use the template provided in `windows/temp.py` as a starting point.
+To create a new window, you can add a folder to the `windows` directory and add the folder name in the `res/settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
 
-1. **Add your Python script:**
+1. **Create your window:**
 
-   - Create a new Python file in the `windows` directory. For example, `my_custom_window.py`.
+   ```
+   example/
+   ├── windows.py
+   ├── config.json (optional)
+   └── res/ (optional)
+   ```
+
+   - `windows.py`: main window script.
+   - `config.json`: configurations linked to window script.
+   - `res/`: images and other miscellaneous items.
 
 2. **Enable the new window:**
+
+   ```json
+   {
+      "windows": [
+         "window1",
+         "window2",
+         "window3",
+         "example" // <-- Add your custom window here
+      ]
+   }
+   ```
+
    - Open the `res/settings.json` file.
-   - Add an entry for your new window in the JSON configuration. For example:
-     ```json
-     {
-       "windows": [
-         {
-           "script": "my_custom_window.py"
-         }
-       ]
-     }
-     ```
+   - Add the name of your folder to the `windows` array.
 
 By following these steps, you can easily add custom windows without rebuilding the application.
 
