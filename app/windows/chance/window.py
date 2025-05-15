@@ -1,17 +1,19 @@
+import os
+
 from PySide6 import QtCore
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 from PySide6.QtGui import QPixmap, Qt, QMovie
 import random
 
-from res.paths import IMG_PATH
-from windows.lib.custom_widgets import CustomWindow
+from windows.custom_widgets import CustomWindow
 
 COIN = 'coin-x.png'
 COIN_IMAGES = ['coin-h.png', 'coin-t.png']
 DICE = 'dice-x.png'
 DICE_IMAGES = ['dice-1.png', 'dice-2.png', 'dice-3.png', 'dice-4.png', 'dice-5.png', 'dice-6.png']
 CONFETTI = 'confetti2.gif'
+IMG_PATH = os.path.join(os.path.dirname(__file__), 'res/img/')
 
 
 class MainWindow(CustomWindow):
@@ -90,7 +92,7 @@ class MainWindow(CustomWindow):
 
     def confetti(self):
         self.confetti_label = QLabel(self)
-        self.confetti_label.setAlignment(Qt.AlignCenter)
+        self.confetti_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.grid_layout.addWidget(self.confetti_label, 0, 0, 1, 2)
 
         confetti_movie = QMovie(IMG_PATH + CONFETTI)

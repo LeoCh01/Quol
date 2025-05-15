@@ -1,16 +1,17 @@
 from pynput import mouse
+
 from PySide6.QtCore import QTimer, QSize, Signal
 from PySide6.QtGui import QPixmap, QColor, QGuiApplication, QCursor, QPainter
 from PySide6.QtWidgets import QLabel, QGridLayout, QPushButton
 
-from windows.lib.custom_widgets import CustomWindow
+from windows.custom_widgets import CustomWindow
 
 
 class MainWindow(CustomWindow):
     col_signal = Signal()
 
     def __init__(self, wid, geometry=(200, 10, 180, 1)):
-        super().__init__("Color", wid, geometry)
+        super().__init__('Color', wid, geometry)
 
         self.grid_layout = QGridLayout()
 
@@ -23,11 +24,11 @@ class MainWindow(CustomWindow):
         self.pixmap_label = QLabel()
         self.grid_layout.addWidget(self.pixmap_label, 1, 0, 2, 2)
 
-        self.copy_btn = QPushButton("copy")
+        self.copy_btn = QPushButton('copy')
         self.copy_btn.clicked.connect(self.copy_color)
         self.grid_layout.addWidget(self.copy_btn, 0, 2)
 
-        self.select_btn = QPushButton("pick color")
+        self.select_btn = QPushButton('pick color')
         self.select_btn.setCheckable(True)
         self.select_btn.clicked.connect(self.select_color)
         self.grid_layout.addWidget(self.select_btn, 1, 2)
@@ -43,8 +44,8 @@ class MainWindow(CustomWindow):
         clipboard.setText(self.hex.text())
 
     def select_color(self):
-        self.select_btn.setText("...")
-        self.select_btn.setStyleSheet("background-color: #eee; color: #000")
+        self.select_btn.setText('...')
+        self.select_btn.setStyleSheet('background-color: #eee; color: #000')
         self.select_btn.setChecked(True)
         self.timer.timeout.connect(self.update_color)
         self.timer.start(100)
@@ -60,8 +61,8 @@ class MainWindow(CustomWindow):
 
     def select_color_finish(self):
         self.timer.stop()
-        self.select_btn.setText("pick color")
-        self.select_btn.setStyleSheet("")
+        self.select_btn.setText('pick color')
+        self.select_btn.setStyleSheet('')
         self.select_btn.setChecked(False)
 
     def update_color(self):
@@ -79,12 +80,12 @@ class MainWindow(CustomWindow):
         self.hex.setText(center_color.name())
 
         self.color_label.setFixedSize(15, 15)
-        self.color_label.setStyleSheet(f"background-color: {center_color.name()}; border: 1px solid black;")
+        self.color_label.setStyleSheet(f'background-color: {center_color.name()}; border: 1px solid black;')
 
     def draw_frame(self, pixmap):
         painter = QPainter(pixmap)
         pen = painter.pen()
-        pen.setColor("white")
+        pen.setColor('white')
         pen.setWidth(2)
         painter.setPen(pen)
 

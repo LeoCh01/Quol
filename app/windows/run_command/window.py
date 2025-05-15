@@ -1,22 +1,24 @@
+import os.path
 import subprocess
 import json
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QDialogButtonBox, \
     QPlainTextEdit, QCheckBox, QDialog
 
-from res.paths import CMDS_PATH
-from windows.lib.custom_widgets import CustomWindow, CustomDialog
+from windows.custom_widgets import CustomWindow, CustomDialog
+
+CMDS_PATH = os.path.join(os.path.dirname(__file__), 'res/commands.json')
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(10, 147, 180, 1)):
-        super().__init__("Command", wid, geometry)
+    def __init__(self, wid, geometry=(10, 120, 180, 1)):
+        super().__init__('Command', wid, geometry)
 
-        self.commands_groupbox = QGroupBox("Commands")
+        self.commands_groupbox = QGroupBox('Commands')
         self.commands_layout = QVBoxLayout()
         self.commands_groupbox.setLayout(self.commands_layout)
         self.layout.addWidget(self.commands_groupbox)
 
-        self.add_btn = QPushButton("Add Command")
+        self.add_btn = QPushButton('Add Command')
         self.add_btn.clicked.connect(self.open_add_command_dialog)
         self.layout.addWidget(self.add_btn)
 
@@ -40,7 +42,7 @@ class MainWindow(CustomWindow):
         cmd_btn.clicked.connect(lambda _, c=cmd, s=show_output: self.run_cmd(c, s))
         cmd_layout.addWidget(cmd_btn)
 
-        delete_btn = QPushButton("\u274C")
+        delete_btn = QPushButton('\u274C')
         delete_btn.setFixedWidth(25)
         delete_btn.clicked.connect(lambda _, c=cmd_name, l=cmd_layout: self.delete_command(c, l))
         cmd_layout.addWidget(delete_btn)
@@ -64,11 +66,11 @@ class MainWindow(CustomWindow):
             if show_output:
                 self.show_command_output(result.stdout)
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f'An error occurred: {e}')
 
     def show_command_output(self, res):
         output_dialog = QDialog(self)
-        output_dialog.setWindowTitle("Command Output")
+        output_dialog.setWindowTitle('Command Output')
         output_dialog.setGeometry(100, 100, 600, 400)
 
         output_text = QPlainTextEdit(output_dialog)
@@ -90,7 +92,7 @@ class MainWindow(CustomWindow):
             with open(CMDS_PATH, 'r') as f:
                 self.commands = json.load(f)
         except Exception as e:
-            print("error :: ", e)
+            print('error :: ', e)
             self.commands = []
 
         for cmd_name, cmd, show_output in self.commands:
@@ -100,7 +102,7 @@ class MainWindow(CustomWindow):
 class AddCommandDialog(CustomDialog):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowTitle("Add Command")
+        self.setWindowTitle('Add Command')
         screen_geometry = self.screen().geometry()
 
         self.setGeometry(
@@ -111,25 +113,25 @@ class AddCommandDialog(CustomDialog):
         )
 
         self.command_name_input = QLineEdit(self)
-        self.command_name_input.setPlaceholderText("name")
+        self.command_name_input.setPlaceholderText('name')
 
         self.command_input = QPlainTextEdit(self)
         self.command_input.setPlaceholderText(
-            "add terminal command...\n\n"
-            "open webpage example:\n"
-            "start https://www.google.com\n\n"
-            "show ip address example (toggle checkbox):\n"
-            "ipconfig\n\n"
-            "concatenate commands example:\n"
-            "start https://www.google.com && ipconfig\n\n"
+            'add terminal command...\n\n'
+            'open webpage example:\n'
+            'start https://www.google.com\n\n'
+            'show ip address example (toggle checkbox):\n'
+            'ipconfig\n\n'
+            'concatenate commands example:\n'
+            'start https://www.google.com && ipconfig\n\n'
         )
 
-        self.show_output_checkbox = QCheckBox("Show Output", self)
+        self.show_output_checkbox = QCheckBox('Show Output', self)
 
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Command Name:"))
+        layout.addWidget(QLabel('Command Name:'))
         layout.addWidget(self.command_name_input)
-        layout.addWidget(QLabel("Command:"))
+        layout.addWidget(QLabel('Command:'))
         layout.addWidget(self.command_input)
         layout.addWidget(self.show_output_checkbox)
 
