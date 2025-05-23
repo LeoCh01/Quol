@@ -1,1 +1,5 @@
-[]
+[
+  "'charmap' codec can't encode characters in position 25-26: character maps to ",
+  "'charmap' codec can't encode characters in position 36-37: character maps to ",
+  "with open("
+]

@@ -212,7 +212,7 @@ class AI:
             HISTORY.append({'role': 'user', 'text': prompt})
             if self.is_img:
                 HISTORY[-1]['image'] = img_data
-        with open(BASE_PATH + '/res/groq.log', 'a') as f:
+        with open(BASE_PATH + '/res/groq.log', 'a', encoding="utf-8") as f:
             f.write(f'{datetime.datetime.now()}\nQ: {prompt}\n')
 
         request = QNetworkRequest(QUrl(url))
@@ -244,7 +244,7 @@ class AI:
             self.chat_window.set_text(self.text_content)
             if self.is_hist:
                 HISTORY.append({'role': 'model', 'text': self.text_content})
-            with open(BASE_PATH + '/res/gemini.log', 'a') as f:
+            with open(BASE_PATH + '/res/gemini.log', 'a', encoding="utf-8") as f:
                 f.write(f'A: {self.text_content.replace('\n\n', '\n')}\n\n')
 
         except Exception as e:

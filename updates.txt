@@ -1,9 +1,5 @@
 CURRENT
-- add dynamic json settings
-- add restart button in tray menu
-- fix clipboard window size change
-- restructure plugins
-- cleanup deprecated code
+- add hide button to tray (close app but keep in tray)
 
 TODO
 - clean up chat code
