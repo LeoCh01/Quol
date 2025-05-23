@@ -3,11 +3,14 @@ import datetime
 import json
 import os
 
-from PySide6.QtCore import QTimer, Qt, QRect, QUrl, QByteArray
+from markdown import markdown
+from markdown.extensions.codehilite import CodeHiliteExtension
+from pygments.formatters.html import HtmlFormatter
+from PySide6.QtCore import QTimer, QRect, QUrl, QByteArray
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
-from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, \
-    QScrollArea, QTextEdit
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QScrollArea
 
 from windows.custom_widgets import CustomWindow
 
@@ -243,25 +246,18 @@ class AI:
 
         reply.deleteLater()
 
-
 class ChatWindow(CustomWindow):
     def __init__(self):
         screen_geometry = QGuiApplication.primaryScreen().geometry()
         self.g = (screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
         super().__init__('Chat', -1, geometry=self.g, add_close_btn=True)
 
-        # self.chat_response = QTextBrowser()
-        self.chat_response = QTextEdit(readOnly=True)
-        self.chat_response.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse |
-                                                   Qt.TextInteractionFlag.TextSelectableByKeyboard)
-
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidget(self.chat_response)
-        self.scroll_area.setWidgetResizable(True)
-        self.layout.addWidget(self.scroll_area)
+        self.chat_response = QWebEngineView()
+        self.layout.addWidget(self.chat_response, stretch=1)
 
     def set_text(self, text):
-        self.chat_response.setMarkdown(str(text))
+        html = self.markdown_to_html(str(text))
+        self.chat_response.setHtml(html)
         self.chat_response.repaint()
         QApplication.processEvents()
 
@@ -271,3 +267,46 @@ class ChatWindow(CustomWindow):
         self.set_text('')
         self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
         HISTORY.clear()
+
+    @staticmethod
+    def markdown_to_html(md_text):
+        html_body = markdown(md_text, extensions=["fenced_code", "codehilite"])
+        css = HtmlFormatter(style="monokai").get_style_defs('.codehilite')
+        full_html = f"""
+            <html>
+            <head>
+            <style>
+            body {{ 
+                font-family: sans-serif; 
+                background-color: #333; 
+                color: white; 
+                font-size: 12px; 
+                letter-spacing: 0.5px;
+                line-height: 1.5;
+            }}
+            ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
+            ::-webkit-scrollbar-thumb {{ background-color: #555; border-radius: 4px; }}
+            ::-webkit-scrollbar-thumb:hover {{ background-color: #666; }}
+            .codehilite {{ font-size: 12px; background-color: #272822; letter-spacing: 0px }}
+            body code:not(pre code):not(.codehilite code) {{
+                background-color: #222;
+                padding: 2px 4px;
+            }}
+            .codehilite pre {{ background-color: #272822; overflow-x: auto; padding: 10px; border-radius: 4px; }}
+            {css}
+            </style>
+            <script>
+            function copyCode(btn) {{
+                const code = btn.nextElementSibling.innerText;
+                navigator.clipboard.writeText(code);
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            }}
+            </script>
+            </head>
+            <body>
+            {html_body}
+            </body>
+            </html>
+        """
+        return full_html

@@ -1,5 +1,5 @@
 [
-  "'charmap' codec can't encode characters in position 25-26: character maps to ",
-  "'charmap' codec can't encode characters in position 36-37: character maps to ",
-  "with open("
+  "            .codehilite {{ font-size: 12px; background-color: #272822; }}\n            body :not(.codehilite) > code {{\n                background-color: #afafaf;\n                padding: 2px 4px;\n            }}",
+  "body code:not(pre code):not(.codehilite code)",
+  "overflow-x: auto;"
 ]

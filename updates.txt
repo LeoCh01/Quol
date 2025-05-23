@@ -1,9 +1,10 @@
 CURRENT
+- better markdown, add code blocks
+- fix text encoding (for alphanumeric characters)
+- clean up some redundant code
 - add hide button to tray (close app but keep in tray)
 
 TODO
-- clean up chat code
 - stream api calls
-- make markdown better
 - tooltips
 - fix QNetworkManager for some devices
