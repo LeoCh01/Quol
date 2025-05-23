@@ -71,11 +71,14 @@ class MainWindow(CustomWindow):
         print('Question:', self.prompt.text())
 
         if self.ai_list.currentText() == 'ollama':
-            self.ai.ollama(self.config['ollama']['model'], self.prompt.text())
-        elif self.ai_list.currentText() == 'groq':
-            self.ai.groq(self.config['groq']['model'], self.prompt.text(), self.config['groq']['apikey'])
-        elif self.ai_list.currentText() == 'gemini':
-            self.ai.gemini(self.config['gemini']['model'], self.prompt.text(), self.config['gemini']['apikey'])
+            self.ai.prompt('ollama', {'prompt': self.prompt.text(), 'model': self.config['ollama']['model']})
+        else:
+            data = {
+                'prompt': self.prompt.text(),
+                'model': self.config[self.ai_list.currentText()]['model'],
+                'apikey': self.config[self.ai_list.currentText()]['apikey']
+            }
+            self.ai.prompt(self.ai_list.currentText(), data)
 
         self.set_button_loading_state(False)
         self.prompt.setText('')
@@ -102,9 +105,40 @@ class AI:
 
         self.max_hist = self.config['config']['max_history']
 
-    def ollama(self, model, prompt):
+    def prompt(self, model, d):
+        url = headers = data = None
         self.chat_window.set_text('Loading...')
         self.chat_window.show()
+
+        if model == 'ollama':
+            self.ollama(d['model'], d['prompt'])
+            return
+        elif model == 'gemini':
+            url, headers, data = self.gemini(d['model'], d['prompt'], d['apikey'])
+        elif model == 'groq':
+            url, headers, data = self.groq(d['model'], d['prompt'], d['apikey'])
+
+        request = QNetworkRequest(QUrl(str(url)))
+        for header, value in headers.items():
+            request.setRawHeader(header.encode(), value.encode())
+
+        json_data = json.dumps(data).encode('utf-8')
+        self.current_type = model
+        self.network_manager.post(request, QByteArray(json_data))
+
+    def add_history(self, model, img_data, prompt):
+        if len(HISTORY) > self.max_hist * 2:
+            HISTORY.pop(0)
+            HISTORY.pop(0)
+
+        if self.is_hist:
+            HISTORY.append({'role': 'user', 'text': prompt})
+            if self.is_img:
+                HISTORY[-1]['image'] = img_data
+        with open(BASE_PATH + f'/res/{model}.log', 'a', encoding='utf-8') as f:
+            f.write(f'{datetime.datetime.now()}\nQ: {prompt}\n')
+
+    def ollama(self, model, prompt):
         if not self.ollama_client:
             self.ollama_client = ollama.Client(host='http://localhost:11434')
 
@@ -125,17 +159,8 @@ class AI:
                 self.chat_window.set_text(text)
         except Exception as e:
             self.chat_window.set_text(f'Error: {e}')
-        finally:
-            self.chat_window.show()
 
     def gemini(self, model, prompt, key):
-        self.chat_window.set_text('Loading...')
-        self.chat_window.show()
-
-        if len(HISTORY) > self.max_hist * 2:
-            HISTORY.pop(0)
-            HISTORY.pop(0)
-
         key = key or 'APIKEY'
         url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}'
         headers = {'Content-Type': 'application/json'}
@@ -158,30 +183,10 @@ class AI:
                 cur['parts'].append({'inline_data': {'mime_type': 'image/jpeg', 'data': img_data}})
 
         data['contents'].append(cur)
-
-        if self.is_hist:
-            HISTORY.append({'role': 'user', 'text': prompt})
-            if self.is_img:
-                HISTORY[-1]['image'] = img_data
-        with open(BASE_PATH + '/res/gemini.log', 'a') as f:
-            f.write(f'{datetime.datetime.now()}\nQ: {prompt}\n')
-
-        request = QNetworkRequest(QUrl(url))
-        for header, value in headers.items():
-            request.setRawHeader(header.encode(), value.encode())
-
-        json_data = json.dumps(data).encode('utf-8')
-        self.current_type = 'gemini'
-        self.network_manager.post(request, QByteArray(json_data))
+        self.add_history('gemini', img_data, prompt)
+        return url, headers, data
 
     def groq(self, model, prompt, key):
-        self.chat_window.set_text('Loading...')
-        self.chat_window.show()
-
-        if len(HISTORY) > self.max_hist * 2:
-            HISTORY.pop(0)
-            HISTORY.pop(0)
-
         key = key or 'APIKEY'
         url = 'https://api.groq.com/openai/v1/chat/completions'
         headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {key}'}
@@ -207,44 +212,28 @@ class AI:
                 cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{img_data}'}})
 
         data['messages'].append(cur)
-
-        if self.is_hist:
-            HISTORY.append({'role': 'user', 'text': prompt})
-            if self.is_img:
-                HISTORY[-1]['image'] = img_data
-        with open(BASE_PATH + '/res/groq.log', 'a', encoding="utf-8") as f:
-            f.write(f'{datetime.datetime.now()}\nQ: {prompt}\n')
-
-        request = QNetworkRequest(QUrl(url))
-        for header, value in headers.items():
-            request.setRawHeader(header.encode(), value.encode())
-
-        json_data = json.dumps(data).encode('utf-8')
-        self.current_type = 'groq'
-        self.network_manager.post(request, QByteArray(json_data))
+        self.add_history('groq', img_data, prompt)
+        return url, headers, data
 
     def handle_response(self, reply: QNetworkReply):
         res = reply.readAll()
         res = res.data().decode()
-
-        if self.current_type == 'gemini':
-            self.handle_gemini_response(res)
-        elif self.current_type == 'groq':
-            self.handle_groq_response(res)
-
-        reply.deleteLater()
-
-    def handle_gemini_response(self, res):
         self.text_content = ''
         try:
             res = json.loads(res)
             if 'error' in res:
                 raise Exception(f'Error: {res['error']['message']}')
-            self.text_content = res['candidates'][0]['content']['parts'][0]['text']
+
+            if self.current_type == 'gemini':
+                self.text_content = res['candidates'][0]['content']['parts'][0]['text']
+            elif self.current_type == 'groq':
+                self.text_content = res['choices'][0]['message']['content']
+
             self.chat_window.set_text(self.text_content)
             if self.is_hist:
                 HISTORY.append({'role': 'model', 'text': self.text_content})
-            with open(BASE_PATH + '/res/gemini.log', 'a', encoding="utf-8") as f:
+
+            with open(BASE_PATH + f'/res/{self.current_type}.log', 'a', encoding="utf-8") as f:
                 f.write(f'A: {self.text_content.replace('\n\n', '\n')}\n\n')
 
         except Exception as e:
@@ -252,23 +241,7 @@ class AI:
             self.chat_window.set_text(self.text_content)
             HISTORY.clear()
 
-    def handle_groq_response(self, res):
-        self.text_content = ''
-        try:
-            res = json.loads(res)
-            if 'error' in res:
-                raise Exception(f'Error: {res['error']['message']}')
-            self.text_content = res['choices'][0]['message']['content']
-            self.chat_window.set_text(self.text_content)
-            if self.is_hist:
-                HISTORY.append({'role': 'assistant', 'text': self.text_content})
-            with open(BASE_PATH + '/res/groq.log', 'a') as f:
-                f.write(f'A: {self.text_content.replace('\n\n', '\n')}\n\n')
-
-        except Exception as e:
-            self.text_content = str(e)
-            self.chat_window.set_text(self.text_content)
-            HISTORY.clear()
+        reply.deleteLater()
 
 
 class ChatWindow(CustomWindow):
