@@ -88,7 +88,11 @@ class App(QObject):
         self.tray_icon.setToolTip('Windows Helper')
         tray_menu = QMenu()
 
-        reload_action = QAction('Restart', self)
+        hide_action = QAction('Hide', self)
+        hide_action.triggered.connect(self.hide)
+        tray_menu.addAction(hide_action)
+
+        reload_action = QAction('Reload', self)
         reload_action.triggered.connect(self.restart)
         tray_menu.addAction(reload_action)
 
@@ -99,16 +103,25 @@ class App(QObject):
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
 
+    def hide(self):
+        for w in App.windows:
+            w.close()
+        App.windows = []
+
+        if self.toggle_key in keyboard._hotkeys:
+            keyboard.remove_hotkey(self.toggle_key)
+
     def restart(self):
-        for window in App.windows:
-            window.close()
-        App.windows.clear()
+        for w in App.windows:
+            w.close()
+        App.windows = []
 
         with open(SETTINGS_PATH, 'r') as f:
             settings = json.load(f)
 
         self.toggle_key = str(settings.get('toggle_key', '`'))
-        keyboard.remove_hotkey(self.toggle_key)
+        if self.toggle_key in keyboard._hotkeys:
+            keyboard.remove_hotkey(self.toggle_key)
         keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
         self.is_hidden = False
         self.is_reset = settings.get('is_default_pos', True)
