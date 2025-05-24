@@ -2,3 +2,5 @@ PySide6
 keyboard
 pynput
 ollama
+markdown
+pygments
