@@ -4,13 +4,12 @@ import json
 import os
 
 from markdown import markdown
-from markdown.extensions.codehilite import CodeHiliteExtension
 from pygments.formatters.html import HtmlFormatter
 from PySide6.QtCore import QTimer, QRect, QUrl, QByteArray
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QScrollArea
+from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication
 
 from windows.custom_widgets import CustomWindow
 
@@ -129,17 +128,23 @@ class AI:
         self.current_type = model
         self.network_manager.post(request, QByteArray(json_data))
 
-    def add_history(self, model, img_data, prompt):
-        if len(HISTORY) > self.max_hist * 2:
-            HISTORY.pop(0)
-            HISTORY.pop(0)
-
+    def add_history(self, model, text, img_data, is_user):
         if self.is_hist:
-            HISTORY.append({'role': 'user', 'text': prompt})
-            if self.is_img:
-                HISTORY[-1]['image'] = img_data
+            if is_user:
+                HISTORY.append({'role': 'user', 'text': text})
+                if self.is_img:
+                    HISTORY[-1]['image'] = img_data
+            else:
+                HISTORY.append({'role': 'model', 'text': text})
+
         with open(BASE_PATH + f'/res/{model}.log', 'a', encoding='utf-8') as f:
-            f.write(f'{datetime.datetime.now()}\nQ: {prompt}\n')
+            if is_user:
+                f.write(f'{datetime.datetime.now()}\nQ: {text}\n')
+            else:
+                f.write(f'A: {text.replace('\n\n', '\n')}\n\n')
+
+        if len(HISTORY) > (self.max_hist - 1) * 2:
+            HISTORY.pop(0)
 
     def ollama(self, model, prompt):
         if not self.ollama_client:
@@ -168,6 +173,7 @@ class AI:
         url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}'
         headers = {'Content-Type': 'application/json'}
         data = {'contents': []}
+        img_data = None
 
         if self.is_hist:
             for h in HISTORY:
@@ -186,7 +192,7 @@ class AI:
                 cur['parts'].append({'inline_data': {'mime_type': 'image/jpeg', 'data': img_data}})
 
         data['contents'].append(cur)
-        self.add_history('gemini', img_data, prompt)
+        self.add_history('gemini', prompt, img_data, True)
         return url, headers, data
 
     def groq(self, model, prompt, key):
@@ -194,6 +200,7 @@ class AI:
         url = 'https://api.groq.com/openai/v1/chat/completions'
         headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {key}'}
         data = {'messages': [], 'model': model, 'stream': False}
+        img_data = None
 
         if self.is_hist:
             for h in HISTORY:
@@ -215,7 +222,7 @@ class AI:
                 cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{img_data}'}})
 
         data['messages'].append(cur)
-        self.add_history('groq', img_data, prompt)
+        self.add_history('groq', prompt, img_data, True)
         return url, headers, data
 
     def handle_response(self, reply: QNetworkReply):
@@ -233,11 +240,7 @@ class AI:
                 self.text_content = res['choices'][0]['message']['content']
 
             self.chat_window.set_text(self.text_content)
-            if self.is_hist:
-                HISTORY.append({'role': 'model', 'text': self.text_content})
-
-            with open(BASE_PATH + f'/res/{self.current_type}.log', 'a', encoding="utf-8") as f:
-                f.write(f'A: {self.text_content.replace('\n\n', '\n')}\n\n')
+            self.add_history(self.current_type, self.text_content, None, False)
 
         except Exception as e:
             self.text_content = str(e)
@@ -245,6 +248,7 @@ class AI:
             HISTORY.clear()
 
         reply.deleteLater()
+
 
 class ChatWindow(CustomWindow):
     def __init__(self):
