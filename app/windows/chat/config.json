@@ -14,5 +14,10 @@
     "image": true,
     "history": true,
     "max_history": 1
+  },
+  "commands": {
+    "/t": "translate any {0} text on screen to {1:english}",
+    "/s": "how would you solve this question",
+    "/e": "explain this in simple terms"
   }
 }

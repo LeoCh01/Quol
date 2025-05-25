@@ -2,6 +2,7 @@ import base64
 import datetime
 import json
 import os
+import re
 
 from markdown import markdown
 from pygments.formatters.html import HtmlFormatter
@@ -70,13 +71,23 @@ class MainWindow(CustomWindow):
         QTimer.singleShot(0, self.start_chat)
 
     def start_chat(self):
-        print('Question:', self.prompt.text())
+        s = self.prompt.text().split()
+        t = self.prompt.text()
+
+        if s and s[0] in self.config['commands']:
+            t = self.config['commands'][s[0]]
+            for i in range(1, len(s)):
+                t = re.sub(r'\{' + str(i - 1) + r'(?::[^}]*)?}', s[i], t)
+            t = re.sub(r'\{(\d+):([^}]*)}', r'\2', t)
+            t = re.sub(r'\{\d+}', '', t)
+
+        print('Question:', t)
 
         if self.ai_list.currentText() == 'ollama':
-            self.ai.prompt('ollama', {'prompt': self.prompt.text(), 'model': self.config['ollama']['model']})
+            self.ai.prompt('ollama', {'prompt': t, 'model': self.config['ollama']['model']})
         else:
             data = {
-                'prompt': self.prompt.text(),
+                'prompt': t,
                 'model': self.config[self.ai_list.currentText()]['model'],
                 'apikey': self.config[self.ai_list.currentText()]['apikey']
             }

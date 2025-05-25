@@ -1,5 +1,5 @@
 CURRENT
-- better markdown, add code blocks
+- better markdown, add code blocks, add quick commands
 - fix text encoding (for alphanumeric characters)
 - clean up some redundant code
 - add hide button to tray (close app but keep in tray)
