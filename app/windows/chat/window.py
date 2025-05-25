@@ -8,8 +8,7 @@ from pygments.formatters.html import HtmlFormatter
 from PySide6.QtCore import QTimer, QRect, QUrl, QByteArray
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication
+from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
 
 from windows.custom_widgets import CustomWindow
 
@@ -17,6 +16,8 @@ import ollama
 
 BASE_PATH = os.path.dirname(__file__)
 HISTORY = []
+test_response = 'Here\'s a Python solution to the Two Sum problem using a hash map (dictionary) for improved efficiency:\n\n```python\nclass Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        """\n        Finds two numbers in the input list \'nums\' that add up to the \'target\'.\n\n        Args:\n            nums: A list of integers.\n            target: The target sum.\n\n        Returns:\n            A list containing the indices of the two numbers that add up to the target.\n            Returns None if no such pair exists (though problem statement guarantees one).\n        """\n\n        num_map = {}  # Create a hash map (dictionary) to store numbers and their indices\n\n        for index, num in enumerate(nums):\n            complement = target - num  # Calculate the complement needed to reach the target\n\n            if complement in num_map:\n                # If the complement is already in the map, we found our pair!\n                return [num_map[complement], index]  # Return the indices\n\n            num_map[num] = index  # Store the number and its index in the map\n```\n\nKey improvements and explanations:\n\n* **Hash Map (Dictionary):** The solution uses a hash map (`num_map`) to store each number from the `nums` list along with its index. This is crucial for achieving O(n) time complexity.\n* **Efficiency:**  Checking if the `complement` exists in the `num_map` is an O(1) operation on average (very fast) because hash maps provide constant-time lookups.\n* **Clarity:** The code is well-commented to explain each step.\n* **Handles All Cases:** This approach correctly handles all possible test cases, including cases where the same number appears multiple times (as in Example 3), while still respecting the constraint that each input has *exactly* one solution, and you may not use the same element twice.\n\n**How it Works:**\n\n1. **Initialization:** A hash map `num_map` is created.  It will store `number: index` pairs.\n2. **Iteration:** The code iterates through the `nums` list using `enumerate` to get both the index and the value of each number.\n3. **Complement Calculation:** For each number `num`, it calculates the `complement` needed to reach the `target`: `complement = target - num`.\n4. **Hash Map Lookup:**  It checks if the `complement` already exists as a key in the `num_map`.\n   - **If the complement exists:**  This means we\'ve found two numbers that add up to the target! The index of the complement is retrieved from the `num_map`, and the current index is the other index we need. The function immediately returns a list containing these two indices.\n   - **If the complement doesn\'t exist:**  The current number `num` and its `index` are added to the `num_map` for future lookups.\n5. **Guaranteed Solution:** Because the problem states that there\'s only one valid answer, the loop will definitely find the correct pair and return the indices. There\'s no need to add any handling for "no solution found."\n\n**Example Walkthrough (nums = [2, 7, 11, 15], target = 9):**\n\n1. **Iteration 1:**\n   - `num` = 2, `index` = 0\n   - `complement` = 9 - 2 = 7\n   - `7` is not in `num_map`, so `num_map[2] = 0` is stored.\n2. **Iteration 2:**\n   - `num` = 7, `index` = 1\n   - `complement` = 9 - 7 = 2\n   - `2` is in `num_map` (because we added it in the previous iteration!).\n   - The function returns `[num_map[2], 1]` which is `[0, 1]`.\n\nThis solution is very efficient and a standard way to solve the Two Sum problem.\n'
+
 
 
 class MainWindow(CustomWindow):
@@ -111,6 +112,10 @@ class AI:
         url = headers = data = None
         self.chat_window.set_text('Loading...')
         self.chat_window.show()
+
+        if test_response:
+            self.chat_window.set_text(test_response)
+            return
 
         if model == 'ollama':
             self.ollama(d['model'], d['prompt'])
@@ -256,7 +261,9 @@ class ChatWindow(CustomWindow):
         self.g = (screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
         super().__init__('Chat', -1, geometry=self.g, add_close_btn=True)
 
-        self.chat_response = QWebEngineView()
+        self.chat_response = QTextBrowser()
+        self.chat_response.setOpenExternalLinks(True)
+        self.chat_response.setReadOnly(True)
         self.layout.addWidget(self.chat_response, stretch=1)
 
     def set_text(self, text):
@@ -276,41 +283,40 @@ class ChatWindow(CustomWindow):
     def markdown_to_html(md_text):
         html_body = markdown(md_text, extensions=["fenced_code", "codehilite"])
         css = HtmlFormatter(style="monokai").get_style_defs('.codehilite')
-        full_html = f"""
-            <html>
-            <head>
-            <style>
-            body {{ 
-                font-family: sans-serif; 
-                background-color: #333; 
-                color: white; 
-                font-size: 12px; 
-                letter-spacing: 0.5px;
-                line-height: 1.5;
+
+        styling = f"""
+            <style type="text/css">
+            .content-wrapper {{
+                padding: 10px;
             }}
-            ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
-            ::-webkit-scrollbar-thumb {{ background-color: #555; border-radius: 4px; }}
-            ::-webkit-scrollbar-thumb:hover {{ background-color: #666; }}
-            .codehilite {{ font-size: 12px; background-color: #272822; letter-spacing: 0px }}
-            body code:not(pre code):not(.codehilite code) {{
-                background-color: #222;
+            body {{
+                background-color: #333;
+                color: white;
+                font-size: 13px;
+                letter-spacing: 0.2px;
+                line-height: 1.2;
+            }}
+            .codehilite pre {{
+                margin: 0;
+                background: #262626;
+                line-height: 1;
+            }}
+            code {{
+                background-color: #262626;
                 padding: 2px 4px;
+                border-radius: 4px;
             }}
-            .codehilite pre {{ background-color: #272822; overflow-x: auto; padding: 10px; border-radius: 4px; }}
             {css}
             </style>
-            <script>
-            function copyCode(btn) {{
-                const code = btn.nextElementSibling.innerText;
-                navigator.clipboard.writeText(code);
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
-            }}
-            </script>
-            </head>
+        """
+
+        html_text = f"""
+            <html>
+            <head>{styling}</head>
             <body>
-            {html_body}
+                {html_body}
             </body>
             </html>
         """
-        return full_html
+
+        return html_text
