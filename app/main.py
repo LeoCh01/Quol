@@ -62,9 +62,7 @@ class App(QObject):
             window.show()
 
     def reset_hotkey(self, new_key, old_key=None):
-        if old_key in keyboard._hotkeys:
-            keyboard.remove_hotkey(old_key)
-
+        keyboard.unhook_all()
         self.toggle_key = new_key
         keyboard.add_hotkey(new_key, self.toggle_windows, suppress=True)
 
@@ -114,8 +112,7 @@ class App(QObject):
             w.close()
         App.windows = []
 
-        if self.toggle_key in keyboard._hotkeys:
-            keyboard.remove_hotkey(self.toggle_key)
+        keyboard.unhook_all()
 
     def restart(self):
         for w in App.windows:

@@ -2,8 +2,9 @@ import os
 
 from PySide6 import QtCore
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
+from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout, QApplication
 from PySide6.QtGui import QPixmap, Qt, QMovie
+
 import random
 
 from windows.custom_widgets import CustomWindow
@@ -24,7 +25,7 @@ class MainWindow(CustomWindow):
         self.grid_layout = QGridLayout()
         self.result_label = QLabel()
         self.result_label.setPixmap(QPixmap(IMG_PATH + COIN))
-        self.result_label.setAlignment(Qt.AlignCenter)
+        self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.coin_button = QPushButton('Coin')
         self.dice_button = QPushButton('Dice')
 

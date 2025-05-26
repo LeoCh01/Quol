@@ -17,7 +17,7 @@
   },
   "commands": {
     "/t": "translate any {0} text on screen to {1:english}",
-    "/s": "how would you solve this question",
+    "/s": "how do I solve this question",
     "/e": "explain this in simple terms"
   }
 }
