@@ -57,3 +57,78 @@
     background-color: #333;
     color: white;
 }
+
+/* HORIZONTAL SCROLLBAR */
+QScrollBar:horizontal {
+    background: #444;
+    height: 12px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #666;
+    border-radius: 3px;
+    min-width: 20px;
+    margin: 3px;
+}
+
+QScrollBar:horizontal:hover {
+    background: #555;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #777;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    background: none;
+    width: 0px;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+/* VERTICAL SCROLLBAR */
+QScrollBar:vertical {
+    background: #444;
+    width: 12px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #666;
+    border-radius: 3px;
+    min-height: 20px;
+    margin: 3px;
+}
+
+QScrollBar:vertical:hover {
+    background: #555;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #777;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    background: none;
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QAbstractScrollArea::corner {
+    background: #444;
+}
+
+QTextBrowser {
+    background: #333;
+    border: none;
+}

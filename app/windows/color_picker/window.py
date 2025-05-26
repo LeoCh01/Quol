@@ -1,6 +1,6 @@
-from pynput import mouse
+import keyboard
 
-from PySide6.QtCore import QTimer, QSize, Signal
+from PySide6.QtCore import QTimer, QSize
 from PySide6.QtGui import QPixmap, QColor, QGuiApplication, QCursor, QPainter
 from PySide6.QtWidgets import QLabel, QGridLayout, QPushButton
 
@@ -8,8 +8,6 @@ from windows.custom_widgets import CustomWindow
 
 
 class MainWindow(CustomWindow):
-    col_signal = Signal()
-
     def __init__(self, wid, geometry=(200, 10, 180, 1)):
         super().__init__('Color', wid, geometry)
 
@@ -37,29 +35,24 @@ class MainWindow(CustomWindow):
         self.sf = QGuiApplication.primaryScreen().devicePixelRatio()
         self.timer = QTimer()
         self.update_color()
-        self.col_signal.connect(self.select_color_finish)
+
+    def close(self):
+        super().close()
 
     def copy_color(self):
         clipboard = QGuiApplication.clipboard()
         clipboard.setText(self.hex.text())
 
     def select_color(self):
-        self.select_btn.setText('...')
+        self.select_btn.setText('Esc to stop')
         self.select_btn.setStyleSheet('background-color: #eee; color: #000')
         self.select_btn.setChecked(True)
         self.timer.timeout.connect(self.update_color)
         self.timer.start(100)
-        self.mouse_listener = mouse.Listener(on_click=self.on_click)
-        self.mouse_listener.start()
+        keyboard.on_press_key('esc', lambda _: self.on_color_select())
 
-    def on_click(self, x, y, button, pressed):
-        self.col_signal.emit()
-        if pressed and self.select_btn.isChecked():
-            self.mouse_listener.stop()
-            self.mouse_listener.suppress_event()
-        return False
-
-    def select_color_finish(self):
+    def on_color_select(self):
+        keyboard.unhook_key('esc')
         self.timer.stop()
         self.select_btn.setText('pick color')
         self.select_btn.setStyleSheet('')

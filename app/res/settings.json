@@ -1,6 +1,6 @@
 {
   "name": "Windows Helper",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "versatile tool for windows.",
   "startup": false,
   "toggle_key": "`",

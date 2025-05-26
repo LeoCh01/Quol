@@ -1,7 +1,7 @@
 import json
 import os
 
-from pynput import keyboard
+import keyboard
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal, QSize
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication
@@ -29,8 +29,7 @@ class MainWindow(CustomWindow):
         self.clip_groupbox.setLayout(self.clip_layout)
         self.layout.addWidget(self.clip_groupbox)
 
-        self.copy_thread = keyboard.Listener(on_release=self.on_copy)
-        self.copy_thread.start()
+        self.copy_hotkey = keyboard.add_hotkey('ctrl+c', lambda: self.copy_signal.emit())
 
         with open(BASE_PATH + '/res/clipboard.json', 'r') as f:
             self.clipboard = json.load(f)
@@ -38,9 +37,9 @@ class MainWindow(CustomWindow):
             for text in self.clipboard:
                 self.clip_layout.insertWidget(0, self.create_copy_btn(text))
 
-    def on_copy(self, key):
-        if str(key) == r"'\x03'":
-            self.copy_signal.emit()
+    def close(self):
+        keyboard.unhook_all()
+        super().close()
 
     @staticmethod
     def create_copy_btn(text):
@@ -57,6 +56,8 @@ class MainWindow(CustomWindow):
         return button
 
     def update_clipboard(self):
+        if not QApplication.clipboard().text():
+            return
         print('Clipboard updated')
         self.clipboard.append(QApplication.clipboard().text())
         self.setFixedHeight(self.height() + 24)

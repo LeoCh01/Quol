@@ -1,13 +1,11 @@
 CURRENT
-- add dynamic json settings
-- add restart button in tray menu
-- fix clipboard window size change
-- restructure plugins
-- cleanup deprecated code
+- better markdown, add code blocks, add quick commands
+- fix text encoding (for alphanumeric characters)
+- clean up some redundant code
+- add hide button to tray (close app but keep in tray)
+- try to reduce app size
 
 TODO
-- clean up chat code
 - stream api calls
-- make markdown better
 - tooltips
 - fix QNetworkManager for some devices
