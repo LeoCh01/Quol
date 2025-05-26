@@ -3,6 +3,7 @@ CURRENT
 - fix text encoding (for alphanumeric characters)
 - clean up some redundant code
 - add hide button to tray (close app but keep in tray)
+- try to reduce app size
 
 TODO
 - stream api calls

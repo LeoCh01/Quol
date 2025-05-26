@@ -1,5 +1,4 @@
 import json
-import keyboard
 import os
 import sys
 

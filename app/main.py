@@ -23,7 +23,8 @@ class App(QObject):
             settings = json.load(f)
 
         self.toggle_key = str(settings.get('toggle_key', '`'))
-        keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
+        self.toggle_listener = None
+        self.reset_hotkey(self.toggle_key)
         self.is_hidden = False
         self.is_reset = settings.get('is_default_pos', True)
 
@@ -60,6 +61,13 @@ class App(QObject):
             self.toggle.connect(window.toggle_windows)
             window.show()
 
+    def reset_hotkey(self, new_key, old_key=None):
+        if old_key in keyboard._hotkeys:
+            keyboard.remove_hotkey(old_key)
+
+        self.toggle_key = new_key
+        keyboard.add_hotkey(new_key, self.toggle_windows, suppress=True)
+
     def toggle_windows(self):
         self.toggle.emit(self.is_hidden, False)
         self.is_hidden = not self.is_hidden
@@ -73,10 +81,8 @@ class App(QObject):
         if self.toggle_key == key:
             return
 
-        keyboard.remove_hotkey(self.toggle_key)
-        self.toggle_key = key
+        self.reset_hotkey(key, self.toggle_key)
 
-        keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
         with open(SETTINGS_PATH, 'r') as f:
             settings = json.load(f)
         settings['toggle_key'] = key
@@ -119,10 +125,7 @@ class App(QObject):
         with open(SETTINGS_PATH, 'r') as f:
             settings = json.load(f)
 
-        self.toggle_key = str(settings.get('toggle_key', '`'))
-        if self.toggle_key in keyboard._hotkeys:
-            keyboard.remove_hotkey(self.toggle_key)
-        keyboard.add_hotkey(self.toggle_key, self.toggle_windows, suppress=True)
+        self.reset_hotkey(str(settings.get('toggle_key', '`')), self.toggle_key)
         self.is_hidden = False
         self.is_reset = settings.get('is_default_pos', True)
 
