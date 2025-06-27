@@ -4,7 +4,7 @@
   "description": "versatile tool for windows.",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "random",
+  "toggle_direction": "up",
   "is_default_pos": true,
   "windows": [
     "info",

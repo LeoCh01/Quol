@@ -47,6 +47,7 @@ class App(QObject):
             class_obj.set_toggle_key = self.set_toggle_key
             class_obj.toggle_windows_2 = self.toggle_windows_2
             class_obj.toggle_signal = self.toggle
+            class_obj.reload_app = self.restart
 
             pos_settings['windows'].append(w + str(i))
             if self.is_reset or not pos_settings['pos'].get(w + str(i)):
@@ -109,15 +110,15 @@ class App(QObject):
 
     def hide(self):
         for w in App.windows:
+            self.toggle.disconnect(w.toggle_windows)
             w.close()
-        App.windows = []
+            del w
 
+        App.windows = []
         keyboard.unhook_all()
 
     def restart(self):
-        for w in App.windows:
-            w.close()
-        App.windows = []
+        self.hide()
 
         with open(SETTINGS_PATH, 'r') as f:
             settings = json.load(f)
@@ -127,7 +128,6 @@ class App(QObject):
         self.is_reset = settings.get('is_default_pos', True)
 
         self.load_windows(settings)
-
 
     @staticmethod
     def load_plugin(plugin_name):

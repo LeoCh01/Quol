@@ -1,11 +1,9 @@
 CURRENT
-- better markdown, add code blocks, add quick commands
-- fix text encoding (for alphanumeric characters)
-- clean up some redundant code
-- add hide button to tray (close app but keep in tray)
-- try to reduce app size
+- disconnect signals on reload
+- add toggle direction to info config
 
 TODO
+- better clipboard
 - stream api calls
 - tooltips
 - fix QNetworkManager for some devices

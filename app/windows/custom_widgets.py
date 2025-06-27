@@ -12,6 +12,7 @@ from res.paths import SETTINGS_PATH, POS_PATH
 
 class CustomWindow(QWidget):
     config_signal = Signal()
+    toggle_direction = 'random'
 
     def __init__(self, title='Custom Window', wid=-1, geometry=(0, 0, 0, 0), add_close_btn=False, path=None):
         """
@@ -52,10 +53,6 @@ class CustomWindow(QWidget):
         self.layout = QVBoxLayout(self.w1)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-            self.toggle_direction = settings.get('toggle_direction', 'random')
-
     def update_config(self):
         if self.config_path:
             with open(self.config_path, 'r') as f:
@@ -81,19 +78,17 @@ class CustomWindow(QWidget):
 
     def generatePosition(self):
         screen_geometry = self.screen().geometry()
-        x = y = 0
 
-        if self.toggle_direction == 'up':
+        if CustomWindow.toggle_direction == 'up':
             x = (screen_geometry.width() - self.geo_old.width()) // 2
             y = -self.geometry().height()
-            print(y)
-        elif self.toggle_direction == 'down':
+        elif CustomWindow.toggle_direction == 'down':
             x = (screen_geometry.width() - self.geo_old.width()) // 2
             y = screen_geometry.height()
-        elif self.toggle_direction == 'left':
+        elif CustomWindow.toggle_direction == 'left':
             x = -self.geo_old.width()
             y = (screen_geometry.height() - self.geometry().height()) // 2
-        elif self.toggle_direction == 'right':
+        elif CustomWindow.toggle_direction == 'right':
             x = screen_geometry.width()
             y = (screen_geometry.height() - self.geometry().height()) // 2
         else:
