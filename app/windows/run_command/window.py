@@ -1,10 +1,10 @@
-import os.path
+import os
 import subprocess
 import json
-from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QDialogButtonBox, \
-    QPlainTextEdit, QCheckBox, QDialog
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QPlainTextEdit, \
+    QCheckBox
 
-from windows.custom_widgets import CustomWindow, CustomDialog
+from windows.custom_widgets import CustomWindow
 
 CMDS_PATH = os.path.join(os.path.dirname(__file__), 'res/commands.json')
 
@@ -24,17 +24,10 @@ class MainWindow(CustomWindow):
 
         self.commands = []
         self.load_commands()
+        self.dialog = CommandConfig(self)
 
     def open_add_command_dialog(self):
-        dialog = AddCommandDialog(self)
-        v = dialog.exec()
-        if v:
-            cmd_name, cmd, show_output = dialog.get_command()
-            if cmd and cmd_name:
-                self.commands.append((cmd_name, cmd, show_output))
-                self.add_command_to_layout(cmd_name, cmd, show_output)
-                self.save_commands()
-                self.setFixedHeight(self.height() + 30)
+        self.dialog.show()
 
     def add_command_to_layout(self, cmd_name, cmd, show_output):
         cmd_layout = QHBoxLayout()
@@ -68,20 +61,16 @@ class MainWindow(CustomWindow):
         except Exception as e:
             print(f'An error occurred: {e}')
 
-    def show_command_output(self, res):
-        output_dialog = QDialog(self)
-        output_dialog.setWindowTitle('Command Output')
-        output_dialog.setGeometry(100, 100, 600, 400)
+    @staticmethod
+    def show_command_output(res):
+        output_window = CustomWindow('Command Output', -1, geometry=(100, 100, 600, 400), add_close_btn=True)
 
-        output_text = QPlainTextEdit(output_dialog)
+        output_text = QPlainTextEdit(output_window)
         output_text.setPlainText(res)
         output_text.setReadOnly(True)
 
-        layout = QVBoxLayout()
-        layout.addWidget(output_text)
-
-        output_dialog.setLayout(layout)
-        output_dialog.exec()
+        output_window.layout.addWidget(output_text)
+        output_window.show()
 
     def save_commands(self):
         with open(CMDS_PATH, 'w') as f:
@@ -99,12 +88,12 @@ class MainWindow(CustomWindow):
             self.add_command_to_layout(cmd_name, cmd, show_output)
 
 
-class AddCommandDialog(CustomDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setWindowTitle('Add Command')
-        screen_geometry = self.screen().geometry()
+class CommandConfig(CustomWindow):
+    def __init__(self, parent: MainWindow):
+        super().__init__('Add Command', -1, geometry=(0, 0, 600, 400), add_close_btn=True)
+        self.parent = parent
 
+        screen_geometry = self.screen().geometry()
         self.setGeometry(
             screen_geometry.width() // 2 - 300,
             screen_geometry.height() // 2 - 200,
@@ -113,34 +102,40 @@ class AddCommandDialog(CustomDialog):
         )
 
         self.command_name_input = QLineEdit(self)
-        self.command_name_input.setPlaceholderText('name')
+        self.command_name_input.setPlaceholderText('Enter command name...')
 
         self.command_input = QPlainTextEdit(self)
         self.command_input.setPlaceholderText(
-            'add terminal command...\n\n'
-            'open webpage example:\n'
-            'start https://www.google.com\n\n'
-            'show ip address example (toggle checkbox):\n'
-            'ipconfig\n\n'
-            'concatenate commands example:\n'
-            'start https://www.google.com && ipconfig\n\n'
+            'Add terminal command...\n\n'
+            'Example 1: open webpage (start https://www.google.com)\n\n'
+            'Example 2: show IP address (ipconfig)\n\n'
+            'Example 3: concatenate commands (start https://www.google.com && ipconfig)\n\n'
         )
 
-        self.show_output_checkbox = QCheckBox('Show Output', self)
+        self.show_output_checkbox = QCheckBox('Show Output in Terminal', self)
 
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel('Command Name:'))
-        layout.addWidget(self.command_name_input)
-        layout.addWidget(QLabel('Command:'))
-        layout.addWidget(self.command_input)
-        layout.addWidget(self.show_output_checkbox)
+        self.save_btn = QPushButton('Save Command', self)
+        self.save_btn.clicked.connect(self.on_save_clicked)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
-        layout.addWidget(self.button_box)
+        self.layout.addWidget(QLabel('Command Name:'))
+        self.layout.addWidget(self.command_name_input)
+        self.layout.addWidget(QLabel('Command:'))
+        self.layout.addWidget(self.command_input)
+        self.layout.addWidget(self.show_output_checkbox)
+        self.layout.addWidget(self.save_btn)
 
-        self.setLayout(layout)
+    def on_save_clicked(self):
+        cmd_name = self.command_name_input.text()
+        cmd = self.command_input.toPlainText()
+        show_output = self.show_output_checkbox.isChecked()
 
-    def get_command(self):
-        return self.command_name_input.text(), self.command_input.toPlainText(), self.show_output_checkbox.isChecked()
+        if cmd_name and cmd:
+            self.parent.add_command_to_layout(cmd_name, cmd, show_output)
+            self.parent.commands.append((cmd_name, cmd, show_output))
+            self.parent.save_commands()
+
+            self.command_name_input.clear()
+            self.command_input.clear()
+            self.show_output_checkbox.setChecked(False)
+
+        self.close()

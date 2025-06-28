@@ -132,3 +132,8 @@ QTextBrowser {
     background: #333;
     border: none;
 }
+
+QDialog {
+    background-color: #444;
+    color: white;
+}
