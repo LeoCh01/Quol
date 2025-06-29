@@ -51,7 +51,9 @@ class App(QObject):
 
             pos_settings['windows'].append(w + str(i))
             if self.is_reset or not pos_settings['pos'].get(w + str(i)):
-                self.windows.append(class_obj(i))
+                o = class_obj(i)
+                self.windows.append(o)
+                pos_settings['pos'][w + str(i)] = [o.x(), o.y(), o.width(), o.height()]
             else:
                 self.windows.append(class_obj(i, pos_settings['pos'][w + str(i)]))
 

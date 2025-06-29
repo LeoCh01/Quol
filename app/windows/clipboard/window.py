@@ -3,7 +3,7 @@ import os
 
 import keyboard
 from PySide6.QtGui import QIcon
-from PySide6.QtCore import Signal, QSize
+from PySide6.QtCore import Signal, QSize, QTimer
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication
 
 from windows.custom_widgets import CustomWindow
@@ -14,9 +14,9 @@ BASE_PATH = os.path.dirname(__file__)
 class MainWindow(CustomWindow):
     copy_signal = Signal()
 
-    def __init__(self, wid, geometry=(550, 10, 170, 1)):
+    def __init__(self, wid, geometry=(10, 120, 180, 1)):
         super().__init__('Clipboard', wid, geometry, path=BASE_PATH)
-        self.copy_signal.connect(self.update_clipboard)
+        self.copy_signal.connect(self.on_copy)
 
         self.copy_params = QHBoxLayout()
         self.clear = QPushButton('Clear')
@@ -80,3 +80,6 @@ class MainWindow(CustomWindow):
 
         with open(BASE_PATH + '/res/clipboard.json', 'w') as f:
             json.dump(self.clipboard, f, indent=2)
+
+    def on_copy(self):
+        QTimer.singleShot(100, self.update_clipboard)

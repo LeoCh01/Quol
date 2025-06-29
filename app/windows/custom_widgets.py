@@ -122,23 +122,6 @@ class CustomWindow(QWidget):
         self.animation.start()
 
 
-class CustomDialog(QDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setObjectName('content')
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.setMask(self.generateRoundedMask())
-
-    def generateRoundedMask(self):
-        rect = self.rect()
-        path = QPainterPath()
-        radius = 6
-        path.addRoundedRect(rect, radius, radius)
-        return QRegion(path.toFillPolygon().toPolygon())
-
-
 class CustomTitleBar(QWidget):
     def __init__(self, title='Custom Title Bar', parent: CustomWindow = None, add_close_btn=False):
         super().__init__(parent)
@@ -182,21 +165,21 @@ class CustomTitleBar(QWidget):
     def mouseReleaseEvent(self, event):
         self.bar_color = self.bar_color_default
         self.parent.setWindowOpacity(1)
-        self.parent.geo = QRect(
+        self.parent.geo_old = QRect(
             round(self.parent.geometry().x() / 10) * 10,
             round(self.parent.geometry().y() / 10) * 10,
             self.parent.geometry().width(),
             self.parent.geometry().height()
         )
 
-        self.parent.setGeometry(self.parent.geo)
+        self.parent.setGeometry(self.parent.geo_old)
         self.update()
 
         if self.parent.wid != -1:
             with open(POS_PATH, 'r') as f:
                 settings = json.load(f)
                 w = settings.get('windows')[self.parent.wid]
-                settings['pos'][w] = [self.parent.geo.x(), self.parent.geo.y(), self.parent.geo.width(),
+                settings['pos'][w] = [self.parent.geo_old.x(), self.parent.geo_old.y(), self.parent.geo_old.width(),
                                       self.parent.geometry().height()]
 
             with open(POS_PATH, 'w') as f:

@@ -10,7 +10,7 @@ CMDS_PATH = os.path.join(os.path.dirname(__file__), 'res/commands.json')
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(10, 120, 180, 1)):
+    def __init__(self, wid, geometry=(200, 10, 170, 1)):
         super().__init__('Command', wid, geometry)
 
         self.commands_groupbox = QGroupBox('Commands')
@@ -29,17 +29,19 @@ class MainWindow(CustomWindow):
     def open_add_command_dialog(self):
         self.dialog.show()
 
-    def add_command_to_layout(self, cmd_name, cmd, show_output):
+    def add_command_to_layout(self, cmd_name, cmd, show_output, init=False):
         cmd_layout = QHBoxLayout()
         cmd_btn = QPushButton(cmd_name)
         cmd_btn.clicked.connect(lambda _, c=cmd, s=show_output: self.run_cmd(c, s))
         cmd_layout.addWidget(cmd_btn)
 
         delete_btn = QPushButton('\u274C')
-        delete_btn.setFixedWidth(25)
+        delete_btn.setFixedWidth(20)
         delete_btn.clicked.connect(lambda _, c=cmd_name, l=cmd_layout: self.delete_command(c, l))
         cmd_layout.addWidget(delete_btn)
 
+        if not init:
+            self.setFixedHeight(self.height() + 29)
         self.commands_layout.addLayout(cmd_layout)
 
     def delete_command(self, cmd_name, layout):
@@ -51,7 +53,7 @@ class MainWindow(CustomWindow):
 
         self.commands_layout.removeItem(layout)
         self.save_commands()
-        self.setFixedHeight(self.height() - 30)
+        self.setFixedHeight(self.height() - 29)
 
     def run_cmd(self, cmd, show_output):
         try:
@@ -85,7 +87,7 @@ class MainWindow(CustomWindow):
             self.commands = []
 
         for cmd_name, cmd, show_output in self.commands:
-            self.add_command_to_layout(cmd_name, cmd, show_output)
+            self.add_command_to_layout(cmd_name, cmd, show_output, init=True)
 
 
 class CommandConfig(CustomWindow):

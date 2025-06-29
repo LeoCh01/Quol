@@ -1,6 +1,8 @@
 CURRENT
 - disconnect signals on reload
 - add toggle direction to info config
+- small bugfixes
+
 
 TODO
 - better clipboard

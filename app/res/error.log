@@ -1,0 +1,140 @@
+2025-06-29 17:02:27,878 - root - ERROR - Error loading clipboard :: invalid syntax (clipboard/window.py, line 79)
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 41, in load_windows
+    class_obj = App.load_plugin(w + '/window.py').MainWindow
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 141, in load_plugin
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1133, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1063, in source_to_code
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\clipboard/window.py", line 79
+    self.setFixedHeight(self.height() - 24)`
+                                           ^
+SyntaxError: invalid syntax
+2025-06-29 17:21:42,953 - root - ERROR - unbound method QWidget.geometry() needs an argument
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 171, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 55, in load_windows
+    pos_settings['pos'][w + str(i)] = class_obj.geometry()
+                                      ^^^^^^^^^^^^^^^^^^^^
+TypeError: unbound method QWidget.geometry() needs an argument
+2025-06-29 17:22:40,808 - root - ERROR - type object 'MainWindow' has no attribute 'geo_old'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 171, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 55, in load_windows
+    pos_settings['pos'][w + str(i)] = class_obj.geo_old
+                                      ^^^^^^^^^^^^^^^^^
+AttributeError: type object 'MainWindow' has no attribute 'geo_old'
+2025-06-29 17:23:15,410 - root - ERROR - unbound method QWidget.geometry() needs an argument
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 171, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 55, in load_windows
+    pos_settings['pos'][w + str(i)] = class_obj.geometry()
+                                      ^^^^^^^^^^^^^^^^^^^^
+TypeError: unbound method QWidget.geometry() needs an argument
+2025-06-29 17:24:48,692 - root - ERROR - Object of type QRect is not JSON serializable
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 172, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 61, in load_windows
+    json.dump(pos_settings, f, indent=2)
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type QRect is not JSON serializable
+2025-06-29 17:25:03,948 - root - ERROR - Expecting value: line 39 column 21 (char 431)
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 177, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 36, in load_windows
+    pos_settings = json.load(f)
+                   ^^^^^^^^^^^^
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 39 column 21 (char 431)
+2025-06-29 17:25:32,567 - root - ERROR - 'PySide6.QtWidgets.QWidget.setGeometry' called with wrong argument types:
+  PySide6.QtWidgets.QWidget.setGeometry(str, str, str, str)
+Supported signatures:
+  PySide6.QtWidgets.QWidget.setGeometry(PySide6.QtCore.QRect)
+  PySide6.QtWidgets.QWidget.setGeometry(int, int, int, int)
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 177, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 63, in load_windows
+    self.windows.append(class_obj(i, pos_settings['pos'][w + str(i)]))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\run_command/window.py", line 14, in __init__
+    super().__init__('Command', wid, geometry)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\custom_widgets.py", line 30, in __init__
+    self.setGeometry(*geometry)
+TypeError: 'PySide6.QtWidgets.QWidget.setGeometry' called with wrong argument types:
+  PySide6.QtWidgets.QWidget.setGeometry(str, str, str, str)
+Supported signatures:
+  PySide6.QtWidgets.QWidget.setGeometry(PySide6.QtCore.QRect)
+  PySide6.QtWidgets.QWidget.setGeometry(int, int, int, int)
+2025-06-29 17:26:17,471 - root - ERROR - 'PySide6.QtWidgets.QWidget.setGeometry' called with wrong argument types:
+  PySide6.QtWidgets.QWidget.setGeometry(str, str, str, str)
+Supported signatures:
+  PySide6.QtWidgets.QWidget.setGeometry(PySide6.QtCore.QRect)
+  PySide6.QtWidgets.QWidget.setGeometry(int, int, int, int)
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 172, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 31, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\main.py", line 58, in load_windows
+    self.windows.append(class_obj(i, pos_settings['pos'][w + str(i)]))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\run_command/window.py", line 14, in __init__
+    super().__init__('Command', wid, geometry)
+  File "C:\Users\leoch\Documents\- Python Code\windows-helper\app\windows\custom_widgets.py", line 30, in __init__
+    self.setGeometry(*geometry)
+TypeError: 'PySide6.QtWidgets.QWidget.setGeometry' called with wrong argument types:
+  PySide6.QtWidgets.QWidget.setGeometry(str, str, str, str)
+Supported signatures:
+  PySide6.QtWidgets.QWidget.setGeometry(PySide6.QtCore.QRect)
+  PySide6.QtWidgets.QWidget.setGeometry(int, int, int, int)
