@@ -137,3 +137,9 @@ QDialog {
     background-color: #444;
     color: white;
 }
+
+QTextEdit {
+    background-color: #3d3d3d;
+    color: white;
+    border: 1px solid #555;
+}
