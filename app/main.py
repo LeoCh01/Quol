@@ -92,7 +92,7 @@ class App(QObject):
 
     def setup_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(QIcon(IMG_PATH + 'icon.ico'), parent=self)
-        self.tray_icon.setToolTip('Windows Helper')
+        self.tray_icon.setToolTip('Quol')
         tray_menu = QMenu()
 
         hide_action = QAction('Hide', self)

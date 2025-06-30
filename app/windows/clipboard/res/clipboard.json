@@ -1,16 +1,11 @@
 {
   "copy": [
-    "setFixedHeight",
-    "BASE_PATH",
-    "QPushButton",
-    "button.mousePressEvent = lambda event: MainWindow.handle_click_event(event, fulltext, button)\n                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: MainWindow.handle_click_event() missing 1 required positional argument: 'button'",
-    "super",
-    "LGPL "
+    "QTimer"
   ],
   "sticky": [
-    "ssgsgr ",
     "",
-    "trghuk",
+    "",
+    "",
     "",
     "",
     "",

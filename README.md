@@ -1,8 +1,8 @@
-# PySide6 Helper Tool for Windows
+# PySide6 Quick Tools for Windows
 
 ## Overview
 
-This project is a desktop application built using **PySide6**, designed to serve as a versatile helper tool for Windows. The tool provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
+Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, designed to serve as a versatile helper tool for Windows. The tool provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
 
 ## Features
 
@@ -16,10 +16,17 @@ This project is a desktop application built using **PySide6**, designed to serve
 
 This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
 
-<img src="demo/wh-chat.gif" width="250">
-<img src="demo/wh-draw.gif" width="250">
-<img src="demo/wh-color.gif" width="250">
-<img src="demo/wh-cmd.gif" width="250">
+<img src="demo/snip.png" width="500">
+<table>
+  <tr>
+    <td><img src="demo/wh-chat.gif" width="250"></td>
+    <td><img src="demo/wh-draw.gif" width="250"></td>
+  </tr>
+  <tr>
+    <td><img src="demo/wh-color.gif" width="250"></td>
+    <td><img src="demo/wh-cmd.gif" width="250"></td>
+  </tr>
+</table>
 
 ## Installation
 
@@ -29,12 +36,12 @@ To quickly set up and run the application:
 
 1. **Download and Extract the ZIP file:**
 
-   - Download the latest `windows-helper.zip` file from the releases page.
+   - Download the latest `Quol.zip` file from the releases page.
    - Extract the contents to your desired location on your computer.
 
 2. **Run the Application:**
    - Navigate to the extracted folder.
-   - Double-click on `windows-helper.exe` to launch the application.
+   - Double-click on `Quol.exe` to launch the application.
 
 ### Option 2: Running Locally
 
@@ -43,7 +50,7 @@ To run the application locally or build it as a standalone executable, follow th
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/LeoCh01/windows-helper.git
+   git clone https://github.com/LeoCh01/quol.git
    ```
 
 2. **Set up the Python environment:**
@@ -71,15 +78,15 @@ To run the application locally or build it as a standalone executable, follow th
    - Once the environment is set up, you can run the app by executing:
 
    ```bash
-   python windows-helper.py
+   python app/main.py
    ```
 
 5. **Building the Executable (Optional):**
 
-   - you can also build the exe yourself by installing `pyinstaller` and using the `windows-helper.spec` file
+   - you can also build the exe yourself by installing `pyinstaller` and using the `quol.spec` file
 
    ```bash
-     pyinstaller windows-helper.spec
+     pyinstaller quol.spec
    ```
 
 ## Settings Config
@@ -121,12 +128,12 @@ To create a new window, you can add a folder to the `windows` directory and add 
 
    ```json
    {
-      "windows": [
-         "window1",
-         "window2",
-         "window3",
-         "example" // <-- Add your custom window here
-      ]
+     "windows": [
+       "window1",
+       "window2",
+       "window3",
+       "example" // <-- Add your custom window here
+     ]
    }
    ```
 

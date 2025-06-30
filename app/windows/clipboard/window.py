@@ -75,7 +75,7 @@ class MainWindow(CustomWindow):
         self.clip_layout.insertWidget(0, self.create_copy_btn(self.clipboard['copy'][-1]))
 
         with open(BASE_PATH + '/res/clipboard.json', 'w') as f:
-            json.dump(self.clipboard['copy'], f, indent=2)
+            json.dump(self.clipboard, f, indent=2)
 
     def on_clear(self):
         self.clipboard['copy'] = []

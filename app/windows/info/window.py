@@ -51,7 +51,7 @@ class MainWindow(CustomWindow):
 
     @staticmethod
     def open_url():
-        QDesktopServices.openUrl(QUrl('https://github.com/LeoCh01/windows-helper'))
+        QDesktopServices.openUrl(QUrl('https://github.com/LeoCh01/quol'))
 
     @staticmethod
     def get_app_path():

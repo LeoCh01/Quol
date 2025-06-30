@@ -3,11 +3,11 @@ import os
 import random
 
 from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt, QRect, QByteArray, Signal
-from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
+from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush, QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog, QCheckBox, \
     QLineEdit, QGroupBox
 
-from res.paths import SETTINGS_PATH, POS_PATH
+from res.paths import POS_PATH, IMG_PATH
 
 
 class CustomWindow(QWidget):
@@ -138,7 +138,8 @@ class CustomTitleBar(QWidget):
 
         if parent.config_path:
             self.config_window = ConfigWindow(parent, title + ' Config')
-            self.config_btn = QPushButton('⚙')
+            self.config_btn = QPushButton(self)
+            self.config_btn.setIcon(QIcon(IMG_PATH + 'config.png'))
             self.config_btn.clicked.connect(self.config_window.show)
             self.l1.addWidget(self.config_btn, stretch=1)
         if add_close_btn:
