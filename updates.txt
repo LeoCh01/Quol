@@ -1,11 +1,14 @@
 CURRENT
-- better markdown, add code blocks, add quick commands
-- fix text encoding (for alphanumeric characters)
-- clean up some redundant code
-- add hide button to tray (close app but keep in tray)
-- try to reduce app size
+- rename (formerly windows-helper)
+- better clipboard + sticky notes
+- disconnect signals on reload
+- more configs in info
+- fix styling in cmd runner
+- other small bugfixes overall
+
 
 TODO
+- add eraser to draw tool
 - stream api calls
 - tooltips
 - fix QNetworkManager for some devices

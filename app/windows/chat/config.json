@@ -13,7 +13,7 @@
   "config": {
     "image": true,
     "history": true,
-    "max_history": 1
+    "max_history": 5
   },
   "commands": {
     "/t": "translate any {0} text on screen to {1:english}",

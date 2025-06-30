@@ -3,15 +3,16 @@ import os
 import random
 
 from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt, QRect, QByteArray, Signal
-from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush
+from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush, QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog, QCheckBox, \
     QLineEdit, QGroupBox
 
-from res.paths import SETTINGS_PATH, POS_PATH
+from res.paths import POS_PATH, IMG_PATH
 
 
 class CustomWindow(QWidget):
     config_signal = Signal()
+    toggle_direction = 'random'
 
     def __init__(self, title='Custom Window', wid=-1, geometry=(0, 0, 0, 0), add_close_btn=False, path=None):
         """
@@ -52,10 +53,6 @@ class CustomWindow(QWidget):
         self.layout = QVBoxLayout(self.w1)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-            self.toggle_direction = settings.get('toggle_direction', 'random')
-
     def update_config(self):
         if self.config_path:
             with open(self.config_path, 'r') as f:
@@ -81,19 +78,17 @@ class CustomWindow(QWidget):
 
     def generatePosition(self):
         screen_geometry = self.screen().geometry()
-        x = y = 0
 
-        if self.toggle_direction == 'up':
+        if CustomWindow.toggle_direction == 'up':
             x = (screen_geometry.width() - self.geo_old.width()) // 2
             y = -self.geometry().height()
-            print(y)
-        elif self.toggle_direction == 'down':
+        elif CustomWindow.toggle_direction == 'down':
             x = (screen_geometry.width() - self.geo_old.width()) // 2
             y = screen_geometry.height()
-        elif self.toggle_direction == 'left':
+        elif CustomWindow.toggle_direction == 'left':
             x = -self.geo_old.width()
             y = (screen_geometry.height() - self.geometry().height()) // 2
-        elif self.toggle_direction == 'right':
+        elif CustomWindow.toggle_direction == 'right':
             x = screen_geometry.width()
             y = (screen_geometry.height() - self.geometry().height()) // 2
         else:
@@ -127,23 +122,6 @@ class CustomWindow(QWidget):
         self.animation.start()
 
 
-class CustomDialog(QDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setObjectName('content')
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.setMask(self.generateRoundedMask())
-
-    def generateRoundedMask(self):
-        rect = self.rect()
-        path = QPainterPath()
-        radius = 6
-        path.addRoundedRect(rect, radius, radius)
-        return QRegion(path.toFillPolygon().toPolygon())
-
-
 class CustomTitleBar(QWidget):
     def __init__(self, title='Custom Title Bar', parent: CustomWindow = None, add_close_btn=False):
         super().__init__(parent)
@@ -160,7 +138,8 @@ class CustomTitleBar(QWidget):
 
         if parent.config_path:
             self.config_window = ConfigWindow(parent, title + ' Config')
-            self.config_btn = QPushButton('⚙')
+            self.config_btn = QPushButton(self)
+            self.config_btn.setIcon(QIcon(IMG_PATH + 'config.png'))
             self.config_btn.clicked.connect(self.config_window.show)
             self.l1.addWidget(self.config_btn, stretch=1)
         if add_close_btn:
@@ -187,21 +166,21 @@ class CustomTitleBar(QWidget):
     def mouseReleaseEvent(self, event):
         self.bar_color = self.bar_color_default
         self.parent.setWindowOpacity(1)
-        self.parent.geo = QRect(
+        self.parent.geo_old = QRect(
             round(self.parent.geometry().x() / 10) * 10,
             round(self.parent.geometry().y() / 10) * 10,
             self.parent.geometry().width(),
             self.parent.geometry().height()
         )
 
-        self.parent.setGeometry(self.parent.geo)
+        self.parent.setGeometry(self.parent.geo_old)
         self.update()
 
         if self.parent.wid != -1:
             with open(POS_PATH, 'r') as f:
                 settings = json.load(f)
                 w = settings.get('windows')[self.parent.wid]
-                settings['pos'][w] = [self.parent.geo.x(), self.parent.geo.y(), self.parent.geo.width(),
+                settings['pos'][w] = [self.parent.geo_old.x(), self.parent.geo_old.y(), self.parent.geo_old.width(),
                                       self.parent.geometry().height()]
 
             with open(POS_PATH, 'w') as f:

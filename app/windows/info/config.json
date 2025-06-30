@@ -1,4 +1,5 @@
 {
   "startup": false,
-  "toggle_key": "`"
+  "toggle_key": "`",
+  "toggle_direction": "up"
 }

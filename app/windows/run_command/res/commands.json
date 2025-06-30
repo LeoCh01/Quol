@@ -1,1 +1,12 @@
-[["google", "start https://www.google.com", false], ["ip", "ipconfig", true]]
+[
+  [
+    "ip",
+    "ipconfig",
+    true
+  ],
+  [
+    "Leo",
+    "start https://leocheng.ca",
+    false
+  ]
+]

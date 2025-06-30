@@ -8,7 +8,7 @@ from windows.custom_widgets import CustomWindow
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(200, 10, 180, 1)):
+    def __init__(self, wid, geometry=(380, 10, 180, 1)):
         super().__init__('Color', wid, geometry)
 
         self.grid_layout = QGridLayout()

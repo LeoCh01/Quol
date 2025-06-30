@@ -1,18 +1,10 @@
 {
-  "name": "Windows Helper",
-  "version": "2.4.0",
+  "name": "Quol",
+  "version": "2.5.0",
   "description": "versatile tool for windows.",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "random",
-  "is_default_pos": true,
-  "windows": [
-    "info",
-    "run_command",
-    "color_picker",
-    "chance",
-    "clipboard",
-    "chat",
-    "draw"
-  ]
+  "toggle_direction": "up",
+  "is_default_pos": false,
+  "windows": ["info", "run_command", "color_picker", "chance", "clipboard", "chat", "draw"]
 }
