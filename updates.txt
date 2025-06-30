@@ -1,11 +1,13 @@
 CURRENT
+- better clipboard + sticky notes
 - disconnect signals on reload
-- add toggle direction to info config
-- small bugfixes
+- more configs in info
+- fix styling in cmd runner
+- other small bugfixes overall
 
 
 TODO
-- better clipboard
+- add eraser to draw tool
 - stream api calls
 - tooltips
 - fix QNetworkManager for some devices

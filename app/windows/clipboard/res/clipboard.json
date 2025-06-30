@@ -1,12 +1,22 @@
-[
-  "self.layout.addWidget(self.clip_groupbox)",
-  "singleShot(100, self.update_clipboard)",
-  "with open(BASE_PATH + '/res/clipboard.json', 'w') as f:",
-  "clipboard",
-  "button",
-  "button.clicked.connect(lambda: QApplication.clipboard().setText(fulltext))",
-  "setFixedHeight",
-  "BASE_PATH",
-  "QPushButton",
-  "button.mousePressEvent = lambda event: MainWindow.handle_click_event(event, fulltext, button)\n                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: MainWindow.handle_click_event() missing 1 required positional argument: 'button'"
-]
+{
+  "copy": [
+    "setFixedHeight",
+    "BASE_PATH",
+    "QPushButton",
+    "button.mousePressEvent = lambda event: MainWindow.handle_click_event(event, fulltext, button)\n                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: MainWindow.handle_click_event() missing 1 required positional argument: 'button'",
+    "super",
+    "LGPL "
+  ],
+  "sticky": [
+    "ssgsgr ",
+    "",
+    "trghuk",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ]
+}

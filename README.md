@@ -10,17 +10,16 @@ This project is a desktop application built using **PySide6**, designed to serve
 - **Draw:** Draw and annotate on your screen.
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **CMD Runner:** Save and execute custom command line instructions.
-- **Clipboard:** Store copy history.
+- **Clipboard:** Store copy history and sticky notes.
 - **Chance:** Flip a coin, roll a dice.
 - **Customize:** Create and Add custom windows without rebuilding.
 
 This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
 
-<img src="demo/wh-draw.gif" width="250">
 <img src="demo/wh-chat.gif" width="250">
+<img src="demo/wh-draw.gif" width="250">
 <img src="demo/wh-color.gif" width="250">
 <img src="demo/wh-cmd.gif" width="250">
-<img src="demo/wh-chance.gif" width="250">
 
 ## Installation
 
