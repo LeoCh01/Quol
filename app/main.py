@@ -148,7 +148,7 @@ class App(QObject):
 
 
 def initialize_app():
-    print('Starting Windows Helper')
+    print('Starting Quol...')
     app = QApplication([])
 
     # Set working directory

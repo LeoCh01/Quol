@@ -86,7 +86,7 @@ To run the application locally or build it as a standalone executable, follow th
    - you can also build the exe yourself by installing `pyinstaller` and using the `quol.spec` file
 
    ```bash
-     pyinstaller quol.spec
+     pyinstaller Quol.spec
    ```
 
 ## Settings Config
