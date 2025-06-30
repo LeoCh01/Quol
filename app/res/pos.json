@@ -1,12 +1,55 @@
 {
   "pos": {
-    "info0": [10, 10, 180, 1],
-    "run_command1": [200, 10, 170],
-    "color_picker2": [380, 10, 180, 155],
-    "chance3": [570, 10, 150, 160],
-    "clipboard4": [10, 120, 180, 1],
-    "chat5": [730, 10, 190, 129],
-    "draw6": [930, 10, 130, 1]
+    "info0": [
+      10,
+      10,
+      180,
+      1
+    ],
+    "run_command1": [
+      200,
+      10,
+      170,
+      1
+    ],
+    "color_picker2": [
+      380,
+      10,
+      180,
+      1
+    ],
+    "chance3": [
+      570,
+      10,
+      150,
+      1
+    ],
+    "clipboard4": [
+      10,
+      120,
+      180,
+      1
+    ],
+    "chat5": [
+      730,
+      10,
+      190,
+      1
+    ],
+    "draw6": [
+      930,
+      10,
+      130,
+      1
+    ]
   },
-  "windows": ["info0", "run_command1", "color_picker2", "chance3", "clipboard4", "chat5", "draw6"]
+  "windows": [
+    "info0",
+    "run_command1",
+    "color_picker2",
+    "chance3",
+    "clipboard4",
+    "chat5",
+    "draw6"
+  ]
 }

@@ -1,4 +1,5 @@
 CURRENT
+- rename (formerly windows-helper)
 - better clipboard + sticky notes
 - disconnect signals on reload
 - more configs in info
