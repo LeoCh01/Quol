@@ -14,8 +14,9 @@ BASE_PATH = os.path.dirname(__file__)
 class MainWindow(CustomWindow):
     copy_signal = Signal()
 
-    def __init__(self, wid, geometry=(10, 120, 180, 1)):
+    def __init__(self, parent, wid, geometry=(10, 120, 180, 1)):
         super().__init__('Clipboard', wid, geometry, path=BASE_PATH)
+        self.parent = parent
         self.copy_signal.connect(self.on_copy)
 
         self.copy_params = QHBoxLayout()
@@ -96,8 +97,8 @@ class MainWindow(CustomWindow):
         sticky_window = StickyWindow(self, id, text, geometry)
         self.sticky_notes.append(sticky_window)
 
-        self.toggle_signal.connect(sticky_window.toggle_windows)
-        sticky_window.toggle_windows_2 = self.toggle_windows_2
+        self.parent.toggle_signal.connect(sticky_window.toggle_windows)
+        sticky_window.toggle_windows_2 = self.parent.toggle_windows_2
 
         sticky_window.show()
         sticky_window.raise_()

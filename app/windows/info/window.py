@@ -4,7 +4,7 @@ import sys
 
 from PySide6.QtCore import QSettings, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
+from PySide6.QtWidgets import QPushButton, QGridLayout, QApplication
 
 from res.paths import SETTINGS_PATH
 from windows.custom_widgets import CustomWindow
@@ -14,8 +14,9 @@ BASE_PATH = os.path.dirname(__file__)
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(10, 10, 180, 1)):
+    def __init__(self, parent, wid, geometry=(10, 10, 180, 1)):
         super().__init__('Info', wid, geometry, path=BASE_PATH)
+        self.parent = parent
         self.settings_to_config()
         CustomWindow.toggle_direction = str(self.config['toggle_direction'])
 
@@ -26,11 +27,11 @@ class MainWindow(CustomWindow):
         self.ver.clicked.connect(self.open_url)
 
         self.reload = QPushButton('Reload')
-        self.reload.clicked.connect(self.reload_app)
+        self.reload.clicked.connect(self.parent.restart)
 
         self.q = QPushButton('Quit')
         self.q.setStyleSheet('background-color: #c44; color: white;')
-        self.q.clicked.connect(lambda _: sys.exit())
+        self.q.clicked.connect(self.parent.exit_app)
 
         self.grid_layout = QGridLayout()
         self.grid_layout.addWidget(self.ver, 0, 0, 1, 2)
@@ -44,7 +45,7 @@ class MainWindow(CustomWindow):
         self.settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
 
     def on_update_config(self):
-        self.set_toggle_key(str(self.config['toggle_key']))
+        self.parent.set_toggle_key(str(self.config['toggle_key']))
         CustomWindow.toggle_direction = str(self.config['toggle_direction'])
         self.toggle_startup()
         self.config_to_settings()
@@ -59,7 +60,7 @@ class MainWindow(CustomWindow):
 
     @staticmethod
     def get_app_name():
-        return 'WindowsHelper'
+        return 'Quol'
 
     def config_to_settings(self):
         with open(SETTINGS_PATH, 'r') as f:

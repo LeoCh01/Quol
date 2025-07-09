@@ -9,10 +9,10 @@ from windows.draw.color_wheel import ColorWheel
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(930, 10, 130, 1)):
+    def __init__(self, parent, wid, geometry=(930, 10, 130, 1)):
         super().__init__('Draw', wid, geometry)
 
-        self.drawing_widget = DrawingWidget(self.toggle_windows_2)
+        self.drawing_widget = DrawingWidget(parent.toggle_windows_2)
 
         self.color_wheel = ColorWheel()
         self.color_wheel.color_changed.connect(self.drawing_widget.set_pen_color)

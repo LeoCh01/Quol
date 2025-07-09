@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import json
 import keyboard
@@ -8,6 +9,7 @@ import sys
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
+from qasync import QEventLoop
 
 from res.paths import SETTINGS_PATH, POS_PATH, RES_PATH, STYLES_PATH, IMG_PATH
 
@@ -44,18 +46,13 @@ class App(QObject):
                 logging.error(f'Error loading {w} :: {e}', exc_info=True)
                 continue
 
-            class_obj.set_toggle_key = self.set_toggle_key
-            class_obj.toggle_windows_2 = self.toggle_windows_2
-            class_obj.toggle_signal = self.toggle
-            class_obj.reload_app = self.restart
-
             pos_settings['windows'].append(w + str(i))
             if self.is_reset or not pos_settings['pos'].get(w + str(i)):
-                o = class_obj(i)
+                o = class_obj(self, i)
                 self.windows.append(o)
                 pos_settings['pos'][w + str(i)] = [o.x(), o.y(), o.width(), o.height()]
             else:
-                self.windows.append(class_obj(i, pos_settings['pos'][w + str(i)]))
+                self.windows.append(class_obj(self, i, pos_settings['pos'][w + str(i)]))
 
         with open(POS_PATH, 'w') as f:
             json.dump(pos_settings, f, indent=2)
@@ -104,11 +101,18 @@ class App(QObject):
         tray_menu.addAction(reload_action)
 
         quit_action = QAction('Quit', self)
-        quit_action.triggered.connect(sys.exit)
+        quit_action.triggered.connect(self.exit_app)
         tray_menu.addAction(quit_action)
 
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
+
+    def exit_app(self):
+        for w in self.windows:
+            self.toggle.disconnect(w.toggle_windows)
+            w.close()
+            del w
+        QApplication.quit()
 
     def hide(self):
         for w in App.windows:
@@ -169,8 +173,13 @@ def initialize_app():
             stylesheet = f.read()
         app.setStyleSheet(stylesheet)
 
+        loop = QEventLoop(app)
+        asyncio.set_event_loop(loop)
         application = App()
-        app.exec()
+
+        with loop:
+            loop.run_forever()
+
     except Exception as e:
         print('error :: ', e)
         logging.error(e, exc_info=True)

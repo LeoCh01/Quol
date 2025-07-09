@@ -3,6 +3,8 @@ keyboard
 ollama
 markdown
 pygments
+httpx
+qasync
 
 # Pillow
 # pyinstaller

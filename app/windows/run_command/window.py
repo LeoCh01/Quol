@@ -10,7 +10,7 @@ CMDS_PATH = os.path.join(os.path.dirname(__file__), 'res/commands.json')
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(200, 10, 170, 1)):
+    def __init__(self, parent, wid, geometry=(200, 10, 170, 1)):
         super().__init__('Command', wid, geometry)
 
         self.commands_groupbox = QGroupBox('Commands')
