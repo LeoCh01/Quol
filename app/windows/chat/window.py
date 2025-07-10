@@ -1,5 +1,6 @@
 import base64
 import datetime
+
 import httpx
 import os
 import re
@@ -9,6 +10,7 @@ from pygments.formatters.html import HtmlFormatter
 from PySide6.QtCore import QTimer, QRect
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
+from pynput.mouse import Controller, Button
 from qasync import asyncSlot
 
 from windows.custom_widgets import CustomWindow
@@ -26,12 +28,13 @@ class MainWindow(CustomWindow):
         self.parent = parent
         self.ollama_client = None
 
+        self.parent.toggle.connect(self.focus)
+
         self.chat_window = ChatWindow()
         self.parent.toggle.connect(self.chat_window.toggle_windows)
         self.chat_window.toggle_windows_2 = self.parent.toggle_windows_2
 
         self.ai = AI(self.chat_window, self.config)
-
         self.ai_list = QComboBox()
         self.ai_list.addItems(['gemini', 'ollama', 'groq'])
 
@@ -54,6 +57,19 @@ class MainWindow(CustomWindow):
         self.layout.addLayout(self.top_layout)
         self.layout.addLayout(self.prompt_layout)
         self.layout.addWidget(self.btn)
+
+    def focus(self):
+        if not self.parent.is_hidden:
+            QTimer.singleShot(300, self._focus_action)
+
+    def _focus_action(self):
+        mouse = Controller()
+        cur = mouse.position
+        sf = QGuiApplication.primaryScreen().devicePixelRatio()
+
+        mouse.position = ((self.geo_old.x() + 20) * sf, (self.geo_old.y() + 80) * sf)
+        mouse.click(Button.left, 1)
+        mouse.position = [cur[0], cur[1]]
 
     def send_prompt(self):
         self.ai.is_img = self.config['config']['image']
@@ -140,20 +156,20 @@ class AI:
 
         def update_loading_text():
             self.loading_counter += 0.1
-            if not self.text_content:  # bugfix
-                self.chat_window.set_text(f'Loading... ({self.loading_counter:.1f}s)')
+            self.chat_window.set_text(f'Loading... ({self.loading_counter:.1f}s)')
 
         try:
             timer = QTimer()
             timer.timeout.connect(update_loading_text)
             timer.start(100)
+            print(url)
 
             async with httpx.AsyncClient() as client:
                 response = await client.post(url, headers=headers, json=data)
 
             timer.stop()
-
             res = response.json()
+
             if 'error' in res:
                 raise Exception(f'Error: {res["error"]["message"]}')
 
@@ -334,3 +350,5 @@ class ChatWindow(CustomWindow):
         """
 
         return html_text
+
+
