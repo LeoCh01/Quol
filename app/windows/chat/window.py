@@ -59,7 +59,7 @@ class MainWindow(CustomWindow):
         self.layout.addWidget(self.btn)
 
     def focus(self):
-        if not self.parent.is_hidden:
+        if self.config['config']['auto_focus'] and not self.parent.is_hidden:
             QTimer.singleShot(300, self._focus_action)
 
     def _focus_action(self):
