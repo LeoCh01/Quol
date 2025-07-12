@@ -1,14 +1,8 @@
 CURRENT
-- rename (formerly windows-helper)
-- better clipboard + sticky notes
-- disconnect signals on reload
-- more configs in info
-- fix styling in cmd runner
-- other small bugfixes overall
-
+- fix QNetworkManager for some devices + show chat response counter
 
 TODO
 - add eraser to draw tool
 - stream api calls
 - tooltips
-- fix QNetworkManager for some devices
+

@@ -10,7 +10,6 @@ from pygments.formatters.html import HtmlFormatter
 from PySide6.QtCore import QTimer, QRect
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
-from pynput.mouse import Controller, Button
 from qasync import asyncSlot
 
 from windows.custom_widgets import CustomWindow
@@ -59,17 +58,9 @@ class MainWindow(CustomWindow):
         self.layout.addWidget(self.btn)
 
     def focus(self):
+        self.activateWindow()
         if self.config['config']['auto_focus'] and not self.parent.is_hidden:
-            QTimer.singleShot(300, self._focus_action)
-
-    def _focus_action(self):
-        mouse = Controller()
-        cur = mouse.position
-        sf = QGuiApplication.primaryScreen().devicePixelRatio()
-
-        mouse.position = ((self.geo_old.x() + 20) * sf, (self.geo_old.y() + 80) * sf)
-        mouse.click(Button.left, 1)
-        mouse.position = [cur[0], cur[1]]
+            self.prompt.setFocus()
 
     def send_prompt(self):
         self.ai.is_img = self.config['config']['image']

@@ -1,12 +1,5 @@
 {
-  "copy": [
-    "import httpx\n",
-    "self.geo_old",
-    "class Solution {\n    public int maxFreeTime(int eventTime, int[] startTime, int[] endTime) {\n        int[][] times = new int[startTime.length * 2][2];\n        for (int i = 0; i < startTime.length; i++) {\n            times[i * 2] = new int[] {startTime[i], 1};\n            times[i * 2 + 1] = new int[] {endTime[i], -1};\n        }\n\n        Arrays.sort(times, (a, b) -> a[0] - b[0]);\n\n        int maxFree = 0;\n        int currMeetings = 0;\n        int lastTime = 0;\n\n        for (int[] time : times) {\n            maxFree = Math.max(maxFree, time[0] - lastTime - (currMeetings > 0 ? 1 : 0));\n            currMeetings += time[1];\n            lastTime = time[0];\n        }\n\n        return Math.max(maxFree, eventTime - lastTime);\n    }\n}",
-    "class Solution {\n public int maxFreeTime(int eventTime, int[] startTime, int[] endTime) {\n int[][] meetings = new int[startTime.length][2];\n for (int i = 0; i < startTime.length; i++) {\n meetings[i] = new int[] {startTime[i], endTime[i]};\n }\n Arrays.sort(meetings, (a, b) -> a[0] - b[0]);\n\n int maxFree = 0;\n int prevEnd = 0;\n\n // Try to reschedule each meeting\n for (int i = 0; i < meetings.length; i++) {\n int free = meetings[i][0] - prevEnd;\n maxFree = Math.max(maxFree, free);\n prevEnd = Math.max(prevEnd, meetings[i][1]);\n }\n\n // Calculate free time at the end of the event\n maxFree = Math.max(maxFree, eventTime - prevEnd);\n\n // Try rescheduling each meeting to the end\n for (int i = 0; i < meetings.length; i++) {\n int tempFree = 0;\n int lastEnd = 0;\n for (int j = 0; j < meetings.length; j++) {\n if (i == j) continue;\n if (meetings[j][0] >= lastEnd) {\n tempFree += meetings[j][0] - lastEnd;\n lastEnd = meetings[j][1];\n } else {\n lastEnd = Math.max(lastEnd, meetings[j][1]);\n }\n }\n tempFree += eventTime - lastEnd;\n maxFree = Math.max(maxFree, tempFree);\n }\n\n return maxFree;\n }\n}",
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyAHhsOMrpky6icx2UuzHyopdMAUdMMoVAI",
-    "AIzaSyAHhsOMrpky6icx2UuzHyopdMAUdMMoVAI"
-  ],
+  "copy": [],
   "sticky": [
     "",
     "",
