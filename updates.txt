@@ -1,8 +1,9 @@
 CURRENT
-- fix QNetworkManager for some devices + show chat response counter
+- fix QNetworkManager for some devices
+- show chat response counter
+- add eraser and stroke width to draw tool
+- optimize draw tool undo stack
 
 TODO
-- add eraser to draw tool
 - stream api calls
 - tooltips
-

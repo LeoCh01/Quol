@@ -155,7 +155,7 @@ class AI:
             timer.start(100)
             print(url)
 
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
                 response = await client.post(url, headers=headers, json=data)
 
             timer.stop()
@@ -230,7 +230,7 @@ class AI:
 
                 if 'image' in h:
                     data['contents'][-1]['parts'].append(
-                        {'inline_data': {'mime_type': 'image/jpeg', 'data': h['image']}}
+                        {'inline_data': {'mime_type': 'image/png', 'data': h['image']}}
                     )
 
         cur = {'role': 'user', 'parts': [{'text': prompt}]}
@@ -238,7 +238,7 @@ class AI:
         if self.is_img:
             with open(BASE_PATH + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
-                cur['parts'].append({'inline_data': {'mime_type': 'image/jpeg', 'data': img_data}})
+                cur['parts'].append({'inline_data': {'mime_type': 'image/png', 'data': img_data}})
 
         data['contents'].append(cur)
         self.add_history('gemini', prompt, img_data, True)
@@ -258,7 +258,7 @@ class AI:
 
                     if 'image' in h:
                         data['messages'][-1]['content'].append(
-                            {'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{h['image']}'}}
+                            {'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{h['image']}'}}
                         )
                 else:
                     data['messages'].append({'role': 'assistant', 'content': h['text']})
@@ -268,7 +268,7 @@ class AI:
         if self.is_img:
             with open(BASE_PATH + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
-                cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{img_data}'}})
+                cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{img_data}'}})
 
         data['messages'].append(cur)
         self.add_history('groq', prompt, img_data, True)
