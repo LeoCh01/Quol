@@ -155,7 +155,7 @@ class DrawingWidget(QWidget):
                 dx = p.x() - pos.x()
                 dy = p.y() - pos.y()
                 distance = (dx * dx + dy * dy) ** 0.5
-                if distance <= width / 2 + self.pen_width * self.eraser_multiplier:
+                if distance <= width / 2 + (3 + self.pen_width ** 0.8) * self.eraser_multiplier:
                     self.save_undo_state()
                     del self.strokes[i]
                     self.update()
@@ -199,7 +199,7 @@ class DrawingWidget(QWidget):
         self.update()
 
     def draw_eraser_indicator(self, painter: QPainter):
-        eraser_size = self.pen_width * self.eraser_multiplier
+        eraser_size = (3 + self.pen_width ** 0.8) * self.eraser_multiplier
         pen = QPen(QColor(255, 255, 255), 1, Qt.PenStyle.SolidLine)
         painter.setPen(pen)
         cursor_pos = self.mapFromGlobal(QCursor.pos())

@@ -11,7 +11,7 @@
     "apikey": ""
   },
   "config": {
-    "auto_focus": false,
+    "auto_focus": true,
     "image": true,
     "history": true,
     "max_history": 5
