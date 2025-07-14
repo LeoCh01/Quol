@@ -102,7 +102,7 @@ class MainWindow(CustomWindow):
         sticky_window = StickyWindow(self, id, text, geometry)
         self.sticky_notes.append(sticky_window)
 
-        self.app.toggle_signal.connect(sticky_window.toggle_windows)
+        self.app.toggle.connect(sticky_window.toggle_windows)
         sticky_window.toggle_windows_2 = self.app.toggle_windows_2
 
         sticky_window.show()
@@ -174,7 +174,7 @@ class StickyWindow(CustomWindow):
 
     def closeEvent(self, event):
         self.inactivity_timer.stop()
-        self.app.toggle_signal.disconnect(self.toggle_windows)
+        self.app.toggle.disconnect(self.toggle_windows)
         self.text_edit.setText('')
         self.save_note()
         super().closeEvent(event)

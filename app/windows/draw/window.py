@@ -71,7 +71,7 @@ class DrawingWidget(QWidget):
         self.pen_color = QColor('red')
         self.pen_width = 2
 
-        self.undo_stack = collections.deque(maxlen=30)
+        self.undo_stack: [tuple[LineStroke, str]] = collections.deque(maxlen=30)
 
         self.undo_sc = QShortcut(QKeySequence('Ctrl+Z'), self)
         self.undo_sc.activated.connect(self.undo)
@@ -81,48 +81,47 @@ class DrawingWidget(QWidget):
         self.screenshot = QPixmap()
         self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
 
-        self.strokes = []  # [(list of QPoint, QColor, width)]
-        self.current_stroke = []
-
+        self.strokes: list[LineStroke] = []
+        self.current_stroke = None
         self.eraser_mode = False
         self.eraser_multiplier = 3
-
         self.is_ctrl_pressed = False
 
     def mousePressEvent(self, event: QMouseEvent):
         point = event.position().toPoint()
 
-        if event.button() == Qt.MouseButton.RightButton:
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.strokes.append(LineStroke(self.pen_color, self.pen_width))
+            self.strokes[-1].add_point(point)
+            self.current_stroke = self.strokes[-1]
+            self.undo_stack.append((self.current_stroke, 'add'))
+            self.update()
+
+        elif event.buttons() == Qt.MouseButton.RightButton:
             self.eraser_mode = True
             self.erase_stroke_at(point)
             self.setCursor(QCursor(Qt.CursorShape.BlankCursor))
             self.update()
-        elif event.button() == Qt.MouseButton.LeftButton:
-            self.save_undo_state()
-            self.drawing = True
-            self.last_point = point
-            self.current_stroke = [point]
 
     def mouseMoveEvent(self, event: QMouseEvent):
         point = event.position().toPoint()
 
-        if self.drawing and (event.buttons() & Qt.MouseButton.LeftButton):
-            self.current_stroke.append(point)
-            self.last_point = point
+        if event.buttons() & Qt.MouseButton.LeftButton and self.current_stroke:
+            if self.is_ctrl_pressed:
+                self.current_stroke.type = 'snap'
+            else:
+                self.current_stroke.type = 'free'
+            self.current_stroke.add_point(point)
             self.update()
+
         elif event.buttons() & Qt.MouseButton.RightButton:
             self.erase_stroke_at(point)
             self.update()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        if event.button() == Qt.MouseButton.LeftButton and self.drawing:
-            self.drawing = False
-            if len(self.current_stroke) > 1:
-                self.strokes.append((list(self.current_stroke), self.pen_color, self.pen_width))
-            self.current_stroke = []
-            self.update()
-        elif event.button() == Qt.MouseButton.RightButton:
+        if event.button() == Qt.MouseButton.RightButton:
             self.eraser_mode = False
+            self.current_stroke = None
             self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
             self.update()
 
@@ -130,17 +129,15 @@ class DrawingWidget(QWidget):
         painter = QPainter(self)
         painter.drawPixmap(self.rect(), self.screenshot)
 
-        for points, color, width in self.strokes:
-            self.draw_path(painter, points, color, width)
-
-        if len(self.current_stroke) > 1:
-            self.draw_path(painter, self.current_stroke, self.pen_color, self.pen_width)
+        for stroke in self.strokes:
+            stroke.draw(painter)
 
         if self.eraser_mode:
             self.draw_eraser_indicator(painter)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Control:
+            print('Control key pressed')
             self.is_ctrl_pressed = True
 
     def keyReleaseEvent(self, event):
@@ -160,32 +157,31 @@ class DrawingWidget(QWidget):
 
     def erase_stroke_at(self, pos: QPoint):
         for i in reversed(range(len(self.strokes))):
-            points, _, width = self.strokes[i]
-            for p in points:
+            stroke = self.strokes[i]
+            for p in stroke.points:
+                t = stroke.width / 2 + (3 + self.pen_width ** 0.8) * self.eraser_multiplier
                 dx = p.x() - pos.x()
                 dy = p.y() - pos.y()
                 distance = (dx * dx + dy * dy) ** 0.5
-                if distance <= width / 2 + (3 + self.pen_width ** 0.8) * self.eraser_multiplier:
-                    self.save_undo_state()
-                    del self.strokes[i]
-                    self.update()
-                    return
+                if distance <= t:
+                    self.undo_stack.append((self.strokes.pop(i), 'remove'))
+        self.update()
 
     def set_pen_color(self, color: QColor):
         self.pen_color = color
         self.update()
 
     def clear_canvas(self):
-        self.undo_stack.clear()
         self.strokes.clear()
         self.update()
 
-    def save_undo_state(self):
-        self.undo_stack.append([(list(pts), QColor(col), w) for pts, col, w in self.strokes])
-
     def undo(self):
         if self.undo_stack:
-            self.strokes = self.undo_stack.pop()
+            stroke, action = self.undo_stack.pop()
+            if action == 'add':
+                self.strokes.remove(stroke)
+            elif action == 'remove':
+                self.strokes.append(stroke)
             self.update()
 
     def start_drawing(self):
@@ -197,7 +193,6 @@ class DrawingWidget(QWidget):
         self.screenshot = screen.grabWindow(0, g2.x(), g2.y(), g2.width(), g2.height())
         self.toggle_windows_2(False)
 
-        self.current_stroke.clear()
         self.update()
         self.show()
 
@@ -214,3 +209,37 @@ class DrawingWidget(QWidget):
         painter.setPen(pen)
         cursor_pos = self.mapFromGlobal(QCursor.pos())
         painter.drawEllipse(cursor_pos, eraser_size, eraser_size)
+
+
+class LineStroke:
+    def __init__(self, color, width):
+        self.points = []
+        self.color = color
+        self.width = width
+        self.type = 'point'
+
+    def add_point(self, point):
+        while self.type == 'snap' and len(self.points) >= 2:
+            self.points.pop()
+        self.points.append(point)
+
+    def draw(self, painter):
+        if not self.points:
+            return
+
+        if len(self.points) == 1:
+            painter.setBrush(self.color)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(self.points[0], self.width / 2, self.width / 2)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            return
+
+        path = QPainterPath()
+        pen = QPen(self.color, self.width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
+        painter.setPen(pen)
+        path.moveTo(self.points[0])
+
+        for pt in self.points[1:]:
+            path.lineTo(pt)
+
+        painter.drawPath(path)
