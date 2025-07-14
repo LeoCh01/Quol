@@ -3,6 +3,7 @@ CURRENT
 - show chat response counter
 - add eraser and stroke width to draw tool
 - optimize draw tool undo stack
+- paintEvent bugfixes
 
 TODO
 - stream api calls

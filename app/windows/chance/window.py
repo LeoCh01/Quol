@@ -18,7 +18,7 @@ IMG_PATH = os.path.join(os.path.dirname(__file__), 'res/img/')
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, parent, wid, geometry=(570, 10, 150, 1)):
+    def __init__(self, app, wid, geometry=(570, 10, 150, 1)):
         super().__init__('Chance', wid, geometry)
         self.is_coin_flip = True
 

@@ -10,10 +10,10 @@ from windows.draw.color_wheel import ColorWheel
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, parent, wid, geometry=(930, 10, 190, 1)):
+    def __init__(self, app, wid, geometry=(930, 10, 190, 1)):
         super().__init__('Draw', wid, geometry)
 
-        self.drawing_widget = DrawingWidget(parent.toggle_windows_2)
+        self.drawing_widget = DrawingWidget(app.toggle_windows_2)
 
         self.top_layout = QHBoxLayout()
         self.layout.addLayout(self.top_layout)
@@ -87,6 +87,8 @@ class DrawingWidget(QWidget):
         self.eraser_mode = False
         self.eraser_multiplier = 3
 
+        self.is_ctrl_pressed = False
+
     def mousePressEvent(self, event: QMouseEvent):
         point = event.position().toPoint()
 
@@ -136,6 +138,14 @@ class DrawingWidget(QWidget):
 
         if self.eraser_mode:
             self.draw_eraser_indicator(painter)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Control:
+            self.is_ctrl_pressed = True
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key.Key_Control:
+            self.is_ctrl_pressed = False
 
     @staticmethod
     def draw_path(painter, points, color, width):

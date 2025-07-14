@@ -15,9 +15,9 @@ BASE_PATH = os.path.dirname(__file__)
 class MainWindow(CustomWindow):
     copy_signal = Signal()
 
-    def __init__(self, parent, wid, geometry=(10, 120, 180, 1)):
+    def __init__(self, app, wid, geometry=(10, 120, 180, 1)):
         super().__init__('Clipboard', wid, geometry, path=BASE_PATH)
-        self.parent = parent
+        self.app = app
         self.copy_signal.connect(self.on_copy)
 
         self.copy_popup = CopiedPopup('copied!')
@@ -102,8 +102,8 @@ class MainWindow(CustomWindow):
         sticky_window = StickyWindow(self, id, text, geometry)
         self.sticky_notes.append(sticky_window)
 
-        self.parent.toggle_signal.connect(sticky_window.toggle_windows)
-        sticky_window.toggle_windows_2 = self.parent.toggle_windows_2
+        self.app.toggle_signal.connect(sticky_window.toggle_windows)
+        sticky_window.toggle_windows_2 = self.app.toggle_windows_2
 
         sticky_window.show()
         sticky_window.raise_()
@@ -139,7 +139,7 @@ class CustomButton(QPushButton):
         if event.button() == Qt.MouseButton.LeftButton:
             QApplication.clipboard().setText(self.full_text)
         elif event.button() == Qt.MouseButton.RightButton:
-            layout = self.parentWidget().layout()
+            layout = self.appWidget().layout()
             if layout:
                 layout.removeWidget(self)
             self.deleteLater()
@@ -148,9 +148,9 @@ class CustomButton(QPushButton):
 
 
 class StickyWindow(CustomWindow):
-    def __init__(self, parent, id, text, geometry):
+    def __init__(self, app, id, text, geometry):
         super().__init__(str(id), -1, geometry, add_close_btn=True)
-        self.parent = parent
+        self.app = app
         self.id = id
         self.text_edit = QTextEdit(self)
         self.text_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -168,13 +168,13 @@ class StickyWindow(CustomWindow):
 
     def save_note(self):
         self.inactivity_timer.stop()
-        self.parent.clipboard['sticky'][self.id - 1] = self.text_edit.toPlainText()
+        self.app.clipboard['sticky'][self.id - 1] = self.text_edit.toPlainText()
         with open(BASE_PATH + '/res/clipboard.json', 'w') as f:
-            json.dump(self.parent.clipboard, f, indent=2)
+            json.dump(self.app.clipboard, f, indent=2)
 
     def closeEvent(self, event):
         self.inactivity_timer.stop()
-        self.parent.toggle_signal.disconnect(self.toggle_windows)
+        self.app.toggle_signal.disconnect(self.toggle_windows)
         self.text_edit.setText('')
         self.save_note()
         super().closeEvent(event)

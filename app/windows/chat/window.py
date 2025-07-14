@@ -22,16 +22,16 @@ test_response = ""
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, parent, wid, geometry=(730, 10, 190, 1)):
+    def __init__(self, app, wid, geometry=(730, 10, 190, 1)):
         super().__init__('Chat', wid, geometry, path=BASE_PATH)
-        self.parent = parent
+        self.app = app
         self.ollama_client = None
 
-        self.parent.toggle.connect(self.focus)
+        self.app.toggle.connect(self.focus)
 
         self.chat_window = ChatWindow()
-        self.parent.toggle.connect(self.chat_window.toggle_windows)
-        self.chat_window.toggle_windows_2 = self.parent.toggle_windows_2
+        self.app.toggle.connect(self.chat_window.toggle_windows)
+        self.chat_window.toggle_windows_2 = self.app.toggle_windows_2
 
         self.ai = AI(self.chat_window, self.config)
         self.ai_list = QComboBox()
@@ -59,7 +59,7 @@ class MainWindow(CustomWindow):
 
     def focus(self):
         self.activateWindow()
-        if self.config['config']['auto_focus'] and not self.parent.is_hidden:
+        if self.config['config']['auto_focus'] and not self.app.is_hidden:
             self.prompt.setFocus()
 
     def send_prompt(self):
@@ -68,9 +68,9 @@ class MainWindow(CustomWindow):
 
         if self.config['config']['image']:
             screen = QGuiApplication.primaryScreen()
-            self.parent.toggle_windows_2(True)
+            self.app.toggle_windows_2(True)
             screenshot = screen.grabWindow(0).toImage()
-            self.parent.toggle_windows_2(False)
+            self.app.toggle_windows_2(False)
             screenshot.save(BASE_PATH + '/res/img/screenshot.png')
 
         self.set_button_loading_state(True)

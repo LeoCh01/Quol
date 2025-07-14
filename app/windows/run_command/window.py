@@ -10,7 +10,7 @@ CMDS_PATH = os.path.join(os.path.dirname(__file__), 'res/commands.json')
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, parent, wid, geometry=(200, 10, 170, 1)):
+    def __init__(self, app, wid, geometry=(200, 10, 170, 1)):
         super().__init__('Command', wid, geometry)
 
         self.commands_groupbox = QGroupBox('Commands')
@@ -49,7 +49,7 @@ class MainWindow(CustomWindow):
         for i in reversed(range(layout.count())):
             widget = layout.itemAt(i).widget()
             if widget is not None:
-                widget.setParent(None)
+                widget.setapp(None)
 
         self.commands_layout.removeItem(layout)
         self.save_commands()
@@ -91,9 +91,9 @@ class MainWindow(CustomWindow):
 
 
 class CommandConfig(CustomWindow):
-    def __init__(self, parent: MainWindow):
+    def __init__(self, app: MainWindow):
         super().__init__('Add Command', -1, geometry=(0, 0, 600, 400), add_close_btn=True)
-        self.parent = parent
+        self.app = app
 
         screen_geometry = self.screen().geometry()
         self.setGeometry(
@@ -132,9 +132,9 @@ class CommandConfig(CustomWindow):
         show_output = self.show_output_checkbox.isChecked()
 
         if cmd_name and cmd:
-            self.parent.add_command_to_layout(cmd_name, cmd, show_output)
-            self.parent.commands.append((cmd_name, cmd, show_output))
-            self.parent.save_commands()
+            self.app.add_command_to_layout(cmd_name, cmd, show_output)
+            self.app.commands.append((cmd_name, cmd, show_output))
+            self.app.save_commands()
 
             self.command_name_input.clear()
             self.command_input.clear()
