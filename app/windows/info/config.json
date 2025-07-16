@@ -1,5 +1,5 @@
 {
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "up"
+  "toggle_direction": "random"
 }

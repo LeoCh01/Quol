@@ -1,15 +1,16 @@
 import base64
 import datetime
-import json
+
+import httpx
 import os
 import re
 
 from markdown import markdown
 from pygments.formatters.html import HtmlFormatter
-from PySide6.QtCore import QTimer, QRect, QUrl, QByteArray
+from PySide6.QtCore import QTimer, QRect
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
+from qasync import asyncSlot
 
 from windows.custom_widgets import CustomWindow
 
@@ -17,22 +18,22 @@ import ollama
 
 BASE_PATH = os.path.dirname(__file__)
 HISTORY = []
-test_response = None
+test_response = ""
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, wid, geometry=(730, 10, 190, 1)):
+    def __init__(self, app, wid, geometry=(730, 10, 190, 1)):
         super().__init__('Chat', wid, geometry, path=BASE_PATH)
+        self.app = app
         self.ollama_client = None
 
-        self.network_manager = QNetworkAccessManager(self)
+        self.app.toggle.connect(self.focus)
 
         self.chat_window = ChatWindow()
-        self.toggle_signal.connect(self.chat_window.toggle_windows)
-        self.chat_window.toggle_windows_2 = self.toggle_windows_2
+        self.app.toggle.connect(self.chat_window.toggle_windows)
+        self.chat_window.toggle_windows_2 = self.app.toggle_windows_2
 
-        self.ai = AI(self.network_manager, self.chat_window, self.config)
-
+        self.ai = AI(self.chat_window, self.config)
         self.ai_list = QComboBox()
         self.ai_list.addItems(['gemini', 'ollama', 'groq'])
 
@@ -56,15 +57,20 @@ class MainWindow(CustomWindow):
         self.layout.addLayout(self.prompt_layout)
         self.layout.addWidget(self.btn)
 
+    def focus(self):
+        self.activateWindow()
+        if self.config['config']['auto_focus'] and not self.app.is_hidden:
+            self.prompt.setFocus()
+
     def send_prompt(self):
         self.ai.is_img = self.config['config']['image']
         self.ai.is_hist = self.config['config']['history']
 
         if self.config['config']['image']:
             screen = QGuiApplication.primaryScreen()
-            self.toggle_windows_2(True)
+            self.app.toggle_windows_2(True)
             screenshot = screen.grabWindow(0).toImage()
-            self.toggle_windows_2(False)
+            self.app.toggle_windows_2(False)
             screenshot.save(BASE_PATH + '/res/img/screenshot.png')
 
         self.set_button_loading_state(True)
@@ -104,24 +110,21 @@ class MainWindow(CustomWindow):
 
 
 class AI:
-    def __init__(self, network_manager, chat_window, config):
-        self.network_manager = network_manager
+    def __init__(self, chat_window, config):
         self.config = config
         self.chat_window = chat_window
         self.ollama_client = None
-        self.network_manager.finished.connect(self.handle_response)
         self.current_type = None
 
         self.is_img = True
         self.is_hist = True
         self.text_content = ''
+        self.loading_counter = 0
 
         self.max_hist = self.config['config']['max_history']
 
     def prompt(self, model, d):
-        url = headers = data = None
-        self.chat_window.set_text('Loading...')
-        self.chat_window.show()
+        self.current_type = model
 
         if test_response:
             self.chat_window.set_text(test_response)
@@ -131,17 +134,47 @@ class AI:
             self.ollama(d['model'], d['prompt'])
             return
         elif model == 'gemini':
-            url, headers, data = self.gemini(d['model'], d['prompt'], d['apikey'])
+            self.handle_response(*self.gemini(d['model'], d['prompt'], d['apikey']))
         elif model == 'groq':
-            url, headers, data = self.groq(d['model'], d['prompt'], d['apikey'])
+            self.handle_response(*self.groq(d['model'], d['prompt'], d['apikey']))
 
-        request = QNetworkRequest(QUrl(str(url)))
-        for header, value in headers.items():
-            request.setRawHeader(header.encode(), value.encode())
+    @asyncSlot()
+    async def handle_response(self, url, headers, data):
+        self.chat_window.set_text('Loading...')
+        self.chat_window.show()
+        self.text_content = ''
+        self.loading_counter = 0
 
-        json_data = json.dumps(data).encode('utf-8')
-        self.current_type = model
-        self.network_manager.post(request, QByteArray(json_data))
+        def update_loading_text():
+            self.loading_counter += 0.1
+            self.chat_window.set_text(f'Loading... ({self.loading_counter:.1f}s)')
+
+        try:
+            timer = QTimer()
+            timer.timeout.connect(update_loading_text)
+            timer.start(100)
+
+            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
+                response = await client.post(url, headers=headers, json=data)
+
+            timer.stop()
+            res = response.json()
+
+            if 'error' in res:
+                raise Exception(f'Error: {res["error"]["message"]}')
+
+            if self.current_type == 'gemini':
+                self.text_content = res['candidates'][0]['content']['parts'][0]['text']
+            elif self.current_type == 'groq':
+                self.text_content = res['choices'][0]['message']['content']
+
+            self.chat_window.set_text(self.text_content)
+            self.add_history(self.current_type, self.text_content, None, False)
+        except Exception as e:
+            print(e)
+            self.text_content = str(e)
+            self.chat_window.set_text(self.text_content)
+            HISTORY.clear()
 
     def add_history(self, model, text, img_data, is_user):
         if self.is_hist:
@@ -196,7 +229,7 @@ class AI:
 
                 if 'image' in h:
                     data['contents'][-1]['parts'].append(
-                        {'inline_data': {'mime_type': 'image/jpeg', 'data': h['image']}}
+                        {'inline_data': {'mime_type': 'image/png', 'data': h['image']}}
                     )
 
         cur = {'role': 'user', 'parts': [{'text': prompt}]}
@@ -204,7 +237,7 @@ class AI:
         if self.is_img:
             with open(BASE_PATH + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
-                cur['parts'].append({'inline_data': {'mime_type': 'image/jpeg', 'data': img_data}})
+                cur['parts'].append({'inline_data': {'mime_type': 'image/png', 'data': img_data}})
 
         data['contents'].append(cur)
         self.add_history('gemini', prompt, img_data, True)
@@ -224,7 +257,7 @@ class AI:
 
                     if 'image' in h:
                         data['messages'][-1]['content'].append(
-                            {'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{h['image']}'}}
+                            {'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{h['image']}'}}
                         )
                 else:
                     data['messages'].append({'role': 'assistant', 'content': h['text']})
@@ -234,35 +267,11 @@ class AI:
         if self.is_img:
             with open(BASE_PATH + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
-                cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/jpeg;base64,{img_data}'}})
+                cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{img_data}'}})
 
         data['messages'].append(cur)
         self.add_history('groq', prompt, img_data, True)
         return url, headers, data
-
-    def handle_response(self, reply: QNetworkReply):
-        res = reply.readAll()
-        res = res.data().decode()
-        self.text_content = ''
-        try:
-            res = json.loads(res)
-            if 'error' in res:
-                raise Exception(f'Error: {res['error']['message']}')
-
-            if self.current_type == 'gemini':
-                self.text_content = res['candidates'][0]['content']['parts'][0]['text']
-            elif self.current_type == 'groq':
-                self.text_content = res['choices'][0]['message']['content']
-
-            self.chat_window.set_text(self.text_content)
-            self.add_history(self.current_type, self.text_content, None, False)
-
-        except Exception as e:
-            self.text_content = str(e)
-            self.chat_window.set_text(self.text_content)
-            HISTORY.clear()
-
-        reply.deleteLater()
 
 
 class ChatWindow(CustomWindow):
@@ -331,3 +340,5 @@ class ChatWindow(CustomWindow):
         """
 
         return html_text
+
+

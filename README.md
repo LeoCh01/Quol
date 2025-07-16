@@ -19,7 +19,7 @@ This application Runs at the top layer and is toggleable through a hotkey. Layou
 <img src="demo/snip.png" width="500">
 <table>
   <tr>
-    <td><img src="demo/wh-chat.gif" width="250"></td>
+    <td><img src="demo/quol-chat.gif" width="250"></td>
     <td><img src="demo/wh-draw.gif" width="250"></td>
   </tr>
   <tr>

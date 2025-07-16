@@ -3,9 +3,9 @@ import os
 import random
 
 from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, Qt, QRect, QByteArray, Signal
-from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush, QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QPushButton, QDialog, QCheckBox, \
-    QLineEdit, QGroupBox
+from PySide6.QtGui import QPainterPath, QRegion, QColor, QPainter, QBrush, QIcon, QPen
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QCheckBox, QLineEdit, QGroupBox, \
+    QSizePolicy
 
 from res.paths import POS_PATH, IMG_PATH
 
@@ -46,8 +46,8 @@ class CustomWindow(QWidget):
         self.l1.addWidget(self.title_bar)
 
         self.w1 = QWidget()
-        self.w1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.w1.setObjectName('content')
+        self.w1.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.l1.addWidget(self.w1)
 
         self.layout = QVBoxLayout(self.w1)
@@ -121,10 +121,15 @@ class CustomWindow(QWidget):
         self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
         self.animation.start()
 
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setBrush(QBrush('#444'))
+        painter.drawRect(self.rect())
+
 
 class CustomTitleBar(QWidget):
     def __init__(self, title='Custom Title Bar', parent: CustomWindow = None, add_close_btn=False):
-        super().__init__(parent)
+        super().__init__()
         self.parent = parent
 
         self.setObjectName('title-bar')

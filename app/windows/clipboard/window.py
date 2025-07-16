@@ -3,8 +3,9 @@ import os
 
 import keyboard
 from PySide6.QtGui import QIcon, Qt
-from PySide6.QtCore import Signal, QSize, QTimer
-from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit
+from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEasingCurve
+from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit, \
+    QWidget, QLabel
 
 from windows.custom_widgets import CustomWindow
 
@@ -14,9 +15,12 @@ BASE_PATH = os.path.dirname(__file__)
 class MainWindow(CustomWindow):
     copy_signal = Signal()
 
-    def __init__(self, wid, geometry=(10, 120, 180, 1)):
+    def __init__(self, app, wid, geometry=(10, 120, 180, 1)):
         super().__init__('Clipboard', wid, geometry, path=BASE_PATH)
+        self.app = app
         self.copy_signal.connect(self.on_copy)
+
+        # self.copy_popup = CopiedPopup('copied!')
 
         self.copy_params = QHBoxLayout()
         self.clear = QPushButton('Clear')
@@ -66,6 +70,8 @@ class MainWindow(CustomWindow):
         if not QApplication.clipboard().text():
             return
 
+        # self.copy_popup.play()
+
         self.clipboard['copy'].append(QApplication.clipboard().text())
 
         while len(self.clipboard['copy']) > self.config['length']:
@@ -96,8 +102,8 @@ class MainWindow(CustomWindow):
         sticky_window = StickyWindow(self, id, text, geometry)
         self.sticky_notes.append(sticky_window)
 
-        self.toggle_signal.connect(sticky_window.toggle_windows)
-        sticky_window.toggle_windows_2 = self.toggle_windows_2
+        self.app.toggle.connect(sticky_window.toggle_windows)
+        sticky_window.toggle_windows_2 = self.app.toggle_windows_2
 
         sticky_window.show()
         sticky_window.raise_()
@@ -133,7 +139,7 @@ class CustomButton(QPushButton):
         if event.button() == Qt.MouseButton.LeftButton:
             QApplication.clipboard().setText(self.full_text)
         elif event.button() == Qt.MouseButton.RightButton:
-            layout = self.parentWidget().layout()
+            layout = self.appWidget().layout()
             if layout:
                 layout.removeWidget(self)
             self.deleteLater()
@@ -153,7 +159,7 @@ class StickyWindow(CustomWindow):
         self.layout.addWidget(self.text_edit)
 
         self.inactivity_timer = QTimer(self)
-        self.inactivity_timer.setInterval(1000)
+        self.inactivity_timer.setInterval(500)
         self.inactivity_timer.timeout.connect(self.save_note)
         self.text_edit.textChanged.connect(self.reset_timer)
 
@@ -168,7 +174,87 @@ class StickyWindow(CustomWindow):
 
     def closeEvent(self, event):
         self.inactivity_timer.stop()
-        self.parent.toggle_signal.disconnect(self.toggle_windows)
+        self.parent.app.toggle.disconnect(self.toggle_windows)
         self.text_edit.setText('')
         self.save_note()
         super().closeEvent(event)
+
+
+class CopiedPopup:
+    def __init__(self, text):
+        screen_w = QApplication.primaryScreen().size().width()
+        screen_h = QApplication.primaryScreen().size().height()
+
+        self.top = CopiedPopupSub('', QRect(0, -30, screen_w, 50), 30, [0, -1])
+        self.bottom = CopiedPopupSub(text, QRect(0, screen_h - 20, screen_w, 50), 30, [0, 1])
+        self.left = CopiedPopupSub('', QRect(-30, 0, 50, screen_h), 30, [-1, 0])
+        self.right = CopiedPopupSub('', QRect(screen_w - 20, 0, 50, screen_h), 30, [1, 0])
+
+    def play(self):
+        self.top.play()
+        self.bottom.play()
+        self.left.play()
+        self.right.play()
+
+
+class CopiedPopupSub(QWidget):
+    def __init__(self, text, geometry, h, d):
+        super().__init__(geometry=geometry)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setStyleSheet(
+            f'background: qlineargradient(x1:{int(d[0] == -1)}, y1:{int(d[1] == -1)}, x2:{int(d[0] == 1)}, y2:{int(d[1] == 1)}, stop:0 #00000000, stop:1 #000000);'
+        )
+
+        layout = QVBoxLayout(self)
+        self.text = QLabel(text, self)
+        self.text.setStyleSheet('color: #fff;')
+        self.text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.text)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+
+        self.fade_in_animation = QPropertyAnimation(self, b"windowOpacity")
+        self.move_in_animation = QPropertyAnimation(self, b"pos")
+        self.fade_out_animation = QPropertyAnimation(self, b"windowOpacity")
+        self.move_out_animation = QPropertyAnimation(self, b"pos")
+
+        self.t1 = 300
+        self.t2 = 500
+        self.h = h
+        self.d = d
+
+    def play(self):
+        self.show()
+        self.raise_()
+
+        self.start_fade()
+
+    def start_fade(self):
+        self.fade_in_animation.setDuration(self.t1)
+        self.fade_in_animation.setStartValue(0)
+        self.fade_in_animation.setEndValue(1)
+
+        self.move_in_animation.setEasingCurve(QEasingCurve.Type.OutExpo)
+        self.move_in_animation.setDuration(self.t2)
+        self.move_in_animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()).topLeft())
+        self.move_in_animation.setEndValue(QRect(self.x() - self.h * self.d[0], self.y() - self.h * self.d[1], self.width(), self.height()).topLeft())
+
+        self.fade_in_animation.start()
+        self.move_in_animation.start()
+
+        QTimer.singleShot(self.t1 + 200, self.start_fade_out)
+
+    def start_fade_out(self):
+        self.fade_out_animation.setDuration(self.t1)
+        self.fade_out_animation.setStartValue(1)
+        self.fade_out_animation.setEndValue(0)
+
+        self.move_out_animation.setDuration(self.t2)
+        self.move_out_animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()).topLeft())
+        self.move_out_animation.setEndValue(QRect(self.x() + self.h * self.d[0], self.y() + self.h * self.d[1], self.width(), self.height()).topLeft())
+
+        self.fade_out_animation.start()
+        self.move_out_animation.start()
+
+        QTimer.singleShot(self.t2, self.hide)

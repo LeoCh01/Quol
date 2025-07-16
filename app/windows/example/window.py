@@ -14,7 +14,7 @@ class MainWindow(CustomWindow):
     This class represents a window with two QLabel widgets.
     """
 
-    def __init__(self, wid, geometry=(300, 300, 100, 1)):
+    def __init__(self, app, wid, geometry=(300, 300, 100, 1)):
         super().__init__('Temp', wid, geometry, path=BASE_PATH)
 
         # self.layout is the main layout of the window

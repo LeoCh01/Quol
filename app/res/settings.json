@@ -1,10 +1,19 @@
 {
   "name": "Quol",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "versatile tool for windows.",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "up",
+  "toggle_direction": "random",
   "is_default_pos": false,
-  "windows": ["info", "run_command", "color_picker", "chance", "clipboard", "chat", "draw"]
+  "windows": [
+    "info",
+    "run_command",
+    "color_picker",
+    "chance",
+    "clipboard",
+    "chat",
+    "draw",
+    "keymap"
+  ]
 }
