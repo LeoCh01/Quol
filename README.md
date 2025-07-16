@@ -6,8 +6,9 @@ Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, de
 
 ## Features
 
-- **Chat:** run AI prompts on your screen.
+- **Chat:** Run AI prompts on your screen.
 - **Draw:** Draw and annotate on your screen.
+- **Key mapper:** Create key bindings to custom actions.
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **CMD Runner:** Save and execute custom command line instructions.
 - **Clipboard:** Store copy history and sticky notes.
