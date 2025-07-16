@@ -153,7 +153,6 @@ class AI:
             timer = QTimer()
             timer.timeout.connect(update_loading_text)
             timer.start(100)
-            print(url)
 
             async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
                 response = await client.post(url, headers=headers, json=data)

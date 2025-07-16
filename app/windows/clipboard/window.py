@@ -20,7 +20,7 @@ class MainWindow(CustomWindow):
         self.app = app
         self.copy_signal.connect(self.on_copy)
 
-        self.copy_popup = CopiedPopup('copied!')
+        # self.copy_popup = CopiedPopup('copied!')
 
         self.copy_params = QHBoxLayout()
         self.clear = QPushButton('Clear')
@@ -70,7 +70,7 @@ class MainWindow(CustomWindow):
         if not QApplication.clipboard().text():
             return
 
-        self.copy_popup.play()
+        # self.copy_popup.play()
 
         self.clipboard['copy'].append(QApplication.clipboard().text())
 
@@ -148,9 +148,9 @@ class CustomButton(QPushButton):
 
 
 class StickyWindow(CustomWindow):
-    def __init__(self, app, id, text, geometry):
+    def __init__(self, parent, id, text, geometry):
         super().__init__(str(id), -1, geometry, add_close_btn=True)
-        self.app = app
+        self.parent = parent
         self.id = id
         self.text_edit = QTextEdit(self)
         self.text_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -159,7 +159,7 @@ class StickyWindow(CustomWindow):
         self.layout.addWidget(self.text_edit)
 
         self.inactivity_timer = QTimer(self)
-        self.inactivity_timer.setInterval(1000)
+        self.inactivity_timer.setInterval(500)
         self.inactivity_timer.timeout.connect(self.save_note)
         self.text_edit.textChanged.connect(self.reset_timer)
 
@@ -168,13 +168,13 @@ class StickyWindow(CustomWindow):
 
     def save_note(self):
         self.inactivity_timer.stop()
-        self.app.clipboard['sticky'][self.id - 1] = self.text_edit.toPlainText()
+        self.parent.clipboard['sticky'][self.id - 1] = self.text_edit.toPlainText()
         with open(BASE_PATH + '/res/clipboard.json', 'w') as f:
-            json.dump(self.app.clipboard, f, indent=2)
+            json.dump(self.parent.clipboard, f, indent=2)
 
     def closeEvent(self, event):
         self.inactivity_timer.stop()
-        self.app.toggle.disconnect(self.toggle_windows)
+        self.parent.app.toggle.disconnect(self.toggle_windows)
         self.text_edit.setText('')
         self.save_note()
         super().closeEvent(event)

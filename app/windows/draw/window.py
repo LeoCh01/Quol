@@ -137,7 +137,6 @@ class DrawingWidget(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Control:
-            print('Control key pressed')
             self.is_ctrl_pressed = True
 
     def keyReleaseEvent(self, event):
@@ -165,6 +164,7 @@ class DrawingWidget(QWidget):
                 distance = (dx * dx + dy * dy) ** 0.5
                 if distance <= t:
                     self.undo_stack.append((self.strokes.pop(i), 'remove'))
+                    break
         self.update()
 
     def set_pen_color(self, color: QColor):

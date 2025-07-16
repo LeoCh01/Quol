@@ -15,7 +15,7 @@ BASE_PATH = os.path.dirname(__file__)
 
 class MainWindow(CustomWindow):
     def __init__(self, app, wid, geometry=(10, 10, 180, 1)):
-        super().__init__('Info', wid, geometry, path=BASE_PATH)
+        super().__init__('Quol', wid, geometry, path=BASE_PATH)
         self.app = app
         self.settings_to_config()
         CustomWindow.toggle_direction = str(self.config['toggle_direction'])

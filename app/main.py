@@ -16,7 +16,6 @@ from res.paths import SETTINGS_PATH, POS_PATH, RES_PATH, STYLES_PATH, IMG_PATH
 
 class App(QObject):
     toggle = Signal(bool, bool)
-    windows = []
 
     def __init__(self):
         super().__init__()
@@ -30,6 +29,7 @@ class App(QObject):
         self.is_hidden = False
         self.is_reset = settings.get('is_default_pos', True)
 
+        self.windows = []
         self.load_windows(settings)
         self.setup_tray_icon()
 
@@ -115,12 +115,12 @@ class App(QObject):
         QApplication.quit()
 
     def hide(self):
-        for w in App.windows:
+        for w in self.windows:
             self.toggle.disconnect(w.toggle_windows)
             w.close()
             del w
 
-        App.windows = []
+        self.windows = []
         keyboard.unhook_all()
 
     def restart(self):

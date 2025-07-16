@@ -6,15 +6,16 @@ from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, 
 
 from windows.custom_widgets import CustomWindow
 
-CMDS_PATH = os.path.join(os.path.dirname(__file__), 'res/commands.json')
+BASE_PATH = os.path.dirname(__file__)
 
 
 class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(200, 10, 170, 1)):
+    def __init__(self, app, wid, geometry=(390, 10, 170, 1)):
         super().__init__('Command', wid, geometry)
 
         self.commands_groupbox = QGroupBox('Commands')
         self.commands_layout = QVBoxLayout()
+        self.commands_layout.setContentsMargins(5, 5, 5, 5)
         self.commands_groupbox.setLayout(self.commands_layout)
         self.layout.addWidget(self.commands_groupbox)
 
@@ -35,7 +36,7 @@ class MainWindow(CustomWindow):
         cmd_btn.clicked.connect(lambda _, c=cmd, s=show_output: self.run_cmd(c, s))
         cmd_layout.addWidget(cmd_btn)
 
-        delete_btn = QPushButton('\u274C')
+        delete_btn = QPushButton('✖')
         delete_btn.setFixedWidth(20)
         delete_btn.clicked.connect(lambda _, c=cmd_name, l=cmd_layout: self.delete_command(c, l))
         cmd_layout.addWidget(delete_btn)
@@ -49,7 +50,7 @@ class MainWindow(CustomWindow):
         for i in reversed(range(layout.count())):
             widget = layout.itemAt(i).widget()
             if widget is not None:
-                widget.setapp(None)
+                widget.deleteLater()
 
         self.commands_layout.removeItem(layout)
         self.save_commands()
@@ -75,12 +76,12 @@ class MainWindow(CustomWindow):
         output_window.show()
 
     def save_commands(self):
-        with open(CMDS_PATH, 'w') as f:
+        with open(BASE_PATH + '/res/commands.json', 'w') as f:
             json.dump(self.commands, f, indent=2)
 
     def load_commands(self):
         try:
-            with open(CMDS_PATH, 'r') as f:
+            with open(BASE_PATH + '/res/commands.json', 'r') as f:
                 self.commands = json.load(f)
         except Exception as e:
             print('error :: ', e)

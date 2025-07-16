@@ -84,9 +84,10 @@ class RainbowTriangleWidget(QWidget):
 
         size = min(width, height) / 10  # Reduce the size of the triangle
         points = [
-            QPointF(center.x(), center.y() - size),  # Top vertex
-            QPointF(center.x() - size * math.sqrt(3) / 2, center.y() + size / 2),  # Bottom-left vertex
-            QPointF(center.x() + size * math.sqrt(3) / 2, center.y() + size / 2)   # Bottom-right vertex
+            QPointF(center.x() - size / 2, center.y() - size / 2),  # Top-left vertex
+            QPointF(center.x() + size / 2, center.y() - size / 2),  # Top-right vertex
+            QPointF(center.x() + size / 2, center.y() + size / 2),  # Bottom-right vertex
+            QPointF(center.x() - size / 2, center.y() + size / 2)   # Bottom-left vertex
         ]
 
         if self.prev_pos and self.dragging:
@@ -110,18 +111,32 @@ class RainbowTriangleWidget(QWidget):
         painter.drawPolygon(triangle)
 
     def rotate_triangle(self, points, angle):
-        """Rotate the triangle points around the center"""
+        """Rotate the triangle points around the center in 3D"""
         radian_angle = math.radians(angle)
         cos_theta = math.cos(radian_angle)
         sin_theta = math.sin(radian_angle)
 
-        # Rotate each point around the center
+        # Define a fixed z-axis rotation angle for 3D effect
+        z_angle = math.radians(angle / 2)  # Example: slower rotation on z-axis
+        cos_z = math.cos(z_angle)
+        sin_z = math.sin(z_angle)
+
+        # Rotate each point around the center in 3D
         for i in range(len(points)):
             x = points[i].x() - self.width() / 2
             y = points[i].y() - self.height() / 2
-            new_x = cos_theta * x - sin_theta * y + self.width() / 2
-            new_y = sin_theta * x + cos_theta * y + self.height() / 2
-            points[i] = QPointF(new_x, new_y)
+            z = 0  # Assume z-coordinate is 0 for 2D points
+
+            # Apply rotation on x-y plane
+            new_x = cos_theta * x - sin_theta * y
+            new_y = sin_theta * x + cos_theta * y
+
+            # Apply rotation on z-axis
+            new_z = cos_z * z - sin_z * new_x
+            new_x = sin_z * z + cos_z * new_x
+
+            # Map back to 2D space
+            points[i] = QPointF(new_x + self.width() / 2, new_y + self.height() / 2)
 
     def mousePressEvent(self, event):
         """Rotate the triangle when the mouse is clicked"""

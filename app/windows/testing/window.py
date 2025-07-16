@@ -1,5 +1,3 @@
-import os
-
 from PySide6.QtWidgets import QLabel, QPushButton
 
 from windows.testing.tri import RainbowTriangleWidget
