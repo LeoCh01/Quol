@@ -1,5 +1,10 @@
 {
-  "copy": [],
+  "copy": [
+    "dfe1e5",
+    "\n        self.hex = QLabel()\n        self.hex.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)\n        self.grid_layout.addWidget(self.hex, 0, 1)",
+    "(242, 197, 92)",
+    "background-color: #eee"
+  ],
   "sticky": [
     "",
     "",

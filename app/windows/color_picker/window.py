@@ -1,6 +1,6 @@
 import keyboard
 
-from PySide6.QtCore import QTimer, QSize
+from PySide6.QtCore import QTimer, QSize, Qt
 from PySide6.QtGui import QPixmap, QColor, QGuiApplication, QCursor, QPainter
 from PySide6.QtWidgets import QLabel, QGridLayout, QPushButton
 
@@ -17,31 +17,49 @@ class MainWindow(CustomWindow):
         self.grid_layout.addWidget(self.color_label, 0, 0)
 
         self.hex = QLabel()
+        self.hex.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.grid_layout.addWidget(self.hex, 0, 1)
 
-        self.pixmap_label = QLabel()
-        self.grid_layout.addWidget(self.pixmap_label, 1, 0, 2, 2)
+        self.rgb = QLabel()
+        self.rgb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.rgb.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.grid_layout.addWidget(self.rgb, 0, 2)
 
-        self.copy_btn = QPushButton('copy')
-        self.copy_btn.clicked.connect(self.copy_color)
-        self.grid_layout.addWidget(self.copy_btn, 0, 2)
+        self.pixmap_label = QLabel()
+        self.grid_layout.addWidget(self.pixmap_label, 1, 0, 3, 2)
+
+        self.copy_rgb = QPushButton('copy RGB')
+        self.copy_rgb.setFixedWidth(79)
+        self.copy_rgb.clicked.connect(lambda: self.copy_color('rgb'))
+        self.grid_layout.addWidget(self.copy_rgb, 1, 2)
+
+        self.copy_hex = QPushButton('copy HEX')
+        self.copy_hex.setFixedWidth(79)
+        self.copy_hex.clicked.connect(lambda: self.copy_color('hex'))
+        self.grid_layout.addWidget(self.copy_hex, 2, 2)
 
         self.select_btn = QPushButton('pick color')
+        self.select_btn.setFixedWidth(79)
         self.select_btn.setCheckable(True)
         self.select_btn.clicked.connect(self.select_color)
-        self.grid_layout.addWidget(self.select_btn, 1, 2)
+        self.grid_layout.addWidget(self.select_btn, 3, 2)
 
         self.layout.addLayout(self.grid_layout)
         self.sf = QGuiApplication.primaryScreen().devicePixelRatio()
         self.timer = QTimer()
         self.update_color()
 
+        self.esc_key = None
+
+    def copy_color(self, t):
+        clipboard = QGuiApplication.clipboard()
+        if t == 'hex':
+            clipboard.setText(self.hex.text())
+        elif t == 'rgb':
+            clipboard.setText(self.rgb.text())
+
     def close(self):
         super().close()
-
-    def copy_color(self):
-        clipboard = QGuiApplication.clipboard()
-        clipboard.setText(self.hex.text())
 
     def select_color(self):
         self.select_btn.setText('Esc to stop')
@@ -49,10 +67,10 @@ class MainWindow(CustomWindow):
         self.select_btn.setChecked(True)
         self.timer.timeout.connect(self.update_color)
         self.timer.start(100)
-        keyboard.on_press_key('esc', lambda _: self.on_color_select())
+        self.esc_key = keyboard.on_press_key('esc', lambda _: self.on_color_select())
 
     def on_color_select(self):
-        keyboard.unhook_key('esc')
+        keyboard.unhook_key(self.esc_key)
         self.timer.stop()
         self.select_btn.setText('pick color')
         self.select_btn.setStyleSheet('')
@@ -71,6 +89,7 @@ class MainWindow(CustomWindow):
 
         center_color = QColor(image.pixel(2, 2))  # The center of the 5x5 image
         self.hex.setText(center_color.name())
+        self.rgb.setText(f'({center_color.red()}, {center_color.green()}, {center_color.blue()})')
 
         self.color_label.setFixedSize(15, 15)
         self.color_label.setStyleSheet(f'background-color: {center_color.name()}; border: 1px solid black;')

@@ -1,0 +1,42 @@
+2025-07-15 21:42:35,286 - root - ERROR - type object 'TextInteractionFlag' has no attribute 'SelectableByMouse'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 178, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 33, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 55, in load_windows
+    self.windows.append(class_obj(self, i, pos_settings['pos'][w + str(i)]))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\windows\color_picker/window.py", line 18, in __init__
+    self.color_label.setTextInteractionFlags(Qt.TextInteractionFlags.SelectableByMouse | Qt.TextInteractionFlag.TextSelectableByKeyboard)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'TextInteractionFlag' has no attribute 'SelectableByMouse'. Did you mean: 'TextSelectableByMouse'?
+2025-07-15 21:42:51,709 - root - ERROR - type object 'TextInteractionFlag' has no attribute 'SelectableByMouse'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 178, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 33, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 55, in load_windows
+    self.windows.append(class_obj(self, i, pos_settings['pos'][w + str(i)]))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\windows\color_picker/window.py", line 18, in __init__
+    self.color_label.setTextInteractionFlags(Qt.TextInteractionFlags.SelectableByMouse | Qt.TextInteractionFlag.TextSelectableByKeyboard)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'TextInteractionFlag' has no attribute 'SelectableByMouse'. Did you mean: 'TextSelectableByMouse'?
+2025-07-15 22:05:35,166 - root - ERROR - 'PySide6.QtWidgets.QPushButton' object has no attribute 'setAlignment'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 178, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 33, in __init__
+    self.load_windows(settings)
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 55, in load_windows
+    self.windows.append(class_obj(self, i, pos_settings['pos'][w + str(i)]))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\windows\color_picker/window.py", line 33, in __init__
+    self.copy_rgb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'PySide6.QtWidgets.QPushButton' object has no attribute 'setAlignment'
