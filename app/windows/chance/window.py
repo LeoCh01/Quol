@@ -2,12 +2,13 @@ import os
 
 from PySide6 import QtCore
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout, QApplication
+from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 from PySide6.QtGui import QPixmap, Qt, QMovie
 
 import random
 
-from windows.custom_widgets import CustomWindow
+from quol_window import QuolMainWindow
+from window_plugin import WindowPluginInfo, WindowPluginContext
 
 COIN = 'coin-x.png'
 COIN_IMAGES = ['coin-h.png', 'coin-t.png']
@@ -17,9 +18,9 @@ CONFETTI = 'confetti2.gif'
 IMG_PATH = os.path.join(os.path.dirname(__file__), 'res/img/')
 
 
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(570, 10, 150, 1)):
-        super().__init__('Chance', wid, geometry)
+class MainWindow(QuolMainWindow):
+    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
+        super().__init__('Chance', plugin_info, plugin_context, default_geometry=(570, 10, 150, 1))
         self.is_coin_flip = True
 
         self.grid_layout = QGridLayout()

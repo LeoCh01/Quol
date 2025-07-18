@@ -1,0 +1,131 @@
+2025-07-17 22:55:49.678877
+Q: hi
+2025-07-18 15:42:46.782676
+Q: hi
+2025-07-18 16:12:12.186391
+Q: hi
+2025-07-18 16:13:16.355655
+Q: hi
+2025-07-18 16:13:38.976521
+Q: hi
+2025-07-18 16:16:24.295672
+Q: 
+2025-07-18 16:19:39.533064
+Q: 
+2025-07-18 16:22:04.850443
+Q: hi
+A: Here are the bounding box detections:
+```json
+[
+  {"box_2d": [615, 18, 636, 35], "label": "Run:"},
+  {"box_2d": [150, 62, 163, 84], "label": "icons"},
+  {"box_2d": [244, 48, 258, 105], "label": "transitions"},
+  {"box_2d": [298, 62, 312, 90], "label": "chance"},
+  {"box_2d": [490, 62, 503, 102], "label": "window.py"},
+  {"box_2d": [893, 13, 911, 27], "label": "Git"},
+  {"box_2d": [918, 295, 936, 355], "label": "Python Console"},
+  {"box_2d": [968, 30, 988, 128], "label": "Type here to search"},
+  {"box_2d": [728, 51, 747, 92], "label": "clipboard"},
+  {"box_2d": [658, 47, 690, 153], "label": "Starting Quol"},
+  {"box_2d": [343, 62, 356, 78], "label": "chat"},
+  {"box_2d": [453, 62, 466, 102], "label": "window.py"},
+  {"box_2d": [920, 54, 938, 80], "label": "Find"},
+  {"box_2d": [690, 47, 723, 315], "label": "Current working directory: D:\\Leo\\Quol\\app"},
+  {"box_2d": [761, 47, 779, 127], "label": "loading chance"},
+  {"box_2d": [638, 47, 660, 431], "label": "D:\\Leo\\Quol\\.venv\\Scripts\\python.exe D:/Leo/Quol/app/main.py"},
+  {"box_2d": [43, 17, 61, 58], "label": "Project"},
+  {"box_2d": [918, 136, 936, 177], "label": "Problems"},
+  {"box_2d": [786, 47, 807, 115], "label": "loading chat"},
+  {"box_2d": [966, 796, 991, 826], "label": "24°C"},
+  {"box_2d": [966, 973, 992, 992], "label": "4:22"},
+  {"box_2d": [723, 47, 755, 322], "label": "Switched working directory: D:\\Leo\\Quol\\app"},
+  {"box_2d": [850, 47, 872, 460], "label": "Error: API key not valid. Please pass a valid API key."},
+  {"box_2d": [918, 31, 936, 53], "label": "Git"},
+  {"box_2d": [56, 310, 75, 329], "label": "app"},
+  {"box_2d": [55, 653, 74, 712], "label": "move_transition"},
+  {"box_2d": [969, 857, 987, 879], "label": "Sunny"},
+  {"box_2d": [268, 54, 281, 76], "label": "fire"},
+  {"box_2d": [4, 329, 22, 359], "label": "Refactor"},
+  {"box_2d": [295, 60, 314, 91], "label": "chance"},
+  {"box_2d": [357, 326, 459, 542], "label": "config extract_from_layout(self.config_layout)\nself.main_window.config config\nself.main_window.plugin_info.save_config(config)\nself.main_window.config_signal.emit()\nself.hide()"
+]
+```
+
+2025-07-18 16:36:25.029799
+Q: 
+A: Here are the bounding box detections:
+```json
+[
+  {"box_2d": [614, 4, 629, 28], "label": "Run:"},
+  {"box_2d": [216, 318, 231, 371], "label": "DrawingWidget"},
+  {"box_2d": [237, 318, 252, 363], "label": "__init__"},
+  {"box_2d": [63, 28, 83, 58], "label": "Project"},
+  {"box_2d": [23, 22, 38, 42], "label": "File"},
+  {"box_2d": [23, 45, 38, 68], "label": "Edit"},
+  {"box_2d": [23, 70, 38, 97], "label": "View"},
+  {"box_2d": [23, 99, 38, 136], "label": "Navigate"},
+  {"box_2d": [23, 138, 38, 164], "label": "Code"},
+  {"box_2d": [23, 166, 38, 201], "label": "Refactor"},
+  {"box_2d": [23, 204, 38, 225], "label": "Run"},
+  {"box_2d": [23, 228, 38, 244], "label": "Tools"},
+  {"box_2d": [23, 247, 38, 258], "label": "Git"},
+  {"box_2d": [23, 260, 38, 288], "label": "Window"},
+  {"box_2d": [23, 290, 38, 314], "label": "Help"},
+  {"box_2d": [591, 318, 607, 341], "label": "Widget"}
+]
+```
+
+2025-07-18 17:20:07.718529
+Q: fdffdf
+A: Here are the bounding box detections:
+```json
+[
+  {"box_2d": [49, 23, 68, 40], "label": "Project"},
+  {"box_2d": [62, 251, 75, 255], "label": "X"},
+  {"box_2d": [61, 287, 76, 363], "label": "Quol-keymap\\window.py"},
+  {"box_2d": [61, 372, 76, 450], "label": "keymap\\window.py"},
+  {"box_2d": [61, 458, 76, 528], "label": "run_command\\window.py"},
+  {"box_2d": [61, 536, 76, 604], "label": "testing\\window.py"},
+  {"box_2d": [61, 612, 76, 672], "label": "chat\\window.py"},
+  {"box_2d": [61, 680, 76, 752], "label": "chance\\window.py"},
+  {"box_2d": [61, 760, 76, 843], "label": "clipboard\\window.py"},
+  {"box_2d": [61, 851, 76, 934], "label": "color_picker\\window.py"},
+  {"box_2d": [61, 942, 76, 997], "label": "draw\\window.py"},
+  {"box_2d": [61, 939, 75, 943], "label": "X"},
+  {"box_2d": [303, 361, 320, 381], "label": "__init__"},
+  {"box_2d": [612, 13, 626, 27], "label": "Run"},
+  {"box_2d": [612, 35, 626, 51], "label": "main"},
+  {"box_2d": [937, 958, 951, 973], "label": "PM"}
+]
+```
+
+2025-07-18 17:20:55.013756
+Q: dddd
+A: Here are the bounding box detections:
+```json
+[
+  {"box_2d": [220, 639, 238, 715], "label": "geometry"},
+  {"box_2d": [246, 656, 262, 683], "label": "Cancel"},
+  {"box_2d": [246, 758, 262, 776], "label": "Save"}
+]
+```
+
+2025-07-18 17:30:32.531735
+Q: 
+A: Here are the bounding box detections:
+```json
+[
+  {"box_2d": [242, 387, 259, 435], "text": "if 'image' in"},
+  {"box_2d": [260, 388, 281, 548], "text": "data['messages'][-1]['content'].append("},
+  {"box_2d": [613, 13, 630, 41], "text": "Run:"},
+  {"box_2d": [40, 22, 57, 46], "text": "File"},
+  {"box_2d": [63, 330, 78, 333], "text": "*"},
+  {"box_2d": [922, 35, 939, 53], "text": "Git"},
+  {"box_2d": [922, 63, 939, 80], "text": "Find"},
+  {"box_2d": [26, 530, 41, 533], "text": "*"},
+  {"box_2d": [465, 525, 484, 611], "text": "read()).decode('utf-8')"},
+  {"box_2d": [26, 648, 41, 651], "text": "*"},
+  {"box_2d": [488, 369, 505, 607], "text": "cur['content'].append({'type': 'image_url',"}
+]
+```
+

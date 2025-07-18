@@ -1,5 +1,11 @@
 {
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "random"
+  "toggle_direction": "random",
+  "_geometry": [
+    90,
+    80,
+    180,
+    108
+  ]
 }

@@ -1,12 +1,13 @@
 from PySide6.QtWidgets import QLabel, QPushButton
 
+from window_plugin import WindowPluginInfo, WindowPluginContext
 from windows.testing.tri import RainbowTriangleWidget
-from windows.custom_widgets import CustomWindow
+from quol_window import QuolMainWindow
 
 
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(300, 300, 100, 1)):
-        super().__init__('Temp', wid, geometry)
+class MainWindow(QuolMainWindow):
+    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
+        super().__init__('Temp', plugin_info, plugin_context, default_geometry=(300, 300, 100, 1))
 
         self.triangles = []
         self.tr = 0

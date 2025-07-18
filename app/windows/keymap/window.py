@@ -1,17 +1,16 @@
-import json
 import os
 import keyboard
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QWidget, QGroupBox
 
-from windows.custom_widgets import CustomWindow
+from io_helpers import read_json, write_json
+from quol_window import QuolMainWindow
+from window_plugin import WindowPluginInfo, WindowPluginContext
 
-BASE_PATH = os.path.dirname(__file__)
 
-
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(200, 170, 180, 1)):
-        super().__init__('Keymap', wid, geometry)
+class MainWindow(QuolMainWindow):
+    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
+        super().__init__('Keymap', plugin_info, plugin_context, default_geometry=(200, 170, 180, 1))
 
         self.keymap_groupbox = QGroupBox('Key Mappings')
         self.keymap_layout = QVBoxLayout()
@@ -24,6 +23,8 @@ class MainWindow(CustomWindow):
         self.layout.addWidget(self.add_button)
 
         self.key_mappings: dict[str, dict] = {}
+
+        self.mappings_path = self.plugin_info.path + '/res/keymaps.json'
         self.load_mappings()
 
     def add_mapping_row(self, src='', dst=''):
@@ -87,15 +88,14 @@ class MainWindow(CustomWindow):
 
     def save_mappings(self):
         data = {src: self.key_mappings[src]['target'] for src in self.key_mappings}
-        with open(BASE_PATH + '/res/keymaps.json', 'w') as f:
-            json.dump(data, f, indent=2)
+        write_json(self.mappings_path, data)
 
     def load_mappings(self):
-        with open(BASE_PATH + '/res/keymaps.json', 'r') as f:
-            data = json.load(f)
-            for src, dst in data.items():
-                src_input, dst_input, save_btn = self.add_mapping_row(src, dst)
-                save_btn.clicked.connect(lambda: save_btn.parent().save_mappings())
-                self.key_mappings[src] = {'target': dst, 'handle': None}
-                self.key_mappings[src]['handle'] = keyboard.add_hotkey(src, lambda: keyboard.send(dst), suppress=True)
+        data = read_json(self.mappings_path)
+
+        for src, dst in data.items():
+            src_input, dst_input, save_btn = self.add_mapping_row(src, dst)
+            save_btn.clicked.connect(lambda: save_btn.parent().save_mappings())
+            self.key_mappings[src] = {'target': dst, 'handle': None}
+            self.key_mappings[src]['handle'] = keyboard.add_hotkey(src, lambda: keyboard.send(dst), suppress=True)
 

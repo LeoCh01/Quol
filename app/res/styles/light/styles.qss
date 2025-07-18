@@ -1,0 +1,141 @@
+#title-bar {
+    background-color: #EEE;
+    padding: 12;
+}
+
+#title-bar * {
+    border: 10px solid transparent;
+    border: none;
+    color: black;
+    font-weight: bold;
+}
+
+#content {
+    background-color: #DDD;
+}
+
+#content QCheckBox {
+    background-color: #CCC;
+}
+
+#content * {
+    color: black;
+}
+
+#content QPushButton {
+    background-color: #DDD;
+    border-radius: 4px;
+    border: 1px solid #CCC;
+    padding: 2px;
+}
+
+#content QLineEdit, #content QPlainTextEdit {
+    background-color: #c2c2c2;
+}
+
+#content QPushButton:hover {
+    background-color: #BBB;
+}
+
+#content QComboBox {
+    background-color: #DDD;
+}
+
+#content QGroupBox {
+    background-color: #CCC;
+}
+
+#content QAbstractItemView {
+    background-color: #DDD;
+}
+
+#content QScrollArea QFrame {
+    padding: 2px;
+    background-color: #DDD;
+}
+
+/* HORIZONTAL SCROLLBAR */
+QScrollBar:horizontal {
+    background: #CCC;
+    height: 12px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #AAA;
+    border-radius: 3px;
+    min-width: 20px;
+    margin: 3px;
+}
+
+QScrollBar:horizontal:hover {
+    background: #BBB;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #777;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    background: none;
+    width: 0px;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+/* VERTICAL SCROLLBAR */
+QScrollBar:vertical {
+    background: #CCC;
+    width: 12px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #AAA;
+    border-radius: 3px;
+    min-height: 20px;
+    margin: 3px;
+}
+
+QScrollBar:vertical:hover {
+    background: #BBB;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #777;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    background: none;
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QAbstractScrollArea::corner {
+    background: #CCC;
+}
+
+QTextBrowser {
+    background: #DDD;
+    border: none;
+}
+
+QDialog {
+    background-color: #CCC;
+    color: black;
+}
+
+QTextEdit {
+    background-color: #c2c2c2;
+    color: black;
+    border: 1px solid #BBB;
+}

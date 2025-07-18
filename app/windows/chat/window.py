@@ -2,7 +2,6 @@ import base64
 import datetime
 
 import httpx
-import os
 import re
 
 from markdown import markdown
@@ -11,29 +10,25 @@ from PySide6.QtCore import QTimer, QRect
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
 from qasync import asyncSlot
-
-from windows.custom_widgets import CustomWindow
-
 import ollama
 
-BASE_PATH = os.path.dirname(__file__)
+from quol_window import QuolMainWindow, QuolSubWindow
+from window_plugin import WindowPluginInfo, WindowPluginContext
+
 HISTORY = []
 test_response = ""
 
 
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(730, 10, 190, 1)):
-        super().__init__('Chat', wid, geometry, path=BASE_PATH)
-        self.app = app
+class MainWindow(QuolMainWindow):
+    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
+        super().__init__('Chat', plugin_info, plugin_context, default_geometry=(730, 10, 190, 1))
         self.ollama_client = None
 
-        self.app.toggle.connect(self.focus)
+        # self.plugin_context.toggle.connect(self.focus)
+        self.chat_window = ChatWindow(self)
+        self.plugin_context.toggle.connect(self.chat_window.toggle_windows)
 
-        self.chat_window = ChatWindow()
-        self.app.toggle.connect(self.chat_window.toggle_windows)
-        self.chat_window.toggle_windows_2 = self.app.toggle_windows_2
-
-        self.ai = AI(self.chat_window, self.config)
+        self.ai = AI(self, self.chat_window)
         self.ai_list = QComboBox()
         self.ai_list.addItems(['gemini', 'ollama', 'groq'])
 
@@ -59,8 +54,8 @@ class MainWindow(CustomWindow):
 
     def focus(self):
         self.activateWindow()
-        if self.config['config']['auto_focus'] and not self.app.is_hidden:
-            self.prompt.setFocus()
+        # if self.config['config']['auto_focus'] and not self.app.is_hidden:
+        #     self.prompt.setFocus()
 
     def send_prompt(self):
         self.ai.is_img = self.config['config']['image']
@@ -68,10 +63,10 @@ class MainWindow(CustomWindow):
 
         if self.config['config']['image']:
             screen = QGuiApplication.primaryScreen()
-            self.app.toggle_windows_2(True)
+            self.plugin_context.toggle_windows_instant(True)
             screenshot = screen.grabWindow(0).toImage()
-            self.app.toggle_windows_2(False)
-            screenshot.save(BASE_PATH + '/res/img/screenshot.png')
+            self.plugin_context.toggle_windows_instant(False)
+            screenshot.save(self.plugin_info.path + '/res/img/screenshot.png')
 
         self.set_button_loading_state(True)
         QTimer.singleShot(0, self.start_chat)
@@ -110,8 +105,8 @@ class MainWindow(CustomWindow):
 
 
 class AI:
-    def __init__(self, chat_window, config):
-        self.config = config
+    def __init__(self, window: QuolMainWindow, chat_window: QuolSubWindow):
+        self.window = window
         self.chat_window = chat_window
         self.ollama_client = None
         self.current_type = None
@@ -121,7 +116,7 @@ class AI:
         self.text_content = ''
         self.loading_counter = 0
 
-        self.max_hist = self.config['config']['max_history']
+        self.max_hist = self.window.config['config']['max_history']
 
     def prompt(self, model, d):
         self.current_type = model
@@ -185,11 +180,11 @@ class AI:
             else:
                 HISTORY.append({'role': 'model', 'text': text})
 
-        with open(BASE_PATH + f'/res/{model}.log', 'a', encoding='utf-8') as f:
+        with open(self.window.plugin_info.path + f'/res/{model}.log', 'a', encoding='utf-8') as f:
             if is_user:
                 f.write(f'{datetime.datetime.now()}\nQ: {text}\n')
             else:
-                f.write(f'A: {text.replace('\n\n', '\n')}\n\n')
+                f.write(f'A: {text.replace("\n\n", "\n")}\n\n')
 
         if len(HISTORY) > (self.max_hist - 1) * 2:
             HISTORY.pop(0)
@@ -205,7 +200,7 @@ class AI:
                 messages=[{
                     'role': 'user',
                     'content': prompt,
-                    'images': [BASE_PATH + '/res/img/screenshot.png']
+                    'images': [self.window.plugin_info.path + '/res/img/screenshot.png']
                 }]
             )
 
@@ -235,7 +230,7 @@ class AI:
         cur = {'role': 'user', 'parts': [{'text': prompt}]}
 
         if self.is_img:
-            with open(BASE_PATH + '/res/img/screenshot.png', 'rb') as img_file:
+            with open(self.window.plugin_info.path + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
                 cur['parts'].append({'inline_data': {'mime_type': 'image/png', 'data': img_data}})
 
@@ -274,11 +269,12 @@ class AI:
         return url, headers, data
 
 
-class ChatWindow(CustomWindow):
-    def __init__(self):
+class ChatWindow(QuolSubWindow):
+    def __init__(self, main_window: QuolMainWindow):
+        super().__init__(main_window, 'Chat')
+
         screen_geometry = QGuiApplication.primaryScreen().geometry()
-        self.g = (screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
-        super().__init__('Chat', -1, geometry=self.g, add_close_btn=True)
+        self.setGeometry(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
 
         self.chat_response = QTextBrowser()
         self.chat_response.setOpenExternalLinks(True)

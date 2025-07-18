@@ -1,28 +1,24 @@
-import json
-import os
 import sys
 
 from PySide6.QtCore import QSettings, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QPushButton, QGridLayout, QApplication
+from PySide6.QtWidgets import QPushButton, QGridLayout
 
-from res.paths import SETTINGS_PATH
-from windows.custom_widgets import CustomWindow
+from io_helpers import write_json
+from quol_window import QuolMainWindow
+from window_plugin import WindowPluginInfo, WindowPluginContext
 
 RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
-BASE_PATH = os.path.dirname(__file__)
 
 
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(10, 10, 180, 1)):
-        super().__init__('Quol', wid, geometry, path=BASE_PATH)
+class MainWindow(QuolMainWindow):
+    def __init__(self, app, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
+        super().__init__('Quol', plugin_info, plugin_context, default_geometry=(10, 10, 180, 1))
+
         self.app = app
         self.settings_to_config()
-        CustomWindow.toggle_direction = str(self.config['toggle_direction'])
 
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-            version = settings['version']
+        version = self.app.settings["version"]
         self.ver = QPushButton(f'v{version}')
         self.ver.clicked.connect(self.open_url)
 
@@ -46,7 +42,6 @@ class MainWindow(CustomWindow):
 
     def on_update_config(self):
         self.app.set_toggle_key(str(self.config['toggle_key']))
-        CustomWindow.toggle_direction = str(self.config['toggle_direction'])
         self.toggle_startup()
         self.config_to_settings()
 
@@ -63,26 +58,15 @@ class MainWindow(CustomWindow):
         return 'Quol'
 
     def config_to_settings(self):
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-
-        settings['toggle_key'] = self.config['toggle_key']
-        settings['startup'] = self.config['startup']
-        settings['toggle_direction'] = self.config['toggle_direction']
-
-        with open(SETTINGS_PATH, 'w') as f:
-            json.dump(settings, f, indent=2)
+        self.app.settings['toggle_key'] = self.config['toggle_key']
+        self.app.settings['startup'] = self.config['startup']
+        self.app.save_settings()
 
     def settings_to_config(self):
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
+        self.config['toggle_key'] = self.app.settings['toggle_key']
+        self.config['startup'] = self.app.settings['startup']
 
-        self.config['toggle_key'] = settings['toggle_key']
-        self.config['startup'] = settings['startup']
-        self.config['toggle_direction'] = settings['toggle_direction']
-
-        with open(BASE_PATH + '/config.json', 'w') as f:
-            json.dump(self.config, f, indent=2)
+        write_json(self.plugin_info.path + '/config.json', self.config)
 
     def toggle_startup(self):
         is_startup = self.config['startup']

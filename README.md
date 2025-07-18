@@ -98,7 +98,7 @@ Some application configurations can be modified in the `res/settings.json` file.
 {
   "startup": true,
   "toggle_key": "`",
-  "toggle_direction": "random",
+  "toggle_direction": "rand",
   "is_default_pos": true
 }
 ```

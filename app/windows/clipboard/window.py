@@ -1,4 +1,3 @@
-import json
 import os
 
 import keyboard
@@ -7,17 +6,17 @@ from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEa
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit, \
     QWidget, QLabel
 
-from windows.custom_widgets import CustomWindow
+from io_helpers import read_json, write_json
+from quol_window import QuolMainWindow, QuolSubWindow
+from window_plugin import WindowPluginInfo, WindowPluginContext
 
-BASE_PATH = os.path.dirname(__file__)
 
-
-class MainWindow(CustomWindow):
+class MainWindow(QuolMainWindow):
     copy_signal = Signal()
 
-    def __init__(self, app, wid, geometry=(10, 120, 180, 1)):
-        super().__init__('Clipboard', wid, geometry, path=BASE_PATH)
-        self.app = app
+    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
+        super().__init__('Clipboard', plugin_info, plugin_context, default_geometry=(10, 120, 180, 1))
+
         self.copy_signal.connect(self.on_copy)
 
         # self.copy_popup = CopiedPopup('copied!')
@@ -45,26 +44,33 @@ class MainWindow(CustomWindow):
         self.clip_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.sticky_notes = []
+        
+        self.clipboard_path = self.plugin_info.path + '/res/clipboard.json'
+        self.clipboard = None
+        self.load_clipboard()
+        
+        if len(self.clipboard['copy']) > self.config['length']:
+            self.clipboard['copy'] = self.clipboard['copy'][-self.config['length']:]
 
-        with open(BASE_PATH + '/res/clipboard.json', 'r') as f:
-            self.clipboard = json.load(f)
+        for text in self.clipboard['copy']:
+            self.clip_layout.insertWidget(0, self.create_copy_btn(text))
 
-            if len(self.clipboard['copy']) > self.config['length']:
-                self.clipboard['copy'] = self.clipboard['copy'][-self.config['length']:]
-
-            for text in self.clipboard['copy']:
-                self.clip_layout.insertWidget(0, self.create_copy_btn(text))
-
-            for i, note in enumerate(self.clipboard['sticky'], 1):
-                if note:
-                    self.on_note(i, note, (i * 15, self.config['length'] * 30 + 200 + i * 45, 200, 200))
+        for i, note in enumerate(self.clipboard['sticky'], 1):
+            if note:
+                self.on_note(i, note, (i * 15, self.config['length'] * 30 + 200 + i * 45, 200, 200))
 
     def close(self):
         keyboard.unhook_all()
         super().close()
 
     def create_copy_btn(self, text):
-        return CustomButton(QIcon(BASE_PATH + '/res/img/copy.png'), text, self.clipboard['copy'])
+        return CustomButton(QIcon(self.plugin_info.path + '/res/img/copy.png'), text, self.clipboard['copy'])
+
+    def save_clipboard(self):
+        write_json(self.clipboard_path, self.clipboard)
+
+    def load_clipboard(self):
+        self.clipboard = read_json(self.clipboard_path)
 
     def update_clipboard(self):
         if not QApplication.clipboard().text():
@@ -80,18 +86,14 @@ class MainWindow(CustomWindow):
 
         self.clip_layout.insertWidget(0, self.create_copy_btn(self.clipboard['copy'][-1]))
 
-        with open(BASE_PATH + '/res/clipboard.json', 'w') as f:
-            json.dump(self.clipboard, f, indent=2)
-
     def on_clear(self):
         self.clipboard['copy'] = []
         for i in reversed(range(self.clip_layout.count())):
             self.clip_layout.itemAt(i).widget().deleteLater()
 
-        with open(BASE_PATH + '/res/clipboard.json', 'w') as f:
-            json.dump(self.clipboard, f, indent=2)
+        self.save_clipboard()
 
-    def on_note(self, id=-1, text='', geometry=(100, 100, 200, 200)):
+    def on_note(self, id=-1, text=''):
         if id == -1:
             try:
                 id = self.clipboard['sticky'].index('') + 1
@@ -99,11 +101,10 @@ class MainWindow(CustomWindow):
                 print('full')
                 return
 
-        sticky_window = StickyWindow(self, id, text, geometry)
+        sticky_window = StickyWindow(self, text, id)
         self.sticky_notes.append(sticky_window)
 
-        self.app.toggle.connect(sticky_window.toggle_windows)
-        sticky_window.toggle_windows_2 = self.app.toggle_windows_2
+        self.plugin_context.toggle.connect(sticky_window.toggle_windows)
 
         sticky_window.show()
         sticky_window.raise_()
@@ -138,19 +139,13 @@ class CustomButton(QPushButton):
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             QApplication.clipboard().setText(self.full_text)
-        elif event.button() == Qt.MouseButton.RightButton:
-            layout = self.appWidget().layout()
-            if layout:
-                layout.removeWidget(self)
-            self.deleteLater()
-            self.copy_clipboard.remove(self.full_text)
         super().mousePressEvent(event)
 
 
-class StickyWindow(CustomWindow):
-    def __init__(self, parent, id, text, geometry):
-        super().__init__(str(id), -1, geometry, add_close_btn=True)
-        self.parent = parent
+class StickyWindow(QuolSubWindow):
+    def __init__(self, main_window: MainWindow, text: str, id: int):
+        super().__init__(main_window, str(id))
+
         self.id = id
         self.text_edit = QTextEdit(self)
         self.text_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -168,13 +163,12 @@ class StickyWindow(CustomWindow):
 
     def save_note(self):
         self.inactivity_timer.stop()
-        self.parent.clipboard['sticky'][self.id - 1] = self.text_edit.toPlainText()
-        with open(BASE_PATH + '/res/clipboard.json', 'w') as f:
-            json.dump(self.parent.clipboard, f, indent=2)
+        self.main_window.clipboard['sticky'][self.id - 1] = self.text_edit.toPlainText()
+        self.main_window.save_clipboard()
 
     def closeEvent(self, event):
         self.inactivity_timer.stop()
-        self.parent.app.toggle.disconnect(self.toggle_windows)
+        self.main_window.plugin_context.toggle.disconnect(self.toggle_windows)
         self.text_edit.setText('')
         self.save_note()
         super().closeEvent(event)
