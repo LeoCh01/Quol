@@ -4,13 +4,13 @@ from PySide6.QtCore import QTimer, QSize, Qt
 from PySide6.QtGui import QPixmap, QColor, QGuiApplication, QCursor, QPainter
 from PySide6.QtWidgets import QLabel, QGridLayout, QPushButton
 
-from quol_window import QuolMainWindow
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
-        super().__init__('Color', plugin_info, plugin_context, default_geometry=(200, 10, 180, 1))
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Color', window_info, window_context, default_geometry=(200, 10, 180, 1))
 
         self.grid_layout = QGridLayout()
 

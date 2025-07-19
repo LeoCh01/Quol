@@ -2,14 +2,14 @@ import subprocess
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QPlainTextEdit, \
     QCheckBox
 
-from io_helpers import read_json, write_json
-from quol_window import QuolMainWindow, QuolSubWindow
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.io_helpers import read_json, write_json
+from lib.quol_window import QuolMainWindow, QuolSubWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
-        super().__init__('Command', plugin_info, plugin_context, default_geometry=(390, 10, 170, 1))
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Command', window_info, window_context, default_geometry=(390, 10, 170, 1))
 
         self.commands_groupbox = QGroupBox('Commands')
         self.commands_layout = QVBoxLayout()
@@ -22,7 +22,7 @@ class MainWindow(QuolMainWindow):
         self.layout.addWidget(self.add_btn)
 
         self.commands = []
-        self.commands_path = self.plugin_info.path + '/res/commands.json'
+        self.commands_path = self.window_info.path + '/res/commands.json'
         self.load_commands()
         self.dialog = CommandConfig(self)
 

@@ -22,10 +22,12 @@
     "/e": "explain this in simple terms",
     "/i": "what is this image?"
   },
-  "_geometry": [
-    830,
-    50,
-    190,
-    136
-  ]
+  "_": {
+    "geometry": [
+      730,
+      10,
+      190,
+      1
+    ]
+  }
 }

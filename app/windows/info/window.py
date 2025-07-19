@@ -4,16 +4,16 @@ from PySide6.QtCore import QSettings, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QPushButton, QGridLayout
 
-from io_helpers import write_json
-from quol_window import QuolMainWindow
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.io_helpers import write_json
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, app, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
-        super().__init__('Quol', plugin_info, plugin_context, default_geometry=(10, 10, 180, 1))
+    def __init__(self, app, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Quol', window_info, window_context, default_geometry=(10, 10, 180, 1))
 
         self.app = app
         self.settings_to_config()
@@ -66,7 +66,7 @@ class MainWindow(QuolMainWindow):
         self.config['toggle_key'] = self.app.settings['toggle_key']
         self.config['startup'] = self.app.settings['startup']
 
-        write_json(self.plugin_info.path + '/config.json', self.config)
+        write_json(self.window_info.path + '/config.json', self.config)
 
     def toggle_startup(self):
         is_startup = self.config['startup']

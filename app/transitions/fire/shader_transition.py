@@ -7,14 +7,14 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtOpenGL import QOpenGLShaderProgram, QOpenGLShader, QOpenGLTexture
 from OpenGL import GL
 
-from quol_window import QuolBaseWindow
+from lib.quol_window import QuolBaseWindow
 from transition import Transition
 from transition_plugin import TransitionPluginInfo
 
 
 class ShaderTransition(Transition, QWidget):
-    def __init__(self, plugin_info: TransitionPluginInfo, window: QuolBaseWindow, vertex_source: str, fragment_src: str):
-        Transition.__init__(self, plugin_info, window)
+    def __init__(self, window_info: TransitionPluginInfo, window: QuolBaseWindow, vertex_source: str, fragment_src: str):
+        Transition.__init__(self, window_info, window)
         QWidget.__init__(self, window)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
@@ -55,7 +55,7 @@ class ShaderTransition(Transition, QWidget):
         image = render_target.toImage().mirrored(False, True)
         self.shader_widget.set_texture(image)
 
-    def begin(self):
+    def exit(self):
         self.update_timer.stop()
 
         self.capture()
@@ -66,7 +66,7 @@ class ShaderTransition(Transition, QWidget):
         self.shader_widget.new_seed()
         self.update_timer.start()
 
-    def end(self):
+    def enter(self):
         self.update_timer.stop()
         self.show()
 

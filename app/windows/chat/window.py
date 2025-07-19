@@ -6,27 +6,26 @@ import re
 
 from markdown import markdown
 from pygments.formatters.html import HtmlFormatter
-from PySide6.QtCore import QTimer, QRect
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
 from qasync import asyncSlot
 import ollama
 
-from quol_window import QuolMainWindow, QuolSubWindow
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.quol_window import QuolMainWindow, QuolSubWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 HISTORY = []
 test_response = ""
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
-        super().__init__('Chat', plugin_info, plugin_context, default_geometry=(730, 10, 190, 1))
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Chat', window_info, window_context, default_geometry=(730, 10, 190, 1))
         self.ollama_client = None
 
-        # self.plugin_context.toggle.connect(self.focus)
         self.chat_window = ChatWindow(self)
-        self.plugin_context.toggle.connect(self.chat_window.toggle_windows)
+        self.window_context.toggle.connect(self.chat_window.toggle_windows)
 
         self.ai = AI(self, self.chat_window)
         self.ai_list = QComboBox()
@@ -63,10 +62,10 @@ class MainWindow(QuolMainWindow):
 
         if self.config['config']['image']:
             screen = QGuiApplication.primaryScreen()
-            self.plugin_context.toggle_windows_instant(True)
+            self.window_context.toggle_windows_instant(True)
             screenshot = screen.grabWindow(0).toImage()
-            self.plugin_context.toggle_windows_instant(False)
-            screenshot.save(self.plugin_info.path + '/res/img/screenshot.png')
+            self.window_context.toggle_windows_instant(False)
+            screenshot.save(self.window_info.path + '/res/img/screenshot.png')
 
         self.set_button_loading_state(True)
         QTimer.singleShot(0, self.start_chat)
@@ -104,8 +103,78 @@ class MainWindow(QuolMainWindow):
             self.btn.setText('Send')
 
 
+class ChatWindow(QuolSubWindow):
+    def __init__(self, main_window: QuolMainWindow):
+        super().__init__(main_window, 'Chat')
+
+        screen_geometry = QGuiApplication.primaryScreen().geometry()
+        self.setGeometry(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
+
+        self.chat_response = QTextBrowser()
+        self.chat_response.setOpenExternalLinks(True)
+        self.chat_response.setReadOnly(True)
+        self.layout.addWidget(self.chat_response, stretch=1)
+
+    def set_text(self, text):
+        html = self.markdown_to_html(str(text))
+        self.chat_response.setHtml(html)
+        self.chat_response.repaint()
+        QApplication.processEvents()
+
+    def closeEvent(self, event):
+        print('Window closed')
+        super().closeEvent(event)
+        self.set_text('')
+        # self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
+        HISTORY.clear()
+        self.close()
+
+    @staticmethod
+    def markdown_to_html(md_text):
+        html_body = markdown(md_text, extensions=["fenced_code", "codehilite"])
+        css = HtmlFormatter(style="monokai").get_style_defs('.codehilite')
+
+        styling = f"""
+            <style type="text/css">
+            {css}
+            .content-wrapper {{
+                padding: 10px;
+            }}
+            body {{
+                background-color: #333;
+                color: white;
+                font-size: 13px;
+                letter-spacing: 0.2px;
+                line-height: 1.2;
+            }}
+            .codehilite pre {{
+                margin: 0;
+                padding: 10px;
+                background: #262626;
+                line-height: 1;
+            }}
+            code {{
+                background-color: #262626;
+                padding:10px;
+                border-radius: 4px;
+            }}
+            </style>
+        """
+
+        html_text = f"""
+            <html>
+            <head>{styling}</head>
+            <body>
+                {html_body}
+            </body>
+            </html>
+        """
+
+        return html_text
+
+
 class AI:
-    def __init__(self, window: QuolMainWindow, chat_window: QuolSubWindow):
+    def __init__(self, window: QuolMainWindow, chat_window: ChatWindow):
         self.window = window
         self.chat_window = chat_window
         self.ollama_client = None
@@ -180,7 +249,7 @@ class AI:
             else:
                 HISTORY.append({'role': 'model', 'text': text})
 
-        with open(self.window.plugin_info.path + f'/res/{model}.log', 'a', encoding='utf-8') as f:
+        with open(self.window.window_info.path + f'/res/{model}.log', 'a', encoding='utf-8') as f:
             if is_user:
                 f.write(f'{datetime.datetime.now()}\nQ: {text}\n')
             else:
@@ -200,7 +269,7 @@ class AI:
                 messages=[{
                     'role': 'user',
                     'content': prompt,
-                    'images': [self.window.plugin_info.path + '/res/img/screenshot.png']
+                    'images': [self.window.window_info.path + '/res/img/screenshot.png']
                 }]
             )
 
@@ -230,7 +299,7 @@ class AI:
         cur = {'role': 'user', 'parts': [{'text': prompt}]}
 
         if self.is_img:
-            with open(self.window.plugin_info.path + '/res/img/screenshot.png', 'rb') as img_file:
+            with open(self.window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
                 cur['parts'].append({'inline_data': {'mime_type': 'image/png', 'data': img_data}})
 
@@ -260,81 +329,10 @@ class AI:
         cur = {'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}
 
         if self.is_img:
-            with open(BASE_PATH + '/res/img/screenshot.png', 'rb') as img_file:
+            with open(self.window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
                 cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{img_data}'}})
 
         data['messages'].append(cur)
         self.add_history('groq', prompt, img_data, True)
         return url, headers, data
-
-
-class ChatWindow(QuolSubWindow):
-    def __init__(self, main_window: QuolMainWindow):
-        super().__init__(main_window, 'Chat')
-
-        screen_geometry = QGuiApplication.primaryScreen().geometry()
-        self.setGeometry(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
-
-        self.chat_response = QTextBrowser()
-        self.chat_response.setOpenExternalLinks(True)
-        self.chat_response.setReadOnly(True)
-        self.layout.addWidget(self.chat_response, stretch=1)
-
-    def set_text(self, text):
-        html = self.markdown_to_html(str(text))
-        self.chat_response.setHtml(html)
-        self.chat_response.repaint()
-        QApplication.processEvents()
-
-    def closeEvent(self, event):
-        print('Window closed')
-        super().closeEvent(event)
-        self.set_text('')
-        self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
-        HISTORY.clear()
-
-    @staticmethod
-    def markdown_to_html(md_text):
-        html_body = markdown(md_text, extensions=["fenced_code", "codehilite"])
-        css = HtmlFormatter(style="monokai").get_style_defs('.codehilite')
-
-        styling = f"""
-            <style type="text/css">
-            {css}
-            .content-wrapper {{
-                padding: 10px;
-            }}
-            body {{
-                background-color: #333;
-                color: white;
-                font-size: 13px;
-                letter-spacing: 0.2px;
-                line-height: 1.2;
-            }}
-            .codehilite pre {{
-                margin: 0;
-                padding: 10px;
-                background: #262626;
-                line-height: 1;
-            }}
-            code {{
-                background-color: #262626;
-                padding:10px;
-                border-radius: 4px;
-            }}
-            </style>
-        """
-
-        html_text = f"""
-            <html>
-            <head>{styling}</head>
-            <body>
-                {html_body}
-            </body>
-            </html>
-        """
-
-        return html_text
-
-

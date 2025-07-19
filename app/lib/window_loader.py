@@ -5,21 +5,10 @@ import importlib
 
 from PySide6.QtCore import Signal
 
-from io_helpers import read_json, write_json
+from lib.io_helpers import read_json, write_json
 
 
-class WindowPluginInfo:
-    def __init__(self, path):
-        self.path = path
-        self.config_path = path + '\\config.json'
-
-    def save_config(self, config):
-        write_json(self.config_path, config)
-
-    def load_config(self):
-        return read_json(self.config_path)
-
-class WindowPlugin:
+class WindowLoader:
     def __init__(self, name):
         self.name = name
         self.module = None
@@ -36,18 +25,31 @@ class WindowPlugin:
         else:
             logging.error(f'Script {self.name} does not exist at {module_path}.')
 
-    def create_window(self, context):
-        return self.module.MainWindow(WindowPluginInfo(self.path), context)
+    def create_window(self, context, app=None):
+        return self.module.MainWindow(WindowInfo(self.path), context)
 
 
-class SystemWindowPlugin(WindowPlugin):
+class SystemWindowLoader(WindowLoader):
     def __init__(self, name):
         super().__init__(name)
 
-    def create_window(self, app, context):
-        return self.module.MainWindow(app, WindowPluginInfo(self.path), context)
+    def create_window(self, context, app=None):
+        return self.module.MainWindow(app, WindowInfo(self.path), context)
 
-class WindowPluginContext:
+
+class WindowInfo:
+    def __init__(self, path):
+        self.path = path
+        self.config_path = path + '\\config.json'
+
+    def save_config(self, config):
+        write_json(self.config_path, config)
+
+    def load_config(self):
+        return read_json(self.config_path)
+
+
+class WindowContext:
     def __init__(self, toggle: Signal(bool, bool), toggle_windows, toggle_windows_instant, settings, transition_plugin):
         self.toggle = toggle
         self.toggle_windows = toggle_windows

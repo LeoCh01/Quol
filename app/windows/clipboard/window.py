@@ -6,16 +6,16 @@ from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEa
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit, \
     QWidget, QLabel
 
-from io_helpers import read_json, write_json
-from quol_window import QuolMainWindow, QuolSubWindow
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.io_helpers import read_json, write_json
+from lib.quol_window import QuolMainWindow, QuolSubWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 
 class MainWindow(QuolMainWindow):
     copy_signal = Signal()
 
-    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
-        super().__init__('Clipboard', plugin_info, plugin_context, default_geometry=(10, 120, 180, 1))
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Clipboard', window_info, window_context, default_geometry=(10, 130, 180, 1))
 
         self.copy_signal.connect(self.on_copy)
 
@@ -45,7 +45,7 @@ class MainWindow(QuolMainWindow):
 
         self.sticky_notes = []
         
-        self.clipboard_path = self.plugin_info.path + '/res/clipboard.json'
+        self.clipboard_path = self.window_info.path + '/res/clipboard.json'
         self.clipboard = None
         self.load_clipboard()
         
@@ -64,7 +64,7 @@ class MainWindow(QuolMainWindow):
         super().close()
 
     def create_copy_btn(self, text):
-        return CustomButton(QIcon(self.plugin_info.path + '/res/img/copy.png'), text, self.clipboard['copy'])
+        return CustomButton(QIcon(self.window_info.path + '/res/img/copy.png'), text, self.clipboard['copy'])
 
     def save_clipboard(self):
         write_json(self.clipboard_path, self.clipboard)
@@ -104,7 +104,7 @@ class MainWindow(QuolMainWindow):
         sticky_window = StickyWindow(self, text, id)
         self.sticky_notes.append(sticky_window)
 
-        self.plugin_context.toggle.connect(sticky_window.toggle_windows)
+        self.window_context.toggle.connect(sticky_window.toggle_windows)
 
         sticky_window.show()
         sticky_window.raise_()
@@ -168,7 +168,7 @@ class StickyWindow(QuolSubWindow):
 
     def closeEvent(self, event):
         self.inactivity_timer.stop()
-        self.main_window.plugin_context.toggle.disconnect(self.toggle_windows)
+        self.main_window.window_context.toggle.disconnect(self.toggle_windows)
         self.text_edit.setText('')
         self.save_note()
         super().closeEvent(event)

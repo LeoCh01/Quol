@@ -3,14 +3,14 @@ import keyboard
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QWidget, QGroupBox
 
-from io_helpers import read_json, write_json
-from quol_window import QuolMainWindow
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.io_helpers import read_json, write_json
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
-        super().__init__('Keymap', plugin_info, plugin_context, default_geometry=(200, 170, 180, 1))
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Keymap', window_info, window_context, default_geometry=(200, 180, 180, 1))
 
         self.keymap_groupbox = QGroupBox('Key Mappings')
         self.keymap_layout = QVBoxLayout()
@@ -24,7 +24,7 @@ class MainWindow(QuolMainWindow):
 
         self.key_mappings: dict[str, dict] = {}
 
-        self.mappings_path = self.plugin_info.path + '/res/keymaps.json'
+        self.mappings_path = self.window_info.path + '/res/keymaps.json'
         self.load_mappings()
 
     def add_mapping_row(self, src='', dst=''):

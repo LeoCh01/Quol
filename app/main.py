@@ -5,8 +5,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 from qasync import QEventLoop
-from app import App
-from res.paths import RES_PATH
+from app.lib.app import App
 
 
 def initialize_app():
@@ -20,7 +19,7 @@ def initialize_app():
     print('Switched working directory:', os.getcwd())
 
     logging.basicConfig(
-        filename=RES_PATH + 'error.log',
+        filename='res/error.log',
         filemode='a',
         level=logging.ERROR,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

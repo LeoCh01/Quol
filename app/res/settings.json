@@ -8,15 +8,13 @@
   "transition": "rand",
   "is_default_pos": true,
   "windows": [
+    "info",
     "chance",
     "chat",
     "draw",
     "run_command",
     "color_picker",
     "keymap",
-    "example",
-    "testing",
-    "clipboard",
-    "info"
+    "clipboard"
   ]
 }

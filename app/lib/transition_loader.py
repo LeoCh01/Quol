@@ -3,7 +3,7 @@ import os
 import sys
 import importlib
 
-from quol_window import QuolBaseWindow
+from lib.quol_window import QuolBaseWindow
 
 
 class TransitionPluginInfo:
@@ -11,7 +11,7 @@ class TransitionPluginInfo:
         self.path = path
 
 
-class TransitionPlugin:
+class TransitionLoader:
     def __init__(self, name):
         self.name = name
         self.module = None

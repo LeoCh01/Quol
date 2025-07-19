@@ -1,11 +1,10 @@
 from PySide6.QtCore import Qt, Signal, QRect
 from PySide6.QtGui import QPainterPath, QRegion
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QPushButton, QGroupBox, QCheckBox, QLabel, \
-    QLineEdit
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QPushButton, QGroupBox, QCheckBox, QLabel, QLineEdit
 
-from io_helpers import read_json
-from quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.io_helpers import read_json
+from lib.quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
+from lib.window_loader import WindowInfo, WindowContext
 
 
 class QuolBaseWindow(QWidget):
@@ -47,28 +46,29 @@ class QuolBaseWindow(QWidget):
             return
 
         if is_hidden:
-            self.transition.end()
+            self.transition.enter()
         else:
-            self.transition.begin()
+            self.transition.exit()
 
 
 class QuolMainWindow(QuolBaseWindow):
     config_signal = Signal()
 
-    def __init__(self, title, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext, default_geometry: tuple[int, int, int, int]):
+    def __init__(self, title, window_info: WindowInfo, window_context: WindowContext, default_geometry: tuple[int, int, int, int]):
         super().__init__()
 
-        self.plugin_info = plugin_info
-        self.config = self.plugin_info.load_config()
-        self.plugin_context = plugin_context
+        self.window_info = window_info
+        self.config = self.window_info.load_config()
+        self.window_context = window_context
 
-        default_pos = self.plugin_context.settings.get('is_default_pos')
-        if default_pos:
-            self.setGeometry(QRect(*default_geometry))
+        default_pos = self.window_context.settings.get('is_default_pos')
+        self.config.setdefault('_', {})
+        self.setGeometry(QRect(*default_geometry))
+        if default_pos or not self.config['_'].get('geometry'):
+            self.config['_']['geometry'] = [*default_geometry]
+            self.window_info.save_config(self.config)
         else:
-            geometry = self.config.get('_geometry')
-            if geometry:
-                self.setGeometry(QRect(*geometry))
+            self.setGeometry(QRect(*self.config['_']['geometry']))
 
         self.update()
         self.config_signal.connect(self.on_update_config)
@@ -77,11 +77,11 @@ class QuolMainWindow(QuolBaseWindow):
         self.title_bar = QuolMainTitleBar(self, title, self.config_window)
         self.l1.insertWidget(0, self.title_bar)
 
-        self.transition = self.plugin_context.transition_plugin.create_transition(self)
+        self.transition = self.window_context.transition_plugin.create_transition(self)
 
     def on_update_config(self):
         """
-        This method is called when the config.json file is updated (requires path to be set).
+        This method is called when the config.json file is updated.
         """
         pass
 
@@ -94,7 +94,7 @@ class QuolSubWindow(QuolBaseWindow):
         self.title_bar = QuolSubTitleBar(self, title)
         self.l1.insertWidget(0, self.title_bar)
 
-        self.transition = self.main_window.plugin_context.transition_plugin.create_transition(self)
+        self.transition = self.main_window.window_context.transition_plugin.create_transition(self)
 
 
 class QuolConfigWindow(QuolSubWindow):
@@ -106,7 +106,7 @@ class QuolConfigWindow(QuolSubWindow):
         self.config_layout = QVBoxLayout()
         self.layout.addLayout(self.config_layout)
 
-        self.settings = read_json(self.main_window.plugin_info.config_path)
+        self.settings = read_json(self.main_window.window_info.config_path)
         self.generate_settings()
 
         self.button_layout = QHBoxLayout()
@@ -181,6 +181,6 @@ class QuolConfigWindow(QuolSubWindow):
 
         config = extract_from_layout(self.config_layout)
         self.main_window.config = config
-        self.main_window.plugin_info.save_config(config)
+        self.main_window.window_info.save_config(config)
         self.main_window.config_signal.emit()
         self.hide()

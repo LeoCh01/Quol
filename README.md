@@ -90,24 +90,6 @@ To run the application locally or build it as a standalone executable, follow th
      pyinstaller Quol.spec
    ```
 
-## Settings Config
-
-Some application configurations can be modified in the `res/settings.json` file. Below is an example of the settings you can adjust:
-
-```json
-{
-  "startup": true,
-  "toggle_key": "`",
-  "toggle_direction": "rand",
-  "is_default_pos": true
-}
-```
-
-- **startup:** Run the application at startup. (`true`/`false`)
-- **toggle_key:** The hotkey to toggle the application.
-- **toggle_direction:** (`up`/`down`/`left`/`right`/`random`).
-- **is_default_pos:** Disable custom window positions (`true`/`false`)
-
 ## Adding Custom Windows
 
 To create a new window, you can add a folder to the `windows` directory and add the folder name in the `res/settings.json` file. You can use the template provided in `windows/example` folder as a starting point.

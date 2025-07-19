@@ -5,14 +5,14 @@ from PySide6.QtGui import QColor, QMouseEvent, QPainter, Qt, QPixmap, QPen, QSho
 from PySide6.QtWidgets import QPushButton, QHBoxLayout, QWidget, QApplication, QSlider, QLabel, QVBoxLayout
 from PySide6.QtCore import QPoint
 
-from quol_window import QuolMainWindow
-from window_plugin import WindowPluginInfo, WindowPluginContext
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 from windows.draw.color_wheel import ColorWheel
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, plugin_info: WindowPluginInfo, plugin_context: WindowPluginContext):
-        super().__init__('Draw', plugin_info, plugin_context, default_geometry=(930, 10, 190, 1))
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Draw', window_info, window_context, default_geometry=(930, 10, 190, 1))
 
         self.drawing_widget = DrawingWidget()
 
@@ -47,7 +47,7 @@ class MainWindow(QuolMainWindow):
     def on_start_clicked(self):
         if self.start_button.text() == 'Start':
             self.start_button.setText('Stop')
-            self.drawing_widget.start_drawing(self.plugin_context   )
+            self.drawing_widget.start_drawing(self.window_context   )
         else:
             self.start_button.setText('Start')
             self.drawing_widget.stop_drawing()

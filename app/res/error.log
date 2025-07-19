@@ -585,7 +585,7 @@ Traceback (most recent call last):
     return self.module.MainWindow(WindowPluginInfo(self.path))
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "D:\Leo\Quol\app\windows\chance\window.py", line 23, in __init__
-    super().__init__('Chance', plugin_info)
+    super().__init__('Chance', window_info)
   File "D:\Leo\Quol\app\quol_widgets.py", line 66, in __init__
     self.title_bar = QuolMainTitleBar(title, self)
                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -601,3 +601,6 @@ Supported signatures:
 2025-07-18 16:00:37,495 - root - ERROR - Script random does not exist at D:\Leo\Quol\app\transitions\random\transition.py.
 2025-07-18 16:52:01,610 - root - ERROR - Script test does not exist at D:\Leo\Quol\app\windows\test\window.py.
 2025-07-18 17:27:15,940 - root - ERROR - Script random does not exist at D:\Leo\Quol\app\transitions\random\transition.py.
+2025-07-19 00:17:31,631 - root - ERROR - Script rand does not exist at C:\Users\leoch\Documents\- Python Code\Quol\app\transitions\rand\quol_transition.py.
+2025-07-19 00:17:43,629 - root - ERROR - Script rand does not exist at C:\Users\leoch\Documents\- Python Code\Quol\app\transitions\rand\quol_transition.py.
+2025-07-19 00:18:04,276 - root - ERROR - Script rand does not exist at C:\Users\leoch\Documents\- Python Code\Quol\app\transitions\rand\quol_transition.py.

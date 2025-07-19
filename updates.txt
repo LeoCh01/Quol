@@ -1,11 +1,5 @@
 CURRENT
-- add keymapper tool
-- fix QNetworkManager for some devices
-- show chat response counter
-- add eraser, stroke width, and straight lines to draw tool
-- optimize draw tool undo stack
-- fix run command delete
-- paintEvent bugfixes
+- refactor
 
 TODO
 - stream api calls
