@@ -37,10 +37,12 @@ class QuolMainTitleBar(QuolBaseTitleBar):
         super().__init__(quol_window, title)
 
         self.quol_window = quol_window
-        self.config_btn = QPushButton(self)
-        self.config_btn.setIcon(QIcon('res/icons/config.png'))
-        self.config_btn.clicked.connect(config_window.show)
-        self.l1.addWidget(self.config_btn, stretch=1)
+
+        if config_window:
+            self.config_btn = QPushButton(self)
+            self.config_btn.setIcon(QIcon('res/icons/config.png'))
+            self.config_btn.clicked.connect(config_window.show)
+            self.l1.addWidget(self.config_btn, stretch=1)
 
     def mouseReleaseEvent(self, event):
         QuolBaseTitleBar.mouseReleaseEvent(self, event)

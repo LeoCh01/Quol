@@ -1,4 +1,4 @@
-import os
+from typing import Optional
 
 import keyboard
 from PySide6.QtGui import QIcon, Qt
@@ -46,7 +46,7 @@ class MainWindow(QuolMainWindow):
         self.sticky_notes = []
         
         self.clipboard_path = self.window_info.path + '/res/clipboard.json'
-        self.clipboard = None
+        self.clipboard: Optional[dict] = None
         self.load_clipboard()
         
         if len(self.clipboard['copy']) > self.config['length']:
@@ -57,11 +57,7 @@ class MainWindow(QuolMainWindow):
 
         for i, note in enumerate(self.clipboard['sticky'], 1):
             if note:
-                self.on_note(i, note, (i * 15, self.config['length'] * 30 + 200 + i * 45, 200, 200))
-
-    def close(self):
-        keyboard.unhook_all()
-        super().close()
+                self.on_note(i, note, (i * 15, self.config['length'] * 30 + 200 + i * 45))
 
     def create_copy_btn(self, text):
         return CustomButton(QIcon(self.window_info.path + '/res/img/copy.png'), text, self.clipboard['copy'])
@@ -93,15 +89,14 @@ class MainWindow(QuolMainWindow):
 
         self.save_clipboard()
 
-    def on_note(self, id=-1, text=''):
-        if id == -1:
-            try:
-                id = self.clipboard['sticky'].index('') + 1
-            except ValueError:
-                print('full')
-                return
+    def on_note(self, wid=-1, text='', pos=(300, 300)):
+        if wid == -1 and len(self.sticky_notes) < 10:
+            wid = len(self.sticky_notes) + 1
+        else:
+            print('full')
+            return
 
-        sticky_window = StickyWindow(self, text, id)
+        sticky_window = StickyWindow(self, text, wid, pos)
         self.sticky_notes.append(sticky_window)
 
         self.window_context.toggle.connect(sticky_window.toggle_windows)
@@ -111,6 +106,7 @@ class MainWindow(QuolMainWindow):
         sticky_window.activateWindow()
 
     def on_copy(self):
+        print('copy')
         QTimer.singleShot(100, self.update_clipboard)
 
     def on_update_config(self):
@@ -143,7 +139,7 @@ class CustomButton(QPushButton):
 
 
 class StickyWindow(QuolSubWindow):
-    def __init__(self, main_window: MainWindow, text: str, id: int):
+    def __init__(self, main_window: MainWindow, text: str, id: int, pos: tuple):
         super().__init__(main_window, str(id))
 
         self.id = id

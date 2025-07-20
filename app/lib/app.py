@@ -26,6 +26,7 @@ class App(QObject):
         self.setup_tray_icon()
 
         self.toggle_key: str = str(self.settings.get('toggle_key', '`'))
+        self.toggle_hotkey = None
         self.reset_hotkey(self.toggle_key)
 
         self.is_hidden: bool = False
@@ -72,9 +73,11 @@ class App(QObject):
             window.show()
 
     def reset_hotkey(self, new_key: str):
-        keyboard.unhook_all()
+        if self.toggle_hotkey:
+            keyboard.remove_hotkey(self.toggle_hotkey)
+
         self.toggle_key = new_key
-        keyboard.add_hotkey(new_key, self.toggle_windows, suppress=True)
+        self.toggle_hotkey = keyboard.add_hotkey(new_key, self.toggle_windows, suppress=True)
 
     def toggle_windows(self):
         self.toggle.emit(self.is_hidden, False)
@@ -124,6 +127,7 @@ class App(QObject):
             w.close()
 
         self.windows.clear()
+        self.toggle_hotkey = None
         keyboard.unhook_all()
 
     def restart(self):

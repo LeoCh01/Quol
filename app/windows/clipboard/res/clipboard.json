@@ -1,5 +1,7 @@
 {
-  "copy": [],
+  "copy": [
+    "sticky"
+  ],
   "sticky": [
     "",
     "",

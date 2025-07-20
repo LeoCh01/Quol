@@ -80,7 +80,7 @@ class QuolBaseWindow(QWidget):
 class QuolMainWindow(QuolBaseWindow):
     config_signal = Signal()
 
-    def __init__(self, title, window_info: WindowInfo, window_context: WindowContext, default_geometry: tuple[int, int, int, int]):
+    def __init__(self, title, window_info: WindowInfo, window_context: WindowContext, default_geometry: tuple[int, int, int, int], show_config=True):
         super().__init__()
 
         self.window_info = window_info
@@ -96,14 +96,17 @@ class QuolMainWindow(QuolBaseWindow):
         else:
             self.setGeometry(QRect(*self.config['_']['geometry']))
 
-        self.update()
-        self.config_signal.connect(self.on_update_config)
-        self.config_window = QuolConfigWindow(self, title + ' Config')
+        if show_config:
+            self.config_signal.connect(self.on_update_config)
+            self.config_window = QuolConfigWindow(self, title + ' Config')
+        else:
+            self.config_window = None
 
         self.title_bar = QuolMainTitleBar(self, title, self.config_window)
         self.l1.insertWidget(0, self.title_bar)
 
         self.transition = self.window_context.transition_plugin.create_transition(self)
+        self.update()
 
     def on_update_config(self):
         """

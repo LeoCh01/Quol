@@ -43,6 +43,7 @@
 
 #content QGroupBox {
     background-color: #CCC;
+    border: 1px solid #AAA;
 }
 
 #content QAbstractItemView {

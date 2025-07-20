@@ -12,7 +12,7 @@ from windows.draw.color_wheel import ColorWheel
 
 class MainWindow(QuolMainWindow):
     def __init__(self, window_info: WindowInfo, window_context: WindowContext):
-        super().__init__('Draw', window_info, window_context, default_geometry=(930, 10, 190, 1))
+        super().__init__('Draw', window_info, window_context, default_geometry=(930, 10, 190, 1), show_config=False)
 
         self.drawing_widget = DrawingWidget()
 

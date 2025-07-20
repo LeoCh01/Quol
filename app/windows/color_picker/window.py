@@ -10,7 +10,7 @@ from lib.window_loader import WindowInfo, WindowContext
 
 class MainWindow(QuolMainWindow):
     def __init__(self, window_info: WindowInfo, window_context: WindowContext):
-        super().__init__('Color', window_info, window_context, default_geometry=(200, 10, 180, 1))
+        super().__init__('Color', window_info, window_context, default_geometry=(200, 10, 180, 1), show_config=False)
 
         self.grid_layout = QGridLayout()
 

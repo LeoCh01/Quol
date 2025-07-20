@@ -54,7 +54,7 @@ class MainWindow(QuolMainWindow):
         self.layout.addWidget(self.btn)
 
     def focus(self):
-        if not self.window_context.get_is_hidden():
+        if self.config['config']['auto_focus'] and not self.window_context.get_is_hidden():
             QTimer.singleShot(210, self._focus_action)
 
     def _focus_action(self):

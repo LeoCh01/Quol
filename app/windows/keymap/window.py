@@ -10,7 +10,7 @@ from lib.window_loader import WindowInfo, WindowContext
 
 class MainWindow(QuolMainWindow):
     def __init__(self, window_info: WindowInfo, window_context: WindowContext):
-        super().__init__('Keymap', window_info, window_context, default_geometry=(200, 180, 180, 1))
+        super().__init__('Keymap', window_info, window_context, default_geometry=(200, 180, 180, 1), show_config=False)
 
         self.keymap_groupbox = QGroupBox('Key Mappings')
         self.keymap_layout = QVBoxLayout()
