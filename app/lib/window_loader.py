@@ -50,9 +50,10 @@ class WindowInfo:
 
 
 class WindowContext:
-    def __init__(self, toggle: Signal(bool, bool), toggle_windows, toggle_windows_instant, settings, transition_plugin):
+    def __init__(self, toggle: Signal(bool, bool), toggle_windows, toggle_windows_instant, settings, transition_plugin, get_is_hidden):
         self.toggle = toggle
         self.toggle_windows = toggle_windows
         self.toggle_windows_instant = toggle_windows_instant
         self.transition_plugin = transition_plugin
         self.settings = settings
+        self.get_is_hidden = get_is_hidden

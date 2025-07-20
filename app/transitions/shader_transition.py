@@ -8,13 +8,13 @@ from PySide6.QtOpenGL import QOpenGLShaderProgram, QOpenGLShader, QOpenGLTexture
 from OpenGL import GL
 
 from lib.quol_window import QuolBaseWindow
-from transition import Transition
-from transition_plugin import TransitionPluginInfo
+from lib.quol_transition import QuolTransition
+from lib.transition_loader import TransitionInfo
 
 
-class ShaderTransition(Transition, QWidget):
-    def __init__(self, window_info: TransitionPluginInfo, window: QuolBaseWindow, vertex_source: str, fragment_src: str):
-        Transition.__init__(self, window_info, window)
+class ShaderTransition(QuolTransition, QWidget):
+    def __init__(self, transition_info: TransitionInfo, window: QuolBaseWindow, vertex_source: str, fragment_src: str):
+        QuolTransition.__init__(self, transition_info, window)
         QWidget.__init__(self, window)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
@@ -35,12 +35,12 @@ class ShaderTransition(Transition, QWidget):
 
     def update_overlay(self):
         if self.shader_widget.is_done():
-            self.hide()
+            # self.hide()
             if not self.shader_widget.forward:
                 self.window.show()
-                # print("AA")
-                # QTimer.singleShot(50, self.hide)
-
+                QTimer.singleShot(50, self.hide)
+            else:
+                self.hide()
             self.update_timer.stop()
 
         self.shader_widget.repaint()
@@ -72,6 +72,7 @@ class ShaderTransition(Transition, QWidget):
 
         self.shader_widget.forward = False
         self.update_timer.start()
+
 
 class TextureShaderWidget(QOpenGLWidget):
     def __init__(self, vertex_src: str, fragment_src: str, parent=None):

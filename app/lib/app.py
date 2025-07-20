@@ -47,9 +47,12 @@ class App(QObject):
         t.load()
         return t
 
+    def get_is_hidden(self):
+        return self.is_hidden
+
     def load_windows(self):
         transition_plugin = self.load_transition()
-        context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin)
+        context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin, self.get_is_hidden)
 
         for name in self.settings.get('windows'):
             if name == 'info':

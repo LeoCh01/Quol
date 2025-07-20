@@ -5,7 +5,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 from qasync import QEventLoop
-from app.lib.app import App
+from lib.app import App
 
 
 def initialize_app():

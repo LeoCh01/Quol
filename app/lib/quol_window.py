@@ -26,6 +26,8 @@ class QuolBaseWindow(QWidget):
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.transition = None
 
+        self.is_hidden = True
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.setMask(self.generate_rounded_mask())
@@ -38,6 +40,9 @@ class QuolBaseWindow(QWidget):
         return QRegion(path.toFillPolygon().toPolygon())
 
     def toggle_windows(self, is_hidden, is_instant=False):
+        if self.is_hidden:
+            return
+
         if is_instant:
             if is_hidden:
                 self.hide()
@@ -49,6 +54,27 @@ class QuolBaseWindow(QWidget):
             self.transition.enter()
         else:
             self.transition.exit()
+
+    def setGeometry(self, *args):
+        if len(args) == 1 and isinstance(args[0], QRect):
+            super().setGeometry(args[0])
+            if self.transition:
+                self.transition.old_pos = self.pos()
+        elif len(args) == 4:
+            super().setGeometry(QRect(*args))
+            if self.transition:
+                self.transition.old_pos = self.pos()
+        else:
+            raise TypeError("setGeometry() accepts either a QRect or (x, y, width, height)")
+        self.update()
+
+    def show(self):
+        super().show()
+        self.is_hidden = False
+
+    def close(self):
+        super().close()
+        self.is_hidden = True
 
 
 class QuolMainWindow(QuolBaseWindow):
@@ -148,6 +174,8 @@ class QuolConfigWindow(QuolSubWindow):
                 return layout
 
         for k, v in self.settings.items():
+            if k == '_':
+                continue
             add_to_layout(self.config_layout, create_item(k, v))
 
     def save(self):
@@ -180,6 +208,7 @@ class QuolConfigWindow(QuolSubWindow):
             return result
 
         config = extract_from_layout(self.config_layout)
+        config['_'] = self.main_window.config.get('_', {})
         self.main_window.config = config
         self.main_window.window_info.save_config(config)
         self.main_window.config_signal.emit()

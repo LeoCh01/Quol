@@ -6,7 +6,7 @@
   "toggle_key": "`",
   "style": "dark",
   "transition": "rand",
-  "is_default_pos": true,
+  "is_default_pos": false,
   "windows": [
     "info",
     "chance",

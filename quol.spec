@@ -5,7 +5,7 @@ a = Analysis(
     ['app/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('app/windows', 'windows'), ('app/res', 'res')],
+    datas=[('app/windows', 'windows'), ('app/res', 'res'), ('app/transitions', 'transitions'), ('app/lib', 'lib')],
     hiddenimports=['ollama', 'markdown', 'pygments', 'httpx', 'qasync.asyncSlot'],
     hookspath=[],
     hooksconfig={},
@@ -64,5 +64,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['app/res/img/icon.ico'],
+    icon=['app/res/icons/icon.ico'],
 )

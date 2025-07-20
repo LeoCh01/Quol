@@ -6,7 +6,7 @@ import importlib
 from lib.quol_window import QuolBaseWindow
 
 
-class TransitionPluginInfo:
+class TransitionInfo:
     def __init__(self, path):
         self.path = path
 
@@ -19,15 +19,14 @@ class TransitionLoader:
 
     def load(self):
         module_path = self.path + '\\transition.py'
-
-        if os.path.exists(module_path):
-            spec = importlib.util.spec_from_file_location(self.name, module_path)
-            self.module = importlib.util.module_from_spec(spec)
-            sys.modules[self.name] = self.module
-            spec.loader.exec_module(self.module)
-        else:
+        if not os.path.exists(module_path):
             logging.error(f'Script {self.name} does not exist at {module_path}.')
-            return None
+            module_path = f'{os.getcwd()}\\transitions\\rand\\transition.py'
+
+        spec = importlib.util.spec_from_file_location(self.name, module_path)
+        self.module = importlib.util.module_from_spec(spec)
+        sys.modules[self.name] = self.module
+        spec.loader.exec_module(self.module)
 
     def create_transition(self, window: QuolBaseWindow):
-        return self.module.Transition(TransitionPluginInfo(self.path), window)
+        return self.module.Transition(TransitionInfo(self.path), window)

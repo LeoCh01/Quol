@@ -4,14 +4,14 @@
   },
   "gemini": {
     "model": "gemini-2.0-flash",
-    "apikey": "AIzaSyAHhsOMrpky6icx2UuzHyopdMAUdMMoVAI"
+    "apikey": ""
   },
   "groq": {
     "model": "meta-llama/llama-4-scout-17b-16e-instruct",
     "apikey": ""
   },
   "config": {
-    "auto_focus": true,
+    "auto_focus": false,
     "image": true,
     "history": true,
     "max_history": 5
@@ -27,7 +27,7 @@
       730,
       10,
       190,
-      1
+      135
     ]
   }
 }

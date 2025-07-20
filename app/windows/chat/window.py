@@ -3,10 +3,11 @@ import datetime
 
 import httpx
 import re
+from pynput.mouse import Controller, Button
 
 from markdown import markdown
 from pygments.formatters.html import HtmlFormatter
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, QRect
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
 from qasync import asyncSlot
@@ -26,6 +27,7 @@ class MainWindow(QuolMainWindow):
 
         self.chat_window = ChatWindow(self)
         self.window_context.toggle.connect(self.chat_window.toggle_windows)
+        self.window_context.toggle.connect(self.focus)
 
         self.ai = AI(self, self.chat_window)
         self.ai_list = QComboBox()
@@ -52,9 +54,20 @@ class MainWindow(QuolMainWindow):
         self.layout.addWidget(self.btn)
 
     def focus(self):
-        self.activateWindow()
-        # if self.config['config']['auto_focus'] and not self.app.is_hidden:
-        #     self.prompt.setFocus()
+        if not self.window_context.get_is_hidden():
+            QTimer.singleShot(210, self._focus_action)
+
+    def _focus_action(self):
+        if self.window_context.get_is_hidden():
+            return
+
+        mouse = Controller()
+        cur = mouse.position
+        sf = QGuiApplication.primaryScreen().devicePixelRatio()
+
+        mouse.position = ((self.x() + 20) * sf, (self.y() + 80) * sf)
+        mouse.click(Button.left, 1)
+        mouse.position = [cur[0], cur[1]]
 
     def send_prompt(self):
         self.ai.is_img = self.config['config']['image']
@@ -105,10 +118,9 @@ class MainWindow(QuolMainWindow):
 
 class ChatWindow(QuolSubWindow):
     def __init__(self, main_window: QuolMainWindow):
-        super().__init__(main_window, 'Chat')
-
         screen_geometry = QGuiApplication.primaryScreen().geometry()
-        self.setGeometry(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600)
+        super().__init__(main_window, 'Chat')
+        self.setGeometry(QRect(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600))
 
         self.chat_response = QTextBrowser()
         self.chat_response.setOpenExternalLinks(True)

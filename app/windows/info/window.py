@@ -18,8 +18,7 @@ class MainWindow(QuolMainWindow):
         self.app = app
         self.settings_to_config()
 
-        version = self.app.settings["version"]
-        self.ver = QPushButton(f'v{version}')
+        self.ver = QPushButton(f'v{self.config["version"]}')
         self.ver.clicked.connect(self.open_url)
 
         self.reload = QPushButton('Reload')
@@ -41,9 +40,9 @@ class MainWindow(QuolMainWindow):
         self.settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
 
     def on_update_config(self):
-        self.app.set_toggle_key(str(self.config['toggle_key']))
         self.toggle_startup()
         self.config_to_settings()
+        self.app.restart()
 
     @staticmethod
     def open_url():
@@ -59,14 +58,17 @@ class MainWindow(QuolMainWindow):
 
     def config_to_settings(self):
         self.app.settings['toggle_key'] = self.config['toggle_key']
+        self.app.settings['transition'] = self.config['transition']
         self.app.settings['startup'] = self.config['startup']
         self.app.save_settings()
 
     def settings_to_config(self):
         self.config['toggle_key'] = self.app.settings['toggle_key']
+        self.config['transition'] = self.app.settings['transition']
         self.config['startup'] = self.app.settings['startup']
+        self.config['version'] = self.app.settings['version']
 
-        write_json(self.window_info.path + '/config.json', self.config)
+        write_json(self.window_info.config_path, self.config)
 
     def toggle_startup(self):
         is_startup = self.config['startup']

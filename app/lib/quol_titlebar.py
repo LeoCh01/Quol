@@ -29,6 +29,7 @@ class QuolBaseTitleBar(QFrame):
 
     def mouseReleaseEvent(self, event):
         self.quol_window.setWindowOpacity(1)
+        self.quol_window.transition.old_pos = self.quol_window.pos()
 
 
 class QuolMainTitleBar(QuolBaseTitleBar):
