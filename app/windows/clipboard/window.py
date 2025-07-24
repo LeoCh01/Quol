@@ -2,12 +2,12 @@ from typing import Optional
 
 import keyboard
 from PySide6.QtGui import QIcon, Qt
-from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEasingCurve
+from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEasingCurve, QPoint
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit, \
     QWidget, QLabel
 
 from lib.io_helpers import read_json, write_json
-from lib.quol_window import QuolMainWindow, QuolSubWindow
+from lib.quol_window import QuolMainWindow, QuolResizableSubWindow
 from lib.window_loader import WindowInfo, WindowContext
 
 
@@ -89,7 +89,7 @@ class MainWindow(QuolMainWindow):
 
         self.save_clipboard()
 
-    def on_note(self, wid=-1, text='', pos=(300, 300)):
+    def on_note(self, wid=-1, text='', pos=(100, 100)):
         if wid == -1 and len(self.sticky_notes) < 10:
             wid = len(self.sticky_notes) + 1
         else:
@@ -98,7 +98,6 @@ class MainWindow(QuolMainWindow):
 
         sticky_window = StickyWindow(self, text, wid, pos)
         self.sticky_notes.append(sticky_window)
-
         self.window_context.toggle.connect(sticky_window.toggle_windows)
 
         sticky_window.show()
@@ -138,9 +137,14 @@ class CustomButton(QPushButton):
         super().mousePressEvent(event)
 
 
-class StickyWindow(QuolSubWindow):
+class StickyWindow(QuolResizableSubWindow):
+
     def __init__(self, main_window: MainWindow, text: str, id: int, pos: tuple):
         super().__init__(main_window, str(id))
+
+        self.setGeometry(pos[0], pos[1], 300, 300)
+        self.setMinimumSize(150, 150)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.id = id
         self.text_edit = QTextEdit(self)
@@ -153,6 +157,8 @@ class StickyWindow(QuolSubWindow):
         self.inactivity_timer.setInterval(500)
         self.inactivity_timer.timeout.connect(self.save_note)
         self.text_edit.textChanged.connect(self.reset_timer)
+
+        self.main_window: MainWindow = main_window
 
     def reset_timer(self):
         self.inactivity_timer.start()

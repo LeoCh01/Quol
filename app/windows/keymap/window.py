@@ -50,10 +50,13 @@ class MainWindow(QuolMainWindow):
         row_layout.addWidget(save_btn)
         row_layout.addWidget(delete_btn)
 
+        src_input.textChanged.connect(lambda: save_btn.setStyleSheet(""))
+        dst_input.textChanged.connect(lambda: save_btn.setStyleSheet(""))
+
         self.setFixedHeight(self.height() + 25)
         self.keymap_layout.addWidget(row_widget)
 
-        def save_mapping():
+        def save_mapping(btn: QPushButton):
             source = src_input.text().strip().lower()
             target = dst_input.text().strip().lower()
 
@@ -65,6 +68,7 @@ class MainWindow(QuolMainWindow):
 
             handle = keyboard.add_hotkey(source, lambda: keyboard.send(target), suppress=True)
             self.key_mappings[source] = {'target': target, 'handle': handle}
+            btn.setStyleSheet("background-color: green;")
             print(f"Mapped '{source}' -> '{target}'")
 
             self.save_mappings()
@@ -81,7 +85,7 @@ class MainWindow(QuolMainWindow):
 
             self.save_mappings()
 
-        save_btn.clicked.connect(save_mapping)
+        save_btn.clicked.connect(lambda: save_mapping(save_btn))
         delete_btn.clicked.connect(delete_mapping)
 
         return src_input, dst_input, save_btn
@@ -95,7 +99,5 @@ class MainWindow(QuolMainWindow):
 
         for src, dst in data.items():
             src_input, dst_input, save_btn = self.add_mapping_row(src, dst)
-            save_btn.clicked.connect(lambda: save_btn.parent().save_mappings())
-            self.key_mappings[src] = {'target': dst, 'handle': None}
-            self.key_mappings[src]['handle'] = keyboard.add_hotkey(src, lambda: keyboard.send(dst), suppress=True)
+            save_btn.click()
 

@@ -57,7 +57,7 @@ void main()
         col = clamp(col - (d - 0.35f) * 10.0f, 0.0f, 1.0f);
 
     if(d > 0.47 && d < 0.5) {
-        col += (d - 0.4f) * 33.0f * 0.5f * noise(100.0f * uv + vec2(-ctime * 2.0f, 0.0f)) * vec4(0.0f, 0.9f, 1.0f, 1.0f);
+        col += (d - 0.4f) * 33.0f * 0.5f * noise(100.0f * uv + vec2(-ctime * 2.0f, 0.0f)) * vec4(1.0f, 0.5f, 0.2f, 1.0f);
     }
 
     gl_FragColor = col;

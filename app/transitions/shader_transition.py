@@ -143,9 +143,9 @@ class TextureShaderWidget(QOpenGLWidget):
         self.program.bind()
 
         if self.forward:
-            self.count += 0.02
+            self.count += 0.005
         else:
-            self.count -= 0.02
+            self.count -= 0.005
 
         self.program.setUniformValue1f(self.program.uniformLocation("u_time"), self.count)
         self.program.setUniformValue1f(self.program.uniformLocation("u_seed"), self.seed)

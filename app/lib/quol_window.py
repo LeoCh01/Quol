@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, QRect
+from PySide6.QtCore import Qt, Signal, QRect, QPoint
 from PySide6.QtGui import QPainterPath, QRegion
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QPushButton, QGroupBox, QCheckBox, QLabel, QLineEdit
 
@@ -124,6 +124,119 @@ class QuolSubWindow(QuolBaseWindow):
         self.l1.insertWidget(0, self.title_bar)
 
         self.transition = self.main_window.window_context.transition_plugin.create_transition(self)
+
+
+class QuolResizableSubWindow(QuolSubWindow):
+    MARGIN = 8
+
+    def __init__(self, main_window: QuolMainWindow, title):
+        super().__init__(main_window, title)
+        self.setMinimumSize(150, 150)
+
+        self._mouse_pos = None
+        self._resizing = False
+        self._resize_dir = None
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._mouse_pos = event.globalPosition().toPoint()
+            self._resize_dir = self._detect_resize_direction(event.pos())
+            if self._resize_dir:
+                self._resizing = True
+            else:
+                self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+        event.accept()
+
+    def mouseMoveEvent(self, event):
+        if self._resizing and self._resize_dir:
+            self._resize_window(event.globalPosition().toPoint())
+
+            direction = self._detect_resize_direction(event.pos())
+            print(direction)
+            if direction:
+                self._set_cursor(direction)
+            else:
+                self.unsetCursor()
+
+        if hasattr(self, '_drag_pos'):
+            self.move(event.globalPosition().toPoint() - self._drag_pos)
+
+        event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self._resizing = False
+        self._resize_dir = None
+        if hasattr(self, '_drag_pos'):
+            del self._drag_pos
+        self.unsetCursor()
+        event.accept()
+
+    def _detect_resize_direction(self, pos: QPoint):
+        x, y = pos.x(), pos.y()
+        w, h = self.width(), self.height()
+        margin = self.MARGIN
+
+        directions = {
+            'left': x < margin,
+            'right': x > w - margin,
+            'top': y < margin,
+            'bottom': y > h - margin,
+        }
+
+        result = ''
+        if directions['top']:
+            result += 'top'
+        elif directions['bottom']:
+            result += 'bottom'
+        if directions['left']:
+            result += 'left'
+        elif directions['right']:
+            result += 'right'
+        return result if result else None
+
+    def _set_cursor(self, direction):
+        cursors = {
+            'left': Qt.CursorShape.SizeHorCursor,
+            'right': Qt.CursorShape.SizeHorCursor,
+            'top': Qt.CursorShape.SizeVerCursor,
+            'bottom': Qt.CursorShape.SizeVerCursor,
+            'topleft': Qt.CursorShape.SizeFDiagCursor,
+            'topright': Qt.CursorShape.SizeBDiagCursor,
+            'bottomleft': Qt.CursorShape.SizeBDiagCursor,
+            'bottomright': Qt.CursorShape.SizeFDiagCursor,
+        }
+        self.setCursor(cursors.get(direction, Qt.CursorShape.ArrowCursor))
+
+    def _resize_window(self, global_pos: QPoint):
+        delta = global_pos - self._mouse_pos
+        geom = self.geometry()
+
+        x, y, w, h = geom.x(), geom.y(), geom.width(), geom.height()
+
+        if 'left' in self._resize_dir:
+            new_x = x + delta.x()
+            new_w = w - delta.x()
+            if new_w >= self.minimumWidth():
+                geom.setX(new_x)
+                geom.setWidth(new_w)
+        elif 'right' in self._resize_dir:
+            new_w = w + delta.x()
+            if new_w >= self.minimumWidth():
+                geom.setWidth(new_w)
+
+        if 'top' in self._resize_dir:
+            new_y = y + delta.y()
+            new_h = h - delta.y()
+            if new_h >= self.minimumHeight():
+                geom.setY(new_y)
+                geom.setHeight(new_h)
+        elif 'bottom' in self._resize_dir:
+            new_h = h + delta.y()
+            if new_h >= self.minimumHeight():
+                geom.setHeight(new_h)
+
+        self.setGeometry(geom)
+        self._mouse_pos = global_pos
 
 
 class QuolConfigWindow(QuolSubWindow):

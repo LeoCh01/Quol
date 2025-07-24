@@ -1,5 +1,6 @@
 CURRENT
-- refactor
+- refactor code
+- rework chat autofocus
 
 TODO
 - stream api calls
