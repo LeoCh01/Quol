@@ -1,7 +1,8 @@
 CURRENT
 - refactor code, less coupling
 - rework chat autofocus
-- transitions
+- add transition loader
+- add resizeable window class
 - clipboard note bugfixes
 
 TODO

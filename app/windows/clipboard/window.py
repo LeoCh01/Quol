@@ -1,10 +1,10 @@
 from typing import Optional
 
 import keyboard
+from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEasingCurve
 from PySide6.QtGui import QIcon, Qt
-from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEasingCurve, QPoint
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit, \
-    QWidget, QLabel, QDialogButtonBox, QLineEdit, QDialog
+    QWidget, QLabel, QLineEdit
 
 from lib.io_helpers import read_json, write_json
 from lib.quol_window import QuolMainWindow, QuolResizableSubWindow, QuolDialogWindow

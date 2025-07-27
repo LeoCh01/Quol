@@ -106,8 +106,8 @@ class QuolMainWindow(QuolBaseWindow):
         else:
             self.config_window = None
 
-        self.title_bar = QuolMainTitleBar(self, title, self.config_window)
-        self._l1.insertWidget(0, self.title_bar)
+        self._title_bar = QuolMainTitleBar(self, title, self.config_window)
+        self._l1.insertWidget(0, self._title_bar)
 
         self.transition = self.window_context.transition_plugin.create_transition(self)
         self.update()
@@ -124,8 +124,8 @@ class QuolSubWindow(QuolBaseWindow):
         super().__init__(main_window)
 
         self.main_window = main_window
-        self.title_bar = QuolSubTitleBar(self, title)
-        self._l1.insertWidget(0, self.title_bar)
+        self._title_bar = QuolSubTitleBar(self, title)
+        self._l1.insertWidget(0, self._title_bar)
 
         self.transition = self.main_window.window_context.transition_plugin.create_transition(self)
 

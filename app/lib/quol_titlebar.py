@@ -9,23 +9,23 @@ class QuolBaseTitleBar(QFrame):
 
         self.quol_window = quol_window
         self.setObjectName('title-bar')
-        self.l1 = QHBoxLayout(self)
-        self.l1.setContentsMargins(0, 0, 0, 0)
+        self._l1 = QHBoxLayout(self)
+        self._l1.setContentsMargins(0, 0, 0, 0)
 
-        self.title_label = QLabel(title)
-        self.l1.addWidget(self.title_label, stretch=10)
+        self._title_label = QLabel(title)
+        self._l1.addWidget(self._title_label, stretch=10)
 
-        self.offset = QPoint(self.quol_window.pos().x(), self.quol_window.pos().y())
+        self._offset = QPoint(self.quol_window.pos().x(), self.quol_window.pos().y())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            self.offset = event.globalPosition().toPoint() - self.quol_window.pos()
+            self._offset = event.globalPosition().toPoint() - self.quol_window.pos()
             self.quol_window.setWindowOpacity(0.5)
             self.update()
 
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.MouseButton.LeftButton:
-            self.quol_window.move(event.globalPosition().toPoint() - self.offset)
+            self.quol_window.move(event.globalPosition().toPoint() - self._offset)
 
     def mouseReleaseEvent(self, event):
         self.quol_window.setWindowOpacity(1)
@@ -42,7 +42,7 @@ class QuolMainTitleBar(QuolBaseTitleBar):
             self.config_btn = QPushButton(self)
             self.config_btn.setIcon(QIcon('res/icons/config.png'))
             self.config_btn.clicked.connect(config_window.show)
-            self.l1.addWidget(self.config_btn, stretch=1)
+            self._l1.addWidget(self.config_btn, stretch=1)
 
     def mouseReleaseEvent(self, event):
         QuolBaseTitleBar.mouseReleaseEvent(self, event)
@@ -64,4 +64,4 @@ class QuolSubTitleBar(QuolBaseTitleBar):
 
         self.close_btn = QPushButton('✕')
         self.close_btn.clicked.connect(quol_window.close)
-        self.l1.addWidget(self.close_btn, stretch=1)
+        self._l1.addWidget(self.close_btn, stretch=1)

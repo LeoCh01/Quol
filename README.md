@@ -54,7 +54,7 @@ To run the application locally or build it as a standalone executable, follow th
    git clone https://github.com/LeoCh01/quol.git
    ```
 
-2. **Set up the Python environment:**
+2. **Set up the Python environment (Python 3.12 recommended):**
 
    - Create a virtual environment in project directory:
 
@@ -87,7 +87,7 @@ To run the application locally or build it as a standalone executable, follow th
    - you can also build the exe yourself by installing `pyinstaller` and using the `quol.spec` file
 
    ```bash
-     pyinstaller Quol.spec
+     pyinstaller quol.spec
    ```
 
 ## Adding Custom Windows
@@ -109,7 +109,7 @@ To create a new window, you can add a folder to the `windows` directory and add 
 
 2. **Enable the new window:**
 
-   ```json
+   ```json5
    {
      "windows": [
        "window1",
