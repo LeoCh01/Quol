@@ -34,7 +34,7 @@ class MainWindow(QuolMainWindow):
         self.ai_list.addItems(['gemini', 'ollama', 'groq'])
 
         self.hist_clear = QPushButton('Clear History')
-        self.hist_clear.clicked.connect(lambda: HISTORY.clear())
+        self.hist_clear.clicked.connect(self.clear_history)
 
         self.prompt = QLineEdit()
         self.prompt.setPlaceholderText('prompt...')
@@ -52,6 +52,10 @@ class MainWindow(QuolMainWindow):
         self.layout.addLayout(self.top_layout)
         self.layout.addLayout(self.prompt_layout)
         self.layout.addWidget(self.btn)
+
+    def clear_history(self):
+        self.chat_window.set_text('')
+        HISTORY.clear()
 
     def focus(self):
         if self.config['config']['auto_focus'] and not self.window_context.get_is_hidden():
@@ -106,14 +110,15 @@ class MainWindow(QuolMainWindow):
             }
             self.ai.prompt(self.ai_list.currentText(), data)
 
-        self.set_button_loading_state(False)
         self.prompt.setText('')
 
     def set_button_loading_state(self, is_loading):
         if is_loading:
-            self.btn.setText('')
+            self.btn.setText('...')
+            self.btn.setEnabled(False)
         else:
             self.btn.setText('Send')
+            self.btn.setEnabled(True)
 
 
 class ChatWindow(QuolSubWindow):
@@ -127,11 +132,29 @@ class ChatWindow(QuolSubWindow):
         self.chat_response.setReadOnly(True)
         self.layout.addWidget(self.chat_response, stretch=1)
 
-    def set_text(self, text):
+        self.old_text = ''
+
+    def set_text(self, text, save=True):
+        if save:
+            self.old_text = text
+
+        scrollbar = self.chat_response.verticalScrollBar()
+        scroll_pos = scrollbar.value()
+
         html = self.markdown_to_html(str(text))
         self.chat_response.setHtml(html)
+
+        scrollbar.setValue(scroll_pos)
+
         self.chat_response.repaint()
         QApplication.processEvents()
+
+    def get_text(self):
+        return self.old_text
+
+    def scroll_to_bottom(self):
+        scrollbar = self.chat_response.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
     def closeEvent(self, event):
         print('Window closed')
@@ -186,7 +209,7 @@ class ChatWindow(QuolSubWindow):
 
 
 class AI:
-    def __init__(self, window: QuolMainWindow, chat_window: ChatWindow):
+    def __init__(self, window: MainWindow, chat_window: ChatWindow):
         self.window = window
         self.chat_window = chat_window
         self.ollama_client = None
@@ -201,6 +224,10 @@ class AI:
 
     def prompt(self, model, d):
         self.current_type = model
+        self.chat_window.show()
+        self.chat_window.set_text(f'{self.chat_window.get_text()}\\> {d['prompt']}\n\n')
+        self.chat_window.set_text(f'{self.chat_window.get_text()}' + '<div style="height: 50px;"></div>', False)
+        self.chat_window.scroll_to_bottom()
 
         if test_response:
             self.chat_window.set_text(test_response)
@@ -216,14 +243,12 @@ class AI:
 
     @asyncSlot()
     async def handle_response(self, url, headers, data):
-        self.chat_window.set_text('Loading...')
-        self.chat_window.show()
         self.text_content = ''
         self.loading_counter = 0
 
         def update_loading_text():
             self.loading_counter += 0.1
-            self.chat_window.set_text(f'Loading... ({self.loading_counter:.1f}s)')
+            self.chat_window.set_text(f'{self.chat_window.get_text()}Loading... ({self.loading_counter:.1f}s)', False)
 
         try:
             timer = QTimer()
@@ -244,13 +269,15 @@ class AI:
             elif self.current_type == 'groq':
                 self.text_content = res['choices'][0]['message']['content']
 
-            self.chat_window.set_text(self.text_content)
+            self.chat_window.set_text(f'{self.chat_window.get_text()}{self.text_content}\n\n')
             self.add_history(self.current_type, self.text_content, None, False)
         except Exception as e:
             print(e)
             self.text_content = str(e)
-            self.chat_window.set_text(self.text_content)
+            self.chat_window.set_text(f'{self.chat_window.get_text()}{self.text_content}\n\n')
             HISTORY.clear()
+        finally:
+            self.window.set_button_loading_state(False)
 
     def add_history(self, model, text, img_data, is_user):
         if self.is_hist:
