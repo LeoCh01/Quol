@@ -13,16 +13,20 @@ class QuolBaseWindow(QWidget):
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
 
-        self.l1 = QVBoxLayout(self)
-        self.l1.setContentsMargins(0, 0, 0, 0)
-        self.l1.setSpacing(0)
+        self._l1 = QVBoxLayout(self)
+        self._l1.setContentsMargins(0, 0, 0, 0)
+        self._l1.setSpacing(0)
 
-        self.body = QWidget()
-        self.body.setObjectName('content')
-        self.body.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.l1.addWidget(self.body)
+        self._body = QWidget()
+        self._body.setObjectName('content')
+        self._body.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._l1.addWidget(self._body)
 
-        self.layout = QVBoxLayout(self.body)
+        self._lower = QWidget()
+        self._lower.setObjectName('content')
+        self._l1.addWidget(self._lower)
+
+        self.layout = QVBoxLayout(self._body)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.transition = None
 
@@ -103,7 +107,7 @@ class QuolMainWindow(QuolBaseWindow):
             self.config_window = None
 
         self.title_bar = QuolMainTitleBar(self, title, self.config_window)
-        self.l1.insertWidget(0, self.title_bar)
+        self._l1.insertWidget(0, self.title_bar)
 
         self.transition = self.window_context.transition_plugin.create_transition(self)
         self.update()
@@ -121,7 +125,7 @@ class QuolSubWindow(QuolBaseWindow):
 
         self.main_window = main_window
         self.title_bar = QuolSubTitleBar(self, title)
-        self.l1.insertWidget(0, self.title_bar)
+        self._l1.insertWidget(0, self.title_bar)
 
         self.transition = self.main_window.window_context.transition_plugin.create_transition(self)
 
@@ -152,7 +156,6 @@ class QuolResizableSubWindow(QuolSubWindow):
             self._resize_window(event.globalPosition().toPoint())
 
             direction = self._detect_resize_direction(event.pos())
-            print(direction)
             if direction:
                 self._set_cursor(direction)
             else:
@@ -239,8 +242,39 @@ class QuolResizableSubWindow(QuolSubWindow):
         self._mouse_pos = global_pos
 
 
+class QuolDialogWindow(QuolSubWindow):
+    def __init__(self, main_window: QuolMainWindow, title: str):
+        super().__init__(main_window, title)
+
+        self.setGeometry(300, 300, 400, 200)
+        self.main_window = main_window
+
+        self.button_layout = QHBoxLayout(self._lower)
+        self.accept_button = QPushButton("Accept")
+        self.accept_button.setShortcut(Qt.Key.Key_Return)
+        self.cancel_button = QPushButton("Cancel")
+        self.accept_button.clicked.connect(self.close)
+        self.cancel_button.clicked.connect(self.close)
+        self.button_layout.addWidget(self.cancel_button)
+        self.button_layout.addWidget(self.accept_button)
+
+    def on_accept(self, fn):
+        """
+        Override this method to define what happens when the accept button is clicked.
+        :param fn: Function to call when the accept button is clicked.
+        """
+        self.accept_button.clicked.connect(fn)
+
+    def on_reject(self, fn):
+        """
+        Override this method to define what happens when the cancel button is clicked.
+        :param fn: Function to call when the cancel button is clicked.
+        """
+        self.cancel_button.clicked.connect(fn)
+
+
 class QuolConfigWindow(QuolSubWindow):
-    def __init__(self, main_window: QuolMainWindow, title):
+    def __init__(self, main_window: QuolMainWindow, title: str):
         super().__init__(main_window, title)
 
         self.setGeometry(300, 300, 400, 1)

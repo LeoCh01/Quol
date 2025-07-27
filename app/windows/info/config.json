@@ -2,7 +2,6 @@
   "startup": false,
   "toggle_key": "`",
   "transition": "rand",
-  "version": "2.6.0",
   "_": {
     "geometry": [
       10,

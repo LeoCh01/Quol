@@ -4,10 +4,10 @@ import keyboard
 from PySide6.QtGui import QIcon, Qt
 from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEasingCurve, QPoint
 from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit, \
-    QWidget, QLabel
+    QWidget, QLabel, QDialogButtonBox, QLineEdit, QDialog
 
 from lib.io_helpers import read_json, write_json
-from lib.quol_window import QuolMainWindow, QuolResizableSubWindow
+from lib.quol_window import QuolMainWindow, QuolResizableSubWindow, QuolDialogWindow
 from lib.window_loader import WindowInfo, WindowContext
 
 
@@ -43,7 +43,7 @@ class MainWindow(QuolMainWindow):
         self.setFixedHeight(self.config['length'] * 30 + 110)
         self.clip_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.sticky_notes = []
+        self.sticky_notes: dict[str, StickyWindow] = {}
         
         self.clipboard_path = self.window_info.path + '/res/clipboard.json'
         self.clipboard: Optional[dict] = None
@@ -55,9 +55,9 @@ class MainWindow(QuolMainWindow):
         for text in self.clipboard['copy']:
             self.clip_layout.insertWidget(0, self.create_copy_btn(text))
 
-        for i, note in enumerate(self.clipboard['sticky'], 1):
+        for i, (k, note) in enumerate(self.clipboard['sticky'].items(), 1):
             if note:
-                self.on_note(i, note, (i * 15, self.config['length'] * 30 + 200 + i * 45))
+                self.on_note(k, note, (i * 15, self.config['length'] * 30 + 200 + i * 45))
 
     def create_copy_btn(self, text):
         return CustomButton(QIcon(self.window_info.path + '/res/img/copy.png'), text, self.clipboard['copy'])
@@ -89,15 +89,27 @@ class MainWindow(QuolMainWindow):
 
         self.save_clipboard()
 
-    def on_note(self, wid=-1, text='', pos=(100, 100)):
-        if wid == -1 and len(self.sticky_notes) < 10:
-            wid = len(self.sticky_notes) + 1
+    def on_note(self, wid='', text='', pos=(100, 100)):
+        if wid == '':
+            dialog = NoteNameDialog(self)
+            dialog.on_accept(lambda: self.open_note(dialog.get_name(), '', pos))
+            dialog.show()
         else:
-            print('full')
-            return
+            self.open_note(wid, text, pos)
 
-        sticky_window = StickyWindow(self, text, wid, pos)
-        self.sticky_notes.append(sticky_window)
+    def open_note(self, wid, text, pos):
+        if wid in self.sticky_notes:
+            self.sticky_notes[wid].raise_()
+            self.sticky_notes[wid].activateWindow()
+            return
+        elif wid not in self.clipboard['sticky']:
+            self.clipboard['sticky'][wid] = ''
+            self.save_clipboard()
+        else:
+            text = self.clipboard['sticky'][wid]
+
+        sticky_window = StickyWindow(self, wid, text, pos)
+        self.sticky_notes[wid] = sticky_window
         self.window_context.toggle.connect(sticky_window.toggle_windows)
 
         sticky_window.show()
@@ -116,6 +128,14 @@ class MainWindow(QuolMainWindow):
             i += 1
 
         self.setFixedHeight(self.config['length'] * 30 + 110)
+
+    def close(self):
+        super().close()
+
+        for wid, sticky in list(self.sticky_notes.items()):
+            sticky.close()
+
+        self.sticky_notes.clear()
 
 
 class CustomButton(QPushButton):
@@ -139,41 +159,51 @@ class CustomButton(QPushButton):
 
 class StickyWindow(QuolResizableSubWindow):
 
-    def __init__(self, main_window: MainWindow, text: str, id: int, pos: tuple):
-        super().__init__(main_window, str(id))
+    def __init__(self, main_window: MainWindow, wid: str, text: str, pos: tuple):
+        super().__init__(main_window, wid)
 
         self.setGeometry(pos[0], pos[1], 300, 300)
         self.setMinimumSize(150, 150)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.id = id
+        self.wid = wid
         self.text_edit = QTextEdit(self)
         self.text_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.text_edit.setPlaceholderText('...')
         self.text_edit.setText(text)
+        self.text_edit.textChanged.connect(self.save_note)
         self.layout.addWidget(self.text_edit)
-
-        self.inactivity_timer = QTimer(self)
-        self.inactivity_timer.setInterval(500)
-        self.inactivity_timer.timeout.connect(self.save_note)
-        self.text_edit.textChanged.connect(self.reset_timer)
 
         self.main_window: MainWindow = main_window
 
-    def reset_timer(self):
-        self.inactivity_timer.start()
-
     def save_note(self):
-        self.inactivity_timer.stop()
-        self.main_window.clipboard['sticky'][self.id - 1] = self.text_edit.toPlainText()
+        self.main_window.clipboard['sticky'][self.wid] = self.text_edit.toPlainText()
         self.main_window.save_clipboard()
 
-    def closeEvent(self, event):
-        self.inactivity_timer.stop()
-        self.main_window.window_context.toggle.disconnect(self.toggle_windows)
-        self.text_edit.setText('')
-        self.save_note()
-        super().closeEvent(event)
+    def close(self):
+        super().close()
+
+        if not self.main_window.clipboard['sticky'].get(self.wid):
+            del self.main_window.clipboard['sticky'][self.wid]
+            self.main_window.save_clipboard()
+
+        self.main_window.sticky_notes.pop(self.wid, None)
+
+        if not self.main_window.sticky_notes:
+            self.main_window.window_context.toggle.disconnect(self.toggle_windows)
+
+
+class NoteNameDialog(QuolDialogWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent, "Note")
+        self.setGeometry(45, 130, 300, 1)
+
+        self.name_input = QLineEdit(self)
+        self.name_input.setPlaceholderText("Enter note name...")
+        self.layout.addWidget(self.name_input)
+
+    def get_name(self):
+        return self.name_input.text().strip()
 
 
 class CopiedPopup:

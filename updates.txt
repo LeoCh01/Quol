@@ -1,6 +1,8 @@
 CURRENT
-- refactor code
+- refactor code, less coupling
 - rework chat autofocus
+- transitions
+- clipboard note bugfixes
 
 TODO
 - stream api calls

@@ -18,7 +18,7 @@ class MainWindow(QuolMainWindow):
         self.app = app
         self.settings_to_config()
 
-        self.ver = QPushButton(f'v{self.config["version"]}')
+        self.ver = QPushButton(f'v{self.app.settings['version']}')
         self.ver.clicked.connect(self.open_url)
 
         self.reload = QPushButton('Reload')
@@ -66,7 +66,6 @@ class MainWindow(QuolMainWindow):
         self.config['toggle_key'] = self.app.settings['toggle_key']
         self.config['transition'] = self.app.settings['transition']
         self.config['startup'] = self.app.settings['startup']
-        self.config['version'] = self.app.settings['version']
 
         write_json(self.window_info.config_path, self.config)
 
