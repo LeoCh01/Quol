@@ -1,5 +1,0 @@
-RES_PATH = 'res/'
-IMG_PATH = 'res/img/'
-SETTINGS_PATH = 'res/settings.json'
-POS_PATH = 'res/pos.json'
-STYLES_PATH = 'res/styles.qss'

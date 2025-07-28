@@ -1,17 +1,15 @@
-import os
 import subprocess
-import json
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QGroupBox, QLabel, QPlainTextEdit, \
     QCheckBox
 
-from windows.custom_widgets import CustomWindow
+from lib.io_helpers import read_json, write_json
+from lib.quol_window import QuolMainWindow, QuolSubWindow
+from lib.window_loader import WindowInfo, WindowContext
 
-BASE_PATH = os.path.dirname(__file__)
 
-
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(390, 10, 170, 1)):
-        super().__init__('Command', wid, geometry)
+class MainWindow(QuolMainWindow):
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Command', window_info, window_context, default_geometry=(390, 10, 170, 1), show_config=False)
 
         self.commands_groupbox = QGroupBox('Commands')
         self.commands_layout = QVBoxLayout()
@@ -24,6 +22,7 @@ class MainWindow(CustomWindow):
         self.layout.addWidget(self.add_btn)
 
         self.commands = []
+        self.commands_path = self.window_info.path + '/res/commands.json'
         self.load_commands()
         self.dialog = CommandConfig(self)
 
@@ -64,9 +63,9 @@ class MainWindow(CustomWindow):
         except Exception as e:
             print(f'An error occurred: {e}')
 
-    @staticmethod
-    def show_command_output(res):
-        output_window = CustomWindow('Command Output', -1, geometry=(100, 100, 600, 400), add_close_btn=True)
+    def show_command_output(self, res):
+        output_window = QuolSubWindow(self, 'Command Output')
+        output_window.setGeometry(100, 100, 600, 400)
 
         output_text = QPlainTextEdit(output_window)
         output_text.setPlainText(res)
@@ -76,13 +75,11 @@ class MainWindow(CustomWindow):
         output_window.show()
 
     def save_commands(self):
-        with open(BASE_PATH + '/res/commands.json', 'w') as f:
-            json.dump(self.commands, f, indent=2)
+        write_json(self.commands_path, self.commands)
 
     def load_commands(self):
         try:
-            with open(BASE_PATH + '/res/commands.json', 'r') as f:
-                self.commands = json.load(f)
+            self.commands = read_json(self.commands_path)
         except Exception as e:
             print('error :: ', e)
             self.commands = []
@@ -91,10 +88,9 @@ class MainWindow(CustomWindow):
             self.add_command_to_layout(cmd_name, cmd, show_output, init=True)
 
 
-class CommandConfig(CustomWindow):
-    def __init__(self, app: MainWindow):
-        super().__init__('Add Command', -1, geometry=(0, 0, 600, 400), add_close_btn=True)
-        self.app = app
+class CommandConfig(QuolSubWindow):
+    def __init__(self, main_window: MainWindow):
+        super().__init__(main_window, 'Add Command')
 
         screen_geometry = self.screen().geometry()
         self.setGeometry(
@@ -133,9 +129,9 @@ class CommandConfig(CustomWindow):
         show_output = self.show_output_checkbox.isChecked()
 
         if cmd_name and cmd:
-            self.app.add_command_to_layout(cmd_name, cmd, show_output)
-            self.app.commands.append((cmd_name, cmd, show_output))
-            self.app.save_commands()
+            self.main_window.add_command_to_layout(cmd_name, cmd, show_output)
+            self.main_window.commands.append((cmd_name, cmd, show_output))
+            self.main_window.save_commands()
 
             self.command_name_input.clear()
             self.command_input.clear()

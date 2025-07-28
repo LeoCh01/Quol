@@ -1,17 +1,16 @@
-import json
 import os
 import keyboard
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QWidget, QGroupBox
 
-from windows.custom_widgets import CustomWindow
+from lib.io_helpers import read_json, write_json
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 
-BASE_PATH = os.path.dirname(__file__)
 
-
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(200, 170, 180, 1)):
-        super().__init__('Keymap', wid, geometry)
+class MainWindow(QuolMainWindow):
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Keymap', window_info, window_context, default_geometry=(200, 180, 180, 1), show_config=False)
 
         self.keymap_groupbox = QGroupBox('Key Mappings')
         self.keymap_layout = QVBoxLayout()
@@ -24,6 +23,8 @@ class MainWindow(CustomWindow):
         self.layout.addWidget(self.add_button)
 
         self.key_mappings: dict[str, dict] = {}
+
+        self.mappings_path = self.window_info.path + '/res/keymaps.json'
         self.load_mappings()
 
     def add_mapping_row(self, src='', dst=''):
@@ -49,10 +50,13 @@ class MainWindow(CustomWindow):
         row_layout.addWidget(save_btn)
         row_layout.addWidget(delete_btn)
 
+        src_input.textChanged.connect(lambda: save_btn.setStyleSheet(""))
+        dst_input.textChanged.connect(lambda: save_btn.setStyleSheet(""))
+
         self.setFixedHeight(self.height() + 25)
         self.keymap_layout.addWidget(row_widget)
 
-        def save_mapping():
+        def save_mapping(btn: QPushButton):
             source = src_input.text().strip().lower()
             target = dst_input.text().strip().lower()
 
@@ -64,6 +68,7 @@ class MainWindow(CustomWindow):
 
             handle = keyboard.add_hotkey(source, lambda: keyboard.send(target), suppress=True)
             self.key_mappings[source] = {'target': target, 'handle': handle}
+            btn.setStyleSheet("background-color: green;")
             print(f"Mapped '{source}' -> '{target}'")
 
             self.save_mappings()
@@ -80,22 +85,19 @@ class MainWindow(CustomWindow):
 
             self.save_mappings()
 
-        save_btn.clicked.connect(save_mapping)
+        save_btn.clicked.connect(lambda: save_mapping(save_btn))
         delete_btn.clicked.connect(delete_mapping)
 
         return src_input, dst_input, save_btn
 
     def save_mappings(self):
         data = {src: self.key_mappings[src]['target'] for src in self.key_mappings}
-        with open(BASE_PATH + '/res/keymaps.json', 'w') as f:
-            json.dump(data, f, indent=2)
+        write_json(self.mappings_path, data)
 
     def load_mappings(self):
-        with open(BASE_PATH + '/res/keymaps.json', 'r') as f:
-            data = json.load(f)
-            for src, dst in data.items():
-                src_input, dst_input, save_btn = self.add_mapping_row(src, dst)
-                save_btn.clicked.connect(lambda: save_btn.parent().save_mappings())
-                self.key_mappings[src] = {'target': dst, 'handle': None}
-                self.key_mappings[src]['handle'] = keyboard.add_hotkey(src, lambda: keyboard.send(dst), suppress=True)
+        data = read_json(self.mappings_path)
+
+        for src, dst in data.items():
+            src_input, dst_input, save_btn = self.add_mapping_row(src, dst)
+            save_btn.click()
 

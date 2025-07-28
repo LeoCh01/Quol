@@ -2,29 +2,29 @@ import os
 
 from PySide6 import QtCore
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout, QApplication
+from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
 from PySide6.QtGui import QPixmap, Qt, QMovie
 
 import random
 
-from windows.custom_widgets import CustomWindow
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 COIN = 'coin-x.png'
 COIN_IMAGES = ['coin-h.png', 'coin-t.png']
 DICE = 'dice-x.png'
 DICE_IMAGES = ['dice-1.png', 'dice-2.png', 'dice-3.png', 'dice-4.png', 'dice-5.png', 'dice-6.png']
 CONFETTI = 'confetti2.gif'
-IMG_PATH = os.path.join(os.path.dirname(__file__), 'res/img/')
 
 
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(570, 10, 150, 1)):
-        super().__init__('Chance', wid, geometry)
+class MainWindow(QuolMainWindow):
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Chance', window_info, window_context, default_geometry=(570, 10, 150, 1), show_config=False)
         self.is_coin_flip = True
 
         self.grid_layout = QGridLayout()
         self.result_label = QLabel()
-        self.result_label.setPixmap(QPixmap(IMG_PATH + COIN))
+        self.result_label.setPixmap(QPixmap(self.window_info.path + '/res/img/' + COIN))
         self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.coin_button = QPushButton('Coin')
         self.dice_button = QPushButton('Dice')
@@ -57,11 +57,11 @@ class MainWindow(CustomWindow):
         if self.is_coin_flip:
             self.coin_button.setStyleSheet('background-color: #696')
             self.dice_button.setStyleSheet('')
-            self.result_label.setPixmap(QPixmap(IMG_PATH + COIN))
+            self.result_label.setPixmap(QPixmap(self.window_info.path + '/res/img/' + COIN))
         else:
             self.coin_button.setStyleSheet('')
             self.dice_button.setStyleSheet('background-color: #696')
-            self.result_label.setPixmap(QPixmap(IMG_PATH + DICE))
+            self.result_label.setPixmap(QPixmap(self.window_info.path + '/res/img/' + DICE))
 
     def perform_action(self, event):
         if self.is_running:
@@ -77,7 +77,7 @@ class MainWindow(CustomWindow):
         def update_flip():
             if self.flip_counter < total_flips:
                 current_frame = frames[self.flip_counter % len(frames)]
-                self.result_label.setPixmap(QPixmap(IMG_PATH + current_frame))
+                self.result_label.setPixmap(QPixmap(self.window_info.path + '/res/img/' + current_frame))
                 self.flip_counter += 1
 
                 new_interval = initial_interval + (self.flip_counter * 20)
@@ -96,7 +96,7 @@ class MainWindow(CustomWindow):
         self.confetti_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.grid_layout.addWidget(self.confetti_label, 0, 0, 1, 2)
 
-        confetti_movie = QMovie(IMG_PATH + CONFETTI)
+        confetti_movie = QMovie(self.window_info.path + '/res/img/' + CONFETTI)
         confetti_movie.setSpeed(150)
         confetti_movie.setScaledSize(QtCore.QSize(self.width() - 20, 80))
 

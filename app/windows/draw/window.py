@@ -5,15 +5,16 @@ from PySide6.QtGui import QColor, QMouseEvent, QPainter, Qt, QPixmap, QPen, QSho
 from PySide6.QtWidgets import QPushButton, QHBoxLayout, QWidget, QApplication, QSlider, QLabel, QVBoxLayout
 from PySide6.QtCore import QPoint
 
-from windows.custom_widgets import CustomWindow
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 from windows.draw.color_wheel import ColorWheel
 
 
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(930, 10, 190, 1)):
-        super().__init__('Draw', wid, geometry)
+class MainWindow(QuolMainWindow):
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Draw', window_info, window_context, default_geometry=(930, 10, 190, 1), show_config=False)
 
-        self.drawing_widget = DrawingWidget(app.toggle_windows_2)
+        self.drawing_widget = DrawingWidget()
 
         self.top_layout = QHBoxLayout()
         self.layout.addLayout(self.top_layout)
@@ -46,7 +47,7 @@ class MainWindow(CustomWindow):
     def on_start_clicked(self):
         if self.start_button.text() == 'Start':
             self.start_button.setText('Stop')
-            self.drawing_widget.start_drawing()
+            self.drawing_widget.start_drawing(self.window_context   )
         else:
             self.start_button.setText('Start')
             self.drawing_widget.stop_drawing()
@@ -58,9 +59,9 @@ class MainWindow(CustomWindow):
 
 
 class DrawingWidget(QWidget):
-    def __init__(self, toggle_windows_2):
+    def __init__(self):
         super().__init__()
-        self.toggle_windows_2 = toggle_windows_2
+
         self.setAttribute(Qt.WidgetAttribute.WA_StaticContents)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         screen_geometry = QApplication.primaryScreen().geometry()
@@ -184,14 +185,14 @@ class DrawingWidget(QWidget):
                 self.strokes.append(stroke)
             self.update()
 
-    def start_drawing(self):
+    def start_drawing(self, context):
         screen = QApplication.primaryScreen()
         g = screen.geometry()
         g2 = g.adjusted(0, 0, 0, -20)
 
-        self.toggle_windows_2(True)
+        context.toggle_windows_instant(True)
         self.screenshot = screen.grabWindow(0, g2.x(), g2.y(), g2.width(), g2.height())
-        self.toggle_windows_2(False)
+        context.toggle_windows_instant(False)
 
         self.update()
         self.show()

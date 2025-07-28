@@ -1,21 +1,18 @@
-import os
-
 from PySide6.QtWidgets import QLabel
 
-from windows.custom_widgets import CustomWindow
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 
-BASE_PATH = os.path.dirname(__file__)
 
-
-class MainWindow(CustomWindow):
+class MainWindow(QuolMainWindow):
     """
-    MainWindow class that inherits from CustomWindow.
+    MainWindow class that inherits from QuolMainWindow.
 
     This class represents a window with two QLabel widgets.
     """
 
-    def __init__(self, app, wid, geometry=(300, 300, 100, 1)):
-        super().__init__('Temp', wid, geometry, path=BASE_PATH)
+    def __init__(self, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Temp', window_info, window_context, default_geometry=(300, 300, 100, 1))
 
         # self.layout is the main layout of the window
         self.layout.addWidget(QLabel('Hello'))

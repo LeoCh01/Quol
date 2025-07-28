@@ -1,5 +1,13 @@
 {
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "random"
+  "transition": "rand",
+  "_": {
+    "geometry": [
+      10,
+      10,
+      180,
+      108
+    ]
+  }
 }

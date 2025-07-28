@@ -1,188 +1,41 @@
-import asyncio
-import importlib
-import json
-import keyboard
-import logging
 import os
+import asyncio
+import logging
 import sys
 
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtCore import Signal, QObject
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
+from PySide6.QtWidgets import QApplication
 from qasync import QEventLoop
-
-from res.paths import SETTINGS_PATH, POS_PATH, RES_PATH, STYLES_PATH, IMG_PATH
-
-
-class App(QObject):
-    toggle = Signal(bool, bool)
-
-    def __init__(self):
-        super().__init__()
-
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-
-        self.toggle_key = str(settings.get('toggle_key', '`'))
-        self.toggle_listener = None
-        self.reset_hotkey(self.toggle_key)
-        self.is_hidden = False
-        self.is_reset = settings.get('is_default_pos', True)
-
-        self.windows = []
-        self.load_windows(settings)
-        self.setup_tray_icon()
-
-    def load_windows(self, settings):
-        with open(POS_PATH, 'r') as f:
-            pos_settings = json.load(f)
-            pos_settings['windows'] = []
-
-        for i, w in enumerate(settings.get('windows')):
-            try:
-                class_obj = App.load_plugin(w + '/window.py').MainWindow
-                print(f'Loading {w}')
-            except Exception as e:
-                logging.error(f'Error loading {w} :: {e}', exc_info=True)
-                continue
-
-            pos_settings['windows'].append(w + str(i))
-            if self.is_reset or not pos_settings['pos'].get(w + str(i)):
-                o = class_obj(self, i)
-                self.windows.append(o)
-                pos_settings['pos'][w + str(i)] = [o.x(), o.y(), o.width(), o.height()]
-            else:
-                self.windows.append(class_obj(self, i, pos_settings['pos'][w + str(i)]))
-
-        with open(POS_PATH, 'w') as f:
-            json.dump(pos_settings, f, indent=2)
-
-        for window in self.windows:
-            self.toggle.connect(window.toggle_windows)
-            window.show()
-
-    def reset_hotkey(self, new_key, old_key=None):
-        keyboard.unhook_all()
-        self.toggle_key = new_key
-        keyboard.add_hotkey(new_key, self.toggle_windows, suppress=True)
-
-    def toggle_windows(self):
-        self.toggle.emit(self.is_hidden, False)
-        self.is_hidden = not self.is_hidden
-
-    def toggle_windows_2(self, show):
-        self.toggle.emit(show, True)
-
-    def set_toggle_key(self, key):
-        key = str(key)
-        print(f'Changing toggle key from {self.toggle_key} to {key}')
-        if self.toggle_key == key:
-            return
-
-        self.reset_hotkey(key, self.toggle_key)
-
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-        settings['toggle_key'] = key
-        with open(SETTINGS_PATH, 'w') as f:
-            json.dump(settings, f, indent=2)
-
-    def setup_tray_icon(self):
-        self.tray_icon = QSystemTrayIcon(QIcon(IMG_PATH + 'icon.ico'), parent=self)
-        self.tray_icon.setToolTip('Quol')
-        tray_menu = QMenu()
-
-        hide_action = QAction('Hide', self)
-        hide_action.triggered.connect(self.hide)
-        tray_menu.addAction(hide_action)
-
-        reload_action = QAction('Reload', self)
-        reload_action.triggered.connect(self.restart)
-        tray_menu.addAction(reload_action)
-
-        quit_action = QAction('Quit', self)
-        quit_action.triggered.connect(self.exit_app)
-        tray_menu.addAction(quit_action)
-
-        self.tray_icon.setContextMenu(tray_menu)
-        self.tray_icon.show()
-
-    def exit_app(self):
-        for w in self.windows:
-            self.toggle.disconnect(w.toggle_windows)
-            w.close()
-            del w
-        QApplication.quit()
-
-    def hide(self):
-        for w in self.windows:
-            self.toggle.disconnect(w.toggle_windows)
-            w.close()
-            del w
-
-        self.windows = []
-        keyboard.unhook_all()
-
-    def restart(self):
-        self.hide()
-
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-
-        self.reset_hotkey(str(settings.get('toggle_key', '`')), self.toggle_key)
-        self.is_hidden = False
-        self.is_reset = settings.get('is_default_pos', True)
-
-        self.load_windows(settings)
-
-    @staticmethod
-    def load_plugin(plugin_name):
-        plugin_path = os.path.join(os.getcwd() + '\\windows', plugin_name)
-        print(plugin_path)
-
-        if os.path.exists(plugin_path):
-            spec = importlib.util.spec_from_file_location(plugin_name, plugin_path)
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[plugin_name] = module
-            spec.loader.exec_module(module)
-            return module
-        else:
-            logging.error(f'Script {plugin_name} does not exist at {plugin_path}.')
-            return None
+from lib.app import App
 
 
 def initialize_app():
     print('Starting Quol...')
     app = QApplication([])
 
-    # Set working directory
+    # set working directory
     print('Current working directory:', os.getcwd())
     base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
     os.chdir(base_dir)
     print('Switched working directory:', os.getcwd())
 
     logging.basicConfig(
-        filename=RES_PATH + 'error.log',
+        filename='res/error.log',
         filemode='a',
         level=logging.ERROR,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     )
 
-    try:
-        with open(STYLES_PATH, 'r') as f:
-            stylesheet = f.read()
-        app.setStyleSheet(stylesheet)
+    # try:
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
+    application = App()
 
-        loop = QEventLoop(app)
-        asyncio.set_event_loop(loop)
-        application = App()
-
-        with loop:
-            loop.run_forever()
-
-    except Exception as e:
-        print('error :: ', e)
-        logging.error(e, exc_info=True)
+    with loop:
+        loop.run_forever()
+    #
+    # except Exception as e:
+    #     print('error :: ', e)
+    #     logging.error(e, exc_info=True)
 
 
 if __name__ == '__main__':

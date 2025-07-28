@@ -1,12 +1,12 @@
 [
   [
+    "leo",
+    "start https://leocheng.ca",
+    false
+  ],
+  [
     "ip",
     "ipconfig",
     true
-  ],
-  [
-    "Leo",
-    "start https://leocheng.ca",
-    false
   ]
 ]

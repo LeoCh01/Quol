@@ -1,19 +1,22 @@
 #title-bar {
-    color: transparent;
     background-color: #222;
+    padding: 12;
 }
 
 #title-bar * {
     border: 10px solid transparent;
-    border-top: 0;
-    border-bottom: 0;
+    border: none;
     color: white;
     font-weight: bold;
 }
 
+
+#content {
+    background-color: #444;
+}
+
 #content QCheckBox {
     background-color: #444;
-    color: white;
 }
 
 #content * {
@@ -29,7 +32,6 @@
 
 #content QLineEdit, #content QPlainTextEdit {
     background-color: #3d3d3d;
-    color: white;
 }
 
 #content QPushButton:hover {
@@ -38,23 +40,19 @@
 
 #content QComboBox {
     background-color: #333;
-    color: white;
 }
 
 #content QGroupBox {
     background-color: #444;
-    color: white;
 }
 
 #content QAbstractItemView {
     background-color: #333;
-    color: white;
 }
 
 #content QScrollArea QFrame {
     padding: 2px;
     background-color: #333;
-    color: white;
 }
 
 /* HORIZONTAL SCROLLBAR */

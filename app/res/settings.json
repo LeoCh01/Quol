@@ -4,16 +4,17 @@
   "description": "versatile tool for windows.",
   "startup": false,
   "toggle_key": "`",
-  "toggle_direction": "random",
+  "style": "dark",
+  "transition": "rand",
   "is_default_pos": false,
   "windows": [
     "info",
-    "run_command",
-    "color_picker",
     "chance",
-    "clipboard",
     "chat",
     "draw",
-    "keymap"
+    "run_command",
+    "color_picker",
+    "keymap",
+    "clipboard"
   ]
 }

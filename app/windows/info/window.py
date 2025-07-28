@@ -1,29 +1,24 @@
-import json
-import os
 import sys
 
 from PySide6.QtCore import QSettings, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QPushButton, QGridLayout, QApplication
+from PySide6.QtWidgets import QPushButton, QGridLayout
 
-from res.paths import SETTINGS_PATH
-from windows.custom_widgets import CustomWindow
+from lib.io_helpers import write_json
+from lib.quol_window import QuolMainWindow
+from lib.window_loader import WindowInfo, WindowContext
 
 RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
-BASE_PATH = os.path.dirname(__file__)
 
 
-class MainWindow(CustomWindow):
-    def __init__(self, app, wid, geometry=(10, 10, 180, 1)):
-        super().__init__('Quol', wid, geometry, path=BASE_PATH)
+class MainWindow(QuolMainWindow):
+    def __init__(self, app, window_info: WindowInfo, window_context: WindowContext):
+        super().__init__('Quol', window_info, window_context, default_geometry=(10, 10, 180, 1))
+
         self.app = app
         self.settings_to_config()
-        CustomWindow.toggle_direction = str(self.config['toggle_direction'])
 
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-            version = settings['version']
-        self.ver = QPushButton(f'v{version}')
+        self.ver = QPushButton(f'v{self.app.settings['version']}')
         self.ver.clicked.connect(self.open_url)
 
         self.reload = QPushButton('Reload')
@@ -45,10 +40,9 @@ class MainWindow(CustomWindow):
         self.settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
 
     def on_update_config(self):
-        self.app.set_toggle_key(str(self.config['toggle_key']))
-        CustomWindow.toggle_direction = str(self.config['toggle_direction'])
         self.toggle_startup()
         self.config_to_settings()
+        self.app.restart()
 
     @staticmethod
     def open_url():
@@ -63,26 +57,17 @@ class MainWindow(CustomWindow):
         return 'Quol'
 
     def config_to_settings(self):
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
-
-        settings['toggle_key'] = self.config['toggle_key']
-        settings['startup'] = self.config['startup']
-        settings['toggle_direction'] = self.config['toggle_direction']
-
-        with open(SETTINGS_PATH, 'w') as f:
-            json.dump(settings, f, indent=2)
+        self.app.settings['toggle_key'] = self.config['toggle_key']
+        self.app.settings['transition'] = self.config['transition']
+        self.app.settings['startup'] = self.config['startup']
+        self.app.save_settings()
 
     def settings_to_config(self):
-        with open(SETTINGS_PATH, 'r') as f:
-            settings = json.load(f)
+        self.config['toggle_key'] = self.app.settings['toggle_key']
+        self.config['transition'] = self.app.settings['transition']
+        self.config['startup'] = self.app.settings['startup']
 
-        self.config['toggle_key'] = settings['toggle_key']
-        self.config['startup'] = settings['startup']
-        self.config['toggle_direction'] = settings['toggle_direction']
-
-        with open(BASE_PATH + '/config.json', 'w') as f:
-            json.dump(self.config, f, indent=2)
+        write_json(self.window_info.config_path, self.config)
 
     def toggle_startup(self):
         is_startup = self.config['startup']

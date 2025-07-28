@@ -54,7 +54,7 @@ To run the application locally or build it as a standalone executable, follow th
    git clone https://github.com/LeoCh01/quol.git
    ```
 
-2. **Set up the Python environment:**
+2. **Set up the Python environment (Python 3.12 recommended):**
 
    - Create a virtual environment in project directory:
 
@@ -87,26 +87,8 @@ To run the application locally or build it as a standalone executable, follow th
    - you can also build the exe yourself by installing `pyinstaller` and using the `quol.spec` file
 
    ```bash
-     pyinstaller Quol.spec
+     pyinstaller quol.spec
    ```
-
-## Settings Config
-
-Some application configurations can be modified in the `res/settings.json` file. Below is an example of the settings you can adjust:
-
-```json
-{
-  "startup": true,
-  "toggle_key": "`",
-  "toggle_direction": "random",
-  "is_default_pos": true
-}
-```
-
-- **startup:** Run the application at startup. (`true`/`false`)
-- **toggle_key:** The hotkey to toggle the application.
-- **toggle_direction:** (`up`/`down`/`left`/`right`/`random`).
-- **is_default_pos:** Disable custom window positions (`true`/`false`)
 
 ## Adding Custom Windows
 
@@ -127,7 +109,7 @@ To create a new window, you can add a folder to the `windows` directory and add 
 
 2. **Enable the new window:**
 
-   ```json
+   ```json5
    {
      "windows": [
        "window1",
