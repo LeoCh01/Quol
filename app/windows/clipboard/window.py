@@ -81,6 +81,7 @@ class MainWindow(QuolMainWindow):
             self.clip_layout.itemAt(self.config['length'] - 1).widget().deleteLater()
 
         self.clip_layout.insertWidget(0, self.create_copy_btn(self.clipboard['copy'][-1]))
+        self.save_clipboard()
 
     def on_clear(self):
         self.clipboard['copy'] = []
