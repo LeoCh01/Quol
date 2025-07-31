@@ -15,6 +15,7 @@
     "run_command",
     "color_picker",
     "keymap",
-    "clipboard"
+    "clipboard",
+    "request"
   ]
 }
