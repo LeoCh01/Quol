@@ -6,7 +6,7 @@
   "toggle_key": "`",
   "style": "dark",
   "transition": "rand",
-  "is_default_pos": false,
+  "is_default_pos": true,
   "windows": [
     "info",
     "chance",
@@ -16,6 +16,7 @@
     "color_picker",
     "keymap",
     "clipboard",
-    "request"
+    "request",
+    "stats"
   ]
 }

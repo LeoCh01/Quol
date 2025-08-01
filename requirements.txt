@@ -5,6 +5,10 @@ markdown
 pygments
 httpx
 qasync
+psutil
+gputil
+OpenGL
+pyqtgraph
 
 # Pillow
 # pyinstaller

@@ -1,9 +1,6 @@
 CURRENT
-- refactor code, less coupling
-- rework chat autofocus
-- add transition loader
-- add resizeable window class
-- clipboard note bugfixes
+- add api requests tester
+- fix clipboard save bug
 
 TODO
 - stream api calls
