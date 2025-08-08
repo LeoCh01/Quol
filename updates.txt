@@ -1,7 +1,11 @@
 CURRENT
 - add api requests tester
+- add screen recorder
 - fix clipboard save bug
+- fix clipboard copy repeat
 
 TODO
 - stream api calls
 - tooltips
+- make process table update on click
+- fix fps on rec

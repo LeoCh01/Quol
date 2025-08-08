@@ -24,18 +24,18 @@ def initialize_app():
         level=logging.ERROR,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     )
+    logging.getLogger().addHandler(logging.StreamHandler())
 
-    # try:
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
-    application = App()
+    try:
+        loop = QEventLoop(app)
+        asyncio.set_event_loop(loop)
+        application = App()
 
-    with loop:
-        loop.run_forever()
-    #
-    # except Exception as e:
-    #     print('error :: ', e)
-    #     logging.error(e, exc_info=True)
+        with loop:
+            loop.run_forever()
+    
+    except Exception as e:
+        logging.error(e, exc_info=True)
 
 
 if __name__ == '__main__':

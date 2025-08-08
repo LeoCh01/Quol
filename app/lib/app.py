@@ -63,7 +63,9 @@ class App(QObject):
             else:
                 print('loading ' + name)
                 plugin = WindowLoader(name)
-                plugin.load()
+                if not plugin.load():
+                    print(f'Failed to load window {name}. Skipping...')
+                    continue
                 window = plugin.create_window(context)
 
             self.windows.append(window)

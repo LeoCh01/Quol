@@ -24,6 +24,9 @@ class WindowLoader:
             spec.loader.exec_module(self.module)
         else:
             logging.error(f'Script {self.name} does not exist at {module_path}.')
+            return False
+
+        return True
 
     def create_window(self, context, app=None):
         return self.module.MainWindow(WindowInfo(self.path), context)

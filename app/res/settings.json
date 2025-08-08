@@ -17,6 +17,7 @@
     "keymap",
     "clipboard",
     "request",
-    "stats"
+    "record",
+    "gpt"
   ]
 }

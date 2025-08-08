@@ -1,9 +1,8 @@
 import json
 
 import httpx
-from PySide6.QtWidgets import (
-    QPushButton, QLineEdit, QHBoxLayout, QLabel, QComboBox, QPlainTextEdit, QVBoxLayout, QMessageBox
-)
+from PySide6.QtWidgets import QPushButton, QLineEdit, QHBoxLayout, QLabel, QComboBox, QPlainTextEdit, QVBoxLayout
+
 from lib.quol_window import QuolSubWindow, QuolMainWindow
 
 

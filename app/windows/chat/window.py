@@ -17,13 +17,18 @@ from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
 
 HISTORY = []
-test_response = ""
+test_response = [""]
+
+
 
 
 class MainWindow(QuolMainWindow):
     def __init__(self, window_info: WindowInfo, window_context: WindowContext):
         super().__init__('Chat', window_info, window_context, default_geometry=(730, 10, 190, 1))
         self.ollama_client = None
+
+        with open(window_info.path + '/test_response.txt', 'r') as f:
+            test_response[0] = f.read().strip()
 
         self.chat_window = ChatWindow(self)
         self.window_context.toggle.connect(self.chat_window.toggle_windows)
@@ -119,6 +124,10 @@ class MainWindow(QuolMainWindow):
         else:
             self.btn.setText('Send')
             self.btn.setEnabled(True)
+
+    def close(self):
+        self.chat_window.close()
+        super().close()
 
 
 class ChatWindow(QuolSubWindow):
@@ -229,8 +238,8 @@ class AI:
         self.chat_window.set_text(f'{self.chat_window.get_text()}' + '<div style="height: 50px;"></div>', False)
         self.chat_window.scroll_to_bottom()
 
-        if test_response:
-            self.chat_window.set_text(test_response)
+        if test_response[0]:
+            self.chat_window.set_text(test_response[0])
             return
 
         if model == 'ollama':

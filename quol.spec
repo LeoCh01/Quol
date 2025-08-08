@@ -13,7 +13,6 @@ a = Analysis(
     excludes=[
         'unittest',
         'doctest',
-        'pydoc',
         'xml.dom',
         'xmlrpc',
 

@@ -15,7 +15,7 @@ class MainWindow(QuolMainWindow):
     copy_signal = Signal()
 
     def __init__(self, window_info: WindowInfo, window_context: WindowContext):
-        super().__init__('Clipboard', window_info, window_context, default_geometry=(10, 390, 180, 1))
+        super().__init__('Clipboard', window_info, window_context, default_geometry=(10, 130, 180, 1))
 
         self.copy_signal.connect(self.on_copy)
 
@@ -38,7 +38,8 @@ class MainWindow(QuolMainWindow):
         self.clip_groupbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.layout.addWidget(self.clip_groupbox)
 
-        self.copy_hotkey = keyboard.add_hotkey('ctrl+c', lambda: self.copy_signal.emit())
+        self.copy_pressed = False
+        keyboard.hook(lambda e: self.on_action(e))
 
         self.setFixedHeight(self.config['length'] * 30 + 110)
         self.clip_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -59,8 +60,27 @@ class MainWindow(QuolMainWindow):
             if note:
                 self.on_note(k, note, (i * 15, self.config['length'] * 30 + 200 + i * 45))
 
+    def handle_key_press(self, event):
+        if event.name == 'c' and keyboard.is_pressed('ctrl') and not self.copy_pressed:
+            self.copy_pressed = True
+            self.copy_signal.emit()
+
+    def handle_key_release(self, event):
+        print(f'Key released: {event.name}')
+        if event.name == 'c':
+            self.copy_pressed = False
+
     def create_copy_btn(self, text):
         return CustomButton(QIcon(self.window_info.path + '/res/img/copy.png'), text, self.clipboard['copy'])
+
+    def on_action(self, event):
+        if event.event_type == 'down':
+            if event.name == 'c' and keyboard.is_pressed('ctrl') and not self.copy_pressed:
+                self.copy_pressed = True
+                self.copy_signal.emit()
+        elif event.event_type == 'up':
+            if event.name == 'c':
+                self.copy_pressed = False
 
     def save_clipboard(self):
         write_json(self.clipboard_path, self.clipboard)
