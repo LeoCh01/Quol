@@ -3,7 +3,7 @@
     "model": "gemma3"
   },
   "gemini": {
-    "model": "gemini-2.5-flash",
+    "model": "gemini-2.0-flash",
     "apikey": ""
   },
   "groq": {
@@ -23,11 +23,6 @@
     "/i": "what is this image?"
   },
   "_": {
-    "geometry": [
-      730,
-      10,
-      190,
-      1
-    ]
+    "geometry": [730, 10, 190, 1]
   }
 }

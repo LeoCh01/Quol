@@ -20,8 +20,6 @@ HISTORY = []
 test_response = [""]
 
 
-
-
 class MainWindow(QuolMainWindow):
     def __init__(self, window_info: WindowInfo, window_context: WindowContext):
         super().__init__('Chat', window_info, window_context, default_geometry=(730, 10, 190, 1))
@@ -38,7 +36,7 @@ class MainWindow(QuolMainWindow):
         self.ai_list = QComboBox()
         self.ai_list.addItems(['gemini', 'ollama', 'groq'])
 
-        self.hist_clear = QPushButton('Clear History')
+        self.hist_clear = QPushButton('Clear')
         self.hist_clear.clicked.connect(self.clear_history)
 
         self.prompt = QLineEdit()
@@ -59,7 +57,7 @@ class MainWindow(QuolMainWindow):
         self.layout.addWidget(self.btn)
 
     def clear_history(self):
-        self.chat_window.set_text('')
+        self.chat_window.chat_response.clear()
         HISTORY.clear()
 
     def focus(self):
@@ -131,35 +129,41 @@ class MainWindow(QuolMainWindow):
 
 
 class ChatWindow(QuolSubWindow):
-    def __init__(self, main_window: QuolMainWindow):
+    def __init__(self, main_window: MainWindow):
         screen_geometry = QGuiApplication.primaryScreen().geometry()
         super().__init__(main_window, 'Chat')
         self.setGeometry(QRect(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600))
+
+        with open(main_window.window_info.path + '/res/style.css') as f:
+            self.style_tag = f'<style>{HtmlFormatter(style='monokai').get_style_defs('.codehilite')}{f.read()}</style>'
 
         self.chat_response = QTextBrowser()
         self.chat_response.setOpenExternalLinks(True)
         self.chat_response.setReadOnly(True)
         self.layout.addWidget(self.chat_response, stretch=1)
 
-        self.old_text = ''
-
-    def set_text(self, text, save=True):
-        if save:
-            self.old_text = text
+    def set_output(self, text=''):
+        data = ''.join(
+            f'''
+                <table width="100%">
+                  <tr>
+                    <td align="{'left' if h['role'] == 'model' else 'right'}" class="{'ai-block' if h['role'] == 'model' else 'user-block'}">
+                        <div>{markdown(h['text'], extensions=["fenced_code", "codehilite"])}</div>
+                    </td>
+                  </tr>
+                </table>
+            ''' for h in HISTORY + [{'role': 'model', 'text': text}]
+        )
 
         scrollbar = self.chat_response.verticalScrollBar()
         scroll_pos = scrollbar.value()
 
-        html = self.markdown_to_html(str(text))
-        self.chat_response.setHtml(html)
+        formatted_text = f'{self.style_tag}<body>{data}</body>'
+        self.chat_response.setHtml(formatted_text)
 
         scrollbar.setValue(scroll_pos)
-
         self.chat_response.repaint()
         QApplication.processEvents()
-
-    def get_text(self):
-        return self.old_text
 
     def scroll_to_bottom(self):
         scrollbar = self.chat_response.verticalScrollBar()
@@ -168,58 +172,14 @@ class ChatWindow(QuolSubWindow):
     def closeEvent(self, event):
         print('Window closed')
         super().closeEvent(event)
-        self.set_text('')
         # self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
         HISTORY.clear()
         self.close()
 
-    @staticmethod
-    def markdown_to_html(md_text):
-        html_body = markdown(md_text, extensions=["fenced_code", "codehilite"])
-        css = HtmlFormatter(style="monokai").get_style_defs('.codehilite')
-
-        styling = f"""
-            <style type="text/css">
-            {css}
-            .content-wrapper {{
-                padding: 10px;
-            }}
-            body {{
-                background-color: #333;
-                color: white;
-                font-size: 13px;
-                letter-spacing: 0.2px;
-                line-height: 1.2;
-            }}
-            .codehilite pre {{
-                margin: 0;
-                padding: 10px;
-                background: #262626;
-                line-height: 1;
-            }}
-            code {{
-                background-color: #262626;
-                padding:10px;
-                border-radius: 4px;
-            }}
-            </style>
-        """
-
-        html_text = f"""
-            <html>
-            <head>{styling}</head>
-            <body>
-                {html_body}
-            </body>
-            </html>
-        """
-
-        return html_text
-
 
 class AI:
-    def __init__(self, window: MainWindow, chat_window: ChatWindow):
-        self.window = window
+    def __init__(self, main_window: MainWindow, chat_window: ChatWindow):
+        self.main_window = main_window
         self.chat_window = chat_window
         self.ollama_client = None
         self.current_type = None
@@ -229,17 +189,16 @@ class AI:
         self.text_content = ''
         self.loading_counter = 0
 
-        self.max_hist = self.window.config['config']['max_history']
+        self.max_hist = self.main_window.config['config']['max_history']
 
     def prompt(self, model, d):
         self.current_type = model
         self.chat_window.show()
-        self.chat_window.set_text(f'{self.chat_window.get_text()}\\> {d['prompt']}\n\n')
-        self.chat_window.set_text(f'{self.chat_window.get_text()}' + '<div style="height: 50px;"></div>', False)
+        self.chat_window.set_output('<p>Loading...</p><br><br><br><br>')
         self.chat_window.scroll_to_bottom()
 
         if test_response[0]:
-            self.chat_window.set_text(test_response[0])
+            self.chat_window.chat_response.setHtml(test_response[0])
             return
 
         if model == 'ollama':
@@ -252,16 +211,15 @@ class AI:
 
     @asyncSlot()
     async def handle_response(self, url, headers, data):
-        self.text_content = ''
         self.loading_counter = 0
 
-        def update_loading_text():
+        def on_loading():
             self.loading_counter += 0.1
-            self.chat_window.set_text(f'{self.chat_window.get_text()}Loading... ({self.loading_counter:.1f}s)', False)
+            self.chat_window.set_output(f'<p>Loading... ({self.loading_counter:.1f}s)</p>')
 
         try:
             timer = QTimer()
-            timer.timeout.connect(update_loading_text)
+            timer.timeout.connect(on_loading)
             timer.start(100)
 
             async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
@@ -278,15 +236,14 @@ class AI:
             elif self.current_type == 'groq':
                 self.text_content = res['choices'][0]['message']['content']
 
-            self.chat_window.set_text(f'{self.chat_window.get_text()}{self.text_content}\n\n')
             self.add_history(self.current_type, self.text_content, None, False)
+            self.chat_window.set_output()
         except Exception as e:
-            print(e)
             self.text_content = str(e)
-            self.chat_window.set_text(f'{self.chat_window.get_text()}{self.text_content}\n\n')
+            self.chat_window.set_output(f'Error: {self.text_content}')
             HISTORY.clear()
         finally:
-            self.window.set_button_loading_state(False)
+            self.main_window.set_button_loading_state(False)
 
     def add_history(self, model, text, img_data, is_user):
         if self.is_hist:
@@ -297,7 +254,7 @@ class AI:
             else:
                 HISTORY.append({'role': 'model', 'text': text})
 
-        with open(self.window.window_info.path + f'/res/{model}.log', 'a', encoding='utf-8') as f:
+        with open(self.main_window.window_info.path + f'/res/{model}.log', 'a', encoding='utf-8') as f:
             if is_user:
                 f.write(f'{datetime.datetime.now()}\nQ: {text}\n')
             else:
@@ -317,16 +274,16 @@ class AI:
                 messages=[{
                     'role': 'user',
                     'content': prompt,
-                    'images': [self.window.window_info.path + '/res/img/screenshot.png']
+                    'images': [self.main_window.window_info.path + '/res/img/screenshot.png']
                 }]
             )
 
             text = ''
             for chunk in response:
                 text += chunk['message']['content']
-                self.chat_window.set_text(text)
+                self.chat_window.set_output(text)
         except Exception as e:
-            self.chat_window.set_text(f'Error: {e}')
+            self.chat_window.set_output(f'Error: {str(e)}')
 
     def gemini(self, model, prompt, key):
         key = key or 'APIKEY'
@@ -347,7 +304,7 @@ class AI:
         cur = {'role': 'user', 'parts': [{'text': prompt}]}
 
         if self.is_img:
-            with open(self.window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
+            with open(self.main_window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
                 cur['parts'].append({'inline_data': {'mime_type': 'image/png', 'data': img_data}})
 
@@ -377,7 +334,7 @@ class AI:
         cur = {'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}
 
         if self.is_img:
-            with open(self.window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
+            with open(self.main_window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
                 cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{img_data}'}})
 

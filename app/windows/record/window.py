@@ -20,7 +20,7 @@ class MainWindow(QuolMainWindow):
     status_updated = Signal(str)
 
     def __init__(self, window_info: WindowInfo, window_context: WindowContext):
-        super().__init__('Screen Recorder', window_info, window_context, default_geometry=(300, 300, 200, 1))
+        super().__init__('Screen Recorder', window_info, window_context, default_geometry=(1340, 10, 200, 1))
 
         self.recording = False
         self.fps = 60  # target capture fps
