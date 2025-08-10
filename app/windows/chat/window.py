@@ -36,29 +36,42 @@ class MainWindow(QuolMainWindow):
         self.ai_list = QComboBox()
         self.ai_list.addItems(['gemini', 'ollama', 'groq'])
 
-        self.hist_clear = QPushButton('Clear')
-        self.hist_clear.clicked.connect(self.clear_history)
+        self.clear_btn = QPushButton('Clear')
+        self.clear_btn.clicked.connect(self.on_clear)
+
+        self.img_btn = QPushButton('Image')
+        self.img_btn.setCheckable(True)
+        self.img_btn.setChecked(True)
+        self.img_btn.setStyleSheet("background-color: #4CAF50;")
+        self.img_btn.clicked.connect(self.on_image)
 
         self.prompt = QLineEdit()
         self.prompt.setPlaceholderText('prompt...')
         self.prompt.returnPressed.connect(self.send_prompt)
 
-        self.btn = QPushButton('Send')
-        self.btn.clicked.connect(self.send_prompt)
+        self.send_btn = QPushButton('Send')
+        self.send_btn.clicked.connect(self.send_prompt)
 
         self.top_layout = QHBoxLayout()
         self.prompt_layout = QVBoxLayout()
 
         self.top_layout.addWidget(self.ai_list)
-        self.top_layout.addWidget(self.hist_clear)
+        self.top_layout.addWidget(self.clear_btn)
+        self.top_layout.addWidget(self.img_btn)
         self.prompt_layout.addWidget(self.prompt)
         self.layout.addLayout(self.top_layout)
         self.layout.addLayout(self.prompt_layout)
-        self.layout.addWidget(self.btn)
+        self.layout.addWidget(self.send_btn)
 
-    def clear_history(self):
+    def on_clear(self):
         self.chat_window.chat_response.clear()
         HISTORY.clear()
+
+    def on_image(self):
+        if self.img_btn.isChecked():
+            self.img_btn.setStyleSheet("background-color: #4CAF50;")
+        else:
+            self.img_btn.setStyleSheet("background-color: #F44336;")
 
     def focus(self):
         if self.config['config']['auto_focus'] and not self.window_context.get_is_hidden():
@@ -77,10 +90,10 @@ class MainWindow(QuolMainWindow):
         mouse.position = [cur[0], cur[1]]
 
     def send_prompt(self):
-        self.ai.is_img = self.config['config']['image']
+        self.ai.is_img = self.img_btn.isChecked()
         self.ai.is_hist = self.config['config']['history']
 
-        if self.config['config']['image']:
+        if self.img_btn.isChecked():
             screen = QGuiApplication.primaryScreen()
             self.window_context.toggle_windows_instant(True)
             screenshot = screen.grabWindow(0).toImage()
@@ -117,11 +130,11 @@ class MainWindow(QuolMainWindow):
 
     def set_button_loading_state(self, is_loading):
         if is_loading:
-            self.btn.setText('...')
-            self.btn.setEnabled(False)
+            self.send_btn.setText('...')
+            self.send_btn.setEnabled(False)
         else:
-            self.btn.setText('Send')
-            self.btn.setEnabled(True)
+            self.send_btn.setText('Send')
+            self.send_btn.setEnabled(True)
 
     def close(self):
         self.chat_window.close()
@@ -147,9 +160,7 @@ class ChatWindow(QuolSubWindow):
             f'''
                 <table width="100%">
                   <tr>
-                    <td align="{'left' if h['role'] == 'model' else 'right'}" class="{'ai-block' if h['role'] == 'model' else 'user-block'}">
-                        <div>{markdown(h['text'], extensions=["fenced_code", "codehilite"])}</div>
-                    </td>
+                    <td align="{'left' if h['role'] == 'model' else 'right'}" class="{'ai-block' if h['role'] == 'model' else 'user-block'}"><div>{markdown(h['text'], extensions=["fenced_code", "codehilite"])}</div></td>
                   </tr>
                 </table>
             ''' for h in HISTORY + [{'role': 'model', 'text': text}]

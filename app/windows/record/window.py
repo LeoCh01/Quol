@@ -25,7 +25,7 @@ class MainWindow(QuolMainWindow):
         self.recording = False
         self.fps = 60  # target capture fps
         self.output_path = self.window_info.path + "/res/recording.mp4"
-        self.crop_selector = CropSelectorWidget()
+        self.crop_selector = CropSelectorWidget(self.window_context)
         self.crop_selector.crop_selected.connect(self.set_crop_rect)
 
         # UI elements
@@ -36,7 +36,7 @@ class MainWindow(QuolMainWindow):
         self.crop_input.setReadOnly(True)
 
         self.crop_button = QPushButton("Select Crop Region")
-        self.crop_button.clicked.connect(lambda: self.crop_selector.start(self.window_context))
+        self.crop_button.clicked.connect(lambda: self.crop_selector.start())
 
         self.start_btn = QPushButton("Start Recording")
         self.start_btn.clicked.connect(self.toggle_recording)
@@ -175,30 +175,31 @@ class MainWindow(QuolMainWindow):
 class CropSelectorWidget(QWidget):
     crop_selected = Signal(int, int, int, int)  # x, y, w, h
 
-    def __init__(self):
+    def __init__(self, context):
         super().__init__()
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setCursor(Qt.CrossCursor)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setCursor(Qt.CursorShape.CrossCursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         screen_geometry = QApplication.primaryScreen().geometry()
         self.setFixedSize(screen_geometry.width(), screen_geometry.height() - 20)
 
+        self.context = context
         self.start_point = None
         self.end_point = None
         self.screenshot = QPixmap()
         self.selecting = False
 
-    def start(self, context):
-        context.toggle_windows_instant(True)
+    def start(self):
+        self.context.toggle_windows_instant(True)
         screen = QApplication.primaryScreen()
         self.screenshot = screen.grabWindow(0)
         self.start_point = None
         self.end_point = None
         self.selecting = False
         self.show()
-        context.toggle_windows_instant(False)
-        context.toggle_windows()
+        self.context.toggle_windows_instant(False)
+        self.context.toggle_windows()
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
@@ -218,6 +219,7 @@ class CropSelectorWidget(QWidget):
             self.end_point = event.position().toPoint()
             self.selecting = False
             self.emit_crop()
+            self.context.toggle_windows()
             print(f"Crop selected: {self.start_point} to {self.end_point}")
 
     def emit_crop(self):

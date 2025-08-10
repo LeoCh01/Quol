@@ -3,6 +3,7 @@ CURRENT
 - add screen recorder
 - fix clipboard save bug
 - fix clipboard copy repeat
+- fix keymap reload bug
 - chat reformat
 - add splash screen
 

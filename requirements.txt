@@ -8,7 +8,6 @@ qasync
 psutil
 gputil
 OpenGL
-pyqtgraph
 
 # Pillow
 # pyinstaller

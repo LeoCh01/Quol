@@ -1,5 +1,6 @@
 import os
 import keyboard
+from PySide6.QtCore import QTimer
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QWidget, QGroupBox
 
@@ -25,7 +26,7 @@ class MainWindow(QuolMainWindow):
         self.key_mappings: dict[str, dict] = {}
 
         self.mappings_path = self.window_info.path + '/res/keymaps.json'
-        self.load_mappings()
+        QTimer.singleShot(0, self.load_mappings)
 
     def add_mapping_row(self, src='', dst=''):
         row_widget = QWidget()
@@ -68,7 +69,7 @@ class MainWindow(QuolMainWindow):
 
             handle = keyboard.add_hotkey(source, lambda: keyboard.send(target), suppress=True)
             self.key_mappings[source] = {'target': target, 'handle': handle}
-            btn.setStyleSheet("background-color: green;")
+            btn.setStyleSheet("background-color: #4CAF50;")
             print(f"Mapped '{source}' -> '{target}'")
 
             self.save_mappings()
@@ -101,3 +102,7 @@ class MainWindow(QuolMainWindow):
             src_input, dst_input, save_btn = self.add_mapping_row(src, dst)
             save_btn.click()
 
+    def close(self):
+        for src in self.key_mappings:
+            keyboard.remove_hotkey(self.key_mappings[src]['handle'])
+        super().close()

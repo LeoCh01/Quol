@@ -12,7 +12,6 @@
   },
   "config": {
     "auto_focus": false,
-    "image": true,
     "history": true,
     "max_history": 5
   },
