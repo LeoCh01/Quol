@@ -13,7 +13,7 @@
   "config": {
     "auto_focus": false,
     "history": true,
-    "max_history": 5
+    "max_history": 10
   },
   "commands": {
     "/t": "translate any {0} text on screen to {1:english}",
@@ -22,6 +22,11 @@
     "/i": "what is this image?"
   },
   "_": {
-    "geometry": [730, 10, 190, 1]
+    "geometry": [
+      730,
+      10,
+      190,
+      1
+    ]
   }
 }
