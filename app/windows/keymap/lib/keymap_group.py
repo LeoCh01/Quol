@@ -17,7 +17,7 @@ class KeymapGroupDialog(QuolDialogWindow):
         self.layout.addWidget(self.groupbox)
 
         self.add_mapping_btn = QPushButton("+ Add Mapping")
-        self.add_mapping_btn.clicked.connect(self.add_mapping_row)
+        self.add_mapping_btn.clicked.connect(lambda: self.add_mapping_row())
         self.layout.addWidget(self.add_mapping_btn)
 
         self.mapping_rows = []
@@ -26,7 +26,7 @@ class KeymapGroupDialog(QuolDialogWindow):
             for src, dst in mappings:
                 self.add_mapping_row(src, dst)
 
-    def add_mapping_row(self, src: str = '', dst: str = '', *_):
+    def add_mapping_row(self, src: str = '', dst: str = ''):
         row_widget = QWidget()
         row_layout = QHBoxLayout(row_widget)
         row_layout.setContentsMargins(0, 0, 0, 0)

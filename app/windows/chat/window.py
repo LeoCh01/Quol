@@ -1,23 +1,13 @@
-import base64
-import datetime
-
-import httpx
 import re
 from pynput.mouse import Controller, Button
-
-from markdown import markdown
-from pygments.formatters.html import HtmlFormatter
-from PySide6.QtCore import QTimer, QRect
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication, QTextBrowser
-from qasync import asyncSlot
-import ollama
+from PySide6.QtWidgets import QPushButton, QComboBox, QLineEdit, QHBoxLayout, QVBoxLayout
 
-from lib.quol_window import QuolMainWindow, QuolSubWindow
+from lib.quol_window import QuolMainWindow
 from lib.window_loader import WindowInfo, WindowContext
-
-HISTORY = []
-test_response = [""]
+from lib.chat_window import ChatWindow
+from lib.ai import AI
 
 
 class MainWindow(QuolMainWindow):
@@ -26,7 +16,7 @@ class MainWindow(QuolMainWindow):
         self.ollama_client = None
 
         with open(window_info.path + '/test_response.txt', 'r') as f:
-            test_response[0] = f.read().strip()
+            self.test_response = f.read().strip()
 
         self.chat_window = ChatWindow(self)
         self.window_context.toggle.connect(self.chat_window.toggle_windows)
@@ -65,7 +55,7 @@ class MainWindow(QuolMainWindow):
 
     def on_clear(self):
         self.chat_window.chat_response.clear()
-        HISTORY.clear()
+        self.ai.history.clear()
 
     def on_image(self):
         if self.img_btn.isChecked():
@@ -139,216 +129,3 @@ class MainWindow(QuolMainWindow):
     def close(self):
         self.chat_window.close()
         super().close()
-
-
-class ChatWindow(QuolSubWindow):
-    def __init__(self, main_window: MainWindow):
-        screen_geometry = QGuiApplication.primaryScreen().geometry()
-        super().__init__(main_window, 'Chat')
-        self.setGeometry(QRect(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600))
-
-        with open(main_window.window_info.path + '/res/style.css') as f:
-            self.style_tag = f'<style>{HtmlFormatter(style='monokai').get_style_defs('.codehilite')}{f.read()}</style>'
-
-        self.chat_response = QTextBrowser()
-        self.chat_response.setOpenExternalLinks(True)
-        self.chat_response.setReadOnly(True)
-        self.layout.addWidget(self.chat_response, stretch=1)
-
-    def set_output(self, text=''):
-        data = ''.join(
-            f'''
-                <table width="100%">
-                  <tr>
-                    <td align="{'left' if h['role'] == 'model' else 'right'}" class="{'ai-block' if h['role'] == 'model' else 'user-block'}"><div>{markdown(h['text'], extensions=["fenced_code", "codehilite"])}</div></td>
-                  </tr>
-                </table>
-            ''' for h in HISTORY + [{'role': 'model', 'text': text}]
-        )
-
-        scrollbar = self.chat_response.verticalScrollBar()
-        scroll_pos = scrollbar.value()
-
-        formatted_text = f'{self.style_tag}<body>{data}</body>'
-        self.chat_response.setHtml(formatted_text)
-
-        scrollbar.setValue(scroll_pos)
-        self.chat_response.repaint()
-        QApplication.processEvents()
-
-    def scroll_to_bottom(self):
-        scrollbar = self.chat_response.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
-
-    def closeEvent(self, event):
-        print('Window closed')
-        super().closeEvent(event)
-        # self.setGeometry(QRect(self.g[0], self.g[1], self.g[2], self.g[3]))
-        HISTORY.clear()
-        self.close()
-
-
-class AI:
-    def __init__(self, main_window: MainWindow, chat_window: ChatWindow):
-        self.main_window = main_window
-        self.chat_window = chat_window
-        self.ollama_client = None
-        self.current_type = None
-
-        self.is_img = True
-        self.is_hist = True
-        self.text_content = ''
-        self.loading_counter = 0
-
-        self.max_hist = self.main_window.config['config']['max_history']
-
-    def prompt(self, model, d):
-        self.current_type = model
-        self.chat_window.show()
-        self.chat_window.set_output('<p>Loading...</p><br><br><br><br>')
-        self.chat_window.scroll_to_bottom()
-
-        if test_response[0]:
-            self.chat_window.chat_response.setHtml(test_response[0])
-            return
-
-        if model == 'ollama':
-            self.ollama(d['model'], d['prompt'])
-            return
-        elif model == 'gemini':
-            self.handle_response(*self.gemini(d['model'], d['prompt'], d['apikey']))
-        elif model == 'groq':
-            self.handle_response(*self.groq(d['model'], d['prompt'], d['apikey']))
-
-    @asyncSlot()
-    async def handle_response(self, url, headers, data):
-        self.loading_counter = 0
-
-        def on_loading():
-            self.loading_counter += 0.1
-            self.chat_window.set_output(f'<p>Loading... ({self.loading_counter:.1f}s)</p>')
-
-        try:
-            timer = QTimer()
-            timer.timeout.connect(on_loading)
-            timer.start(100)
-
-            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
-                response = await client.post(url, headers=headers, json=data)
-
-            timer.stop()
-            res = response.json()
-
-            if 'error' in res:
-                raise Exception(f'Error: {res["error"]["message"]}')
-
-            if self.current_type == 'gemini':
-                self.text_content = res['candidates'][0]['content']['parts'][0]['text']
-            elif self.current_type == 'groq':
-                self.text_content = res['choices'][0]['message']['content']
-
-            self.add_history(self.current_type, self.text_content, None, False)
-            self.chat_window.set_output()
-        except Exception as e:
-            self.text_content = str(e)
-            self.chat_window.set_output(f'Error: {self.text_content}')
-            HISTORY.clear()
-        finally:
-            self.main_window.set_button_loading_state(False)
-
-    def add_history(self, model, text, img_data, is_user):
-        if self.is_hist:
-            if is_user:
-                HISTORY.append({'role': 'user', 'text': text})
-                if self.is_img:
-                    HISTORY[-1]['image'] = img_data
-            else:
-                HISTORY.append({'role': 'model', 'text': text})
-
-        with open(self.main_window.window_info.path + f'/res/{model}.log', 'a', encoding='utf-8') as f:
-            if is_user:
-                f.write(f'{datetime.datetime.now()}\nQ: {text}\n')
-            else:
-                f.write(f'A: {text.replace("\n\n", "\n")}\n\n')
-
-        if len(HISTORY) > (self.max_hist - 1) * 2:
-            HISTORY.pop(0)
-
-    def ollama(self, model, prompt):
-        if not self.ollama_client:
-            self.ollama_client = ollama.Client(host='http://localhost:11434')
-
-        try:
-            response = self.ollama_client.chat(
-                model=model,
-                stream=True,
-                messages=[{
-                    'role': 'user',
-                    'content': prompt,
-                    'images': [self.main_window.window_info.path + '/res/img/screenshot.png']
-                }]
-            )
-
-            text = ''
-            for chunk in response:
-                text += chunk['message']['content']
-                self.chat_window.set_output(text)
-        except Exception as e:
-            self.chat_window.set_output(f'Error: {str(e)}')
-
-    def gemini(self, model, prompt, key):
-        key = key or 'APIKEY'
-        url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}'
-        headers = {'Content-Type': 'application/json'}
-        data = {'contents': []}
-        img_data = None
-
-        if self.is_hist:
-            for h in HISTORY:
-                data['contents'].append({'role': h['role'], 'parts': [{'text': h['text']}]})
-
-                if 'image' in h:
-                    data['contents'][-1]['parts'].append(
-                        {'inline_data': {'mime_type': 'image/png', 'data': h['image']}}
-                    )
-
-        cur = {'role': 'user', 'parts': [{'text': prompt}]}
-
-        if self.is_img:
-            with open(self.main_window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
-                img_data = base64.b64encode(img_file.read()).decode('utf-8')
-                cur['parts'].append({'inline_data': {'mime_type': 'image/png', 'data': img_data}})
-
-        data['contents'].append(cur)
-        self.add_history('gemini', prompt, img_data, True)
-        return url, headers, data
-
-    def groq(self, model, prompt, key):
-        key = key or 'APIKEY'
-        url = 'https://api.groq.com/openai/v1/chat/completions'
-        headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {key}'}
-        data = {'messages': [], 'model': model, 'stream': False}
-        img_data = None
-
-        if self.is_hist:
-            for h in HISTORY:
-                if h['role'] == 'user':
-                    data['messages'].append({'role': 'user', 'content': [{'type': 'text', 'text': h['text']}]})
-
-                    if 'image' in h:
-                        data['messages'][-1]['content'].append(
-                            {'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{h['image']}'}}
-                        )
-                else:
-                    data['messages'].append({'role': 'assistant', 'content': h['text']})
-
-        cur = {'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}
-
-        if self.is_img:
-            with open(self.main_window.window_info.path + '/res/img/screenshot.png', 'rb') as img_file:
-                img_data = base64.b64encode(img_file.read()).decode('utf-8')
-                cur['content'].append({'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{img_data}'}})
-
-        data['messages'].append(cur)
-        self.add_history('groq', prompt, img_data, True)
-        return url, headers, data
