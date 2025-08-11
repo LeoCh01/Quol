@@ -51,7 +51,7 @@ class SystemWindowLoader(WindowLoader):
 class WindowInfo:
     def __init__(self, path):
         self.path = path
-        self.config_path = path + '\\config.json'
+        self.config_path = path + '\\res\\config.json'
 
     def save_config(self, config):
         write_json(self.config_path, config)
