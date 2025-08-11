@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QLabel
 
 from lib.quol_window import QuolMainWindow
 from lib.window_loader import WindowInfo, WindowContext
+from lib.adder import add_to_str
 
 
 class MainWindow(QuolMainWindow):
@@ -18,9 +19,9 @@ class MainWindow(QuolMainWindow):
         self.layout.addWidget(QLabel('Hello'))
 
         # self.config is a dictionary containing data in config.json
-        self.number = QLabel(str(self.config['test']))
+        self.number = QLabel(add_to_str(self.config['a'], self.config['b']))
         self.layout.addWidget(self.number)
 
     def on_update_config(self):
         # This method is called when the config is updated.
-        self.number.setText(str(self.config['test']))
+        self.number.setText(add_to_str(self.config['a'], self.config['b']))

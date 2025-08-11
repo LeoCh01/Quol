@@ -7,7 +7,7 @@ from PySide6.QtCore import QPoint
 
 from lib.quol_window import QuolMainWindow
 from lib.window_loader import WindowInfo, WindowContext
-from windows.draw.color_wheel import ColorWheel
+from lib.color_wheel import ColorWheel
 
 
 class MainWindow(QuolMainWindow):

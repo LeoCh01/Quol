@@ -1,19 +1,20 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['app/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('app/windows', 'windows'), ('app/res', 'res'), ('app/transitions', 'transitions'), ('app/lib', 'lib')],
-    hiddenimports=['ollama', 'markdown', 'pygments', 'httpx', 'qasync.asyncSlot', 'pynput', 'PySide6.QtOpenGLWidgets', 'PySide6.QtOpenGL', 'OpenGL.GL'],
+    datas=[
+        ('app/res', 'res'),
+        ('app/transitions', 'transitions'),
+        ('app/lib', 'lib')
+    ],
+    hiddenimports=['ollama', 'markdown', 'pygments', 'httpx', 'qasync.asyncSlot', 'pynput', 'PySide6.QtOpenGLWidgets', 'PySide6.QtOpenGL', 'OpenGL.GL', 'seleniumbase', 'selenium', 'selenium.webdriver.support.expected_conditions'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        'unittest',
         'doctest',
-        'xml.dom',
         'xmlrpc',
 
         'pygments.formatters.bbcode',

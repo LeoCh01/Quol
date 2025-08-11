@@ -9,5 +9,6 @@ psutil
 gputil
 OpenGL
 
+# seleniumbase
 # Pillow
 # pyinstaller

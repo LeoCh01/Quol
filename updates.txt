@@ -4,6 +4,7 @@ CURRENT
 - fix clipboard save bug
 - fix clipboard copy repeat
 - fix keymap reload bug
+- fix dynamic script loading
 - chat reformat
 - add splash screen
 
