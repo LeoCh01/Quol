@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 from lib.quol_window import QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
-from simulator import AI
+from simulator import Simulator
 
 test_response = ['']
 
@@ -16,6 +16,7 @@ class GPTWindow(QuolSubWindow):
         self.setGeometry(1200, 410, 500, 600)
         self.window_info: WindowInfo = main_window.window_info
         self.window_context: WindowContext = main_window.window_context
+        self.main_window = main_window
 
         self.output_box = QTextBrowser(self)
         self.output_box.setOpenExternalLinks(True)
@@ -28,7 +29,7 @@ class GPTWindow(QuolSubWindow):
         self.l2 = QHBoxLayout()
         self.layout.addLayout(self.l2)
 
-        self.ai = AI()
+        self.simulator = Simulator()
         self.simulate_thread = None
         self.history = []
         self.set_output()
@@ -41,17 +42,13 @@ class GPTWindow(QuolSubWindow):
             self.set_output(test_response[0])
 
     def on_send(self, input_field, toggle_image_button):
-        self.loading_counter = 0
-
-        def on_loading():
-            self.loading_counter += 0.1
-            self.set_output(f'<p>Loading... ({self.loading_counter:.1f}s)</p>')
-
         prompt = input_field.text()
-        if not prompt.strip():
+        if not prompt.strip() or not self.simulator.is_loaded:
             return
 
         input_field.clear()
+        self.show()
+        self.loading_counter = 0
 
         img_path = None
         if toggle_image_button.isChecked():
@@ -62,15 +59,19 @@ class GPTWindow(QuolSubWindow):
             img_path = self.window_info.path + '/res/img/screenshot.png'
             screenshot.save(img_path)
 
+        def on_loading():
+            self.loading_counter += 0.1
+            self.set_output(f'<p>Loading... ({self.loading_counter:.1f}s)</p>')
+
         timer = QTimer()
         timer.timeout.connect(on_loading)
         timer.start(100)
 
         self.history.append(('user', '<p>' + prompt + '</p>'))
-        self.simulate_thread = SimulateThread(self.ai, prompt, img_path=img_path)
+        self.simulate_thread = SimulateThread(self.simulator, prompt, img_path=img_path)
         self.simulate_thread.response_signal.connect(lambda response: self.set_output(response))
         self.simulate_thread.loaded_signal.connect(lambda: timer.stop())
-        self.simulate_thread.done_signal.connect(lambda response: self.history.append(('ai', response)))
+        self.simulate_thread.finished_signal.connect(lambda response: self.history.append(('ai', response)))
         self.simulate_thread.start()
 
     def on_clear(self):
@@ -79,7 +80,7 @@ class GPTWindow(QuolSubWindow):
         if self.simulate_thread and self.simulate_thread.isRunning():
             self.simulate_thread.requestInterruption()
             self.simulate_thread.wait()
-        self.ai.refresh()
+        self.simulator.refresh()
 
     def on_image(self, toggle_image_button):
         if toggle_image_button.isChecked():
@@ -87,17 +88,20 @@ class GPTWindow(QuolSubWindow):
         else:
             toggle_image_button.setStyleSheet("padding: 5px; background-color: #F44336;")
 
-    def reload(self, reload_button):
+    def reload(self, reload_button, clear_btn, send_btn):
+        self.show()
         reload_button.setEnabled(False)
         reload_button.setText("Loading...")
-
-        self.simulate_thread = ReloadThread(self.ai)
+        send_btn.setEnabled(False)
+        clear_btn.setEnabled(False)
 
         def on_finished():
             reload_button.setEnabled(True)
             reload_button.setText("Reload")
-            print('ChatGPT loaded')
+            send_btn.setEnabled(True)
+            clear_btn.setEnabled(True)
 
+        self.simulate_thread = ReloadThread(self.simulator)
         self.simulate_thread.finished_signal.connect(on_finished)
         self.simulate_thread.start()
 
@@ -128,11 +132,11 @@ class GPTWindow(QuolSubWindow):
         self.output_box.repaint()
         QApplication.processEvents()
 
-    def close(self):
+    def closeEvent(self, event):
         if self.simulate_thread and self.simulate_thread.isRunning():
             self.simulate_thread.requestInterruption()
             self.simulate_thread.wait()
-        self.ai.close()
+        self.simulator.close()
         super().close()
 
 
@@ -141,31 +145,31 @@ class ReloadThread(QThread):
 
     def __init__(self, ai):
         super().__init__()
-        self.ai = ai
+        self.simulator = ai
 
     def run(self):
-        self.ai.reload('chatgpt')
+        self.simulator.reload('chatgpt')
         self.finished_signal.emit()
 
 
 class SimulateThread(QThread):
     response_signal = Signal(str)
     loaded_signal = Signal()
-    done_signal = Signal(str)
+    finished_signal = Signal(str)
 
     def __init__(self, ai, input_text, img_path=None):
         super().__init__()
-        self.ai = ai
+        self.simulator = ai
         self.input_text = input_text
         self.img_path = img_path
 
     def run(self):
         res = ''
         is_loaded = False
-        for response in self.ai.submit(self.input_text, img_path=self.img_path):
+        for response in self.simulator.submit(self.input_text, img_path=self.img_path):
             if not is_loaded:
                 self.loaded_signal.emit()
                 is_loaded = True
             res = response
             self.response_signal.emit(res)
-        self.done_signal.emit(res)
+        self.finished_signal.emit(res)

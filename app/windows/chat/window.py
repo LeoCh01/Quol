@@ -29,8 +29,7 @@ class MainWindow(QuolMainWindow):
         self.ai_list = QComboBox()
         self.ai_list.addItems(['gemini', 'ollama', 'groq'])
 
-        self.reload_btn_gpt = QPushButton('Reload')
-        self.reload_btn_gpt.clicked.connect(lambda: self.gpt.reload(self.reload_btn_gpt))
+        self.reload_btn_gpt = QPushButton('init')
 
         self.clear_btn = QPushButton('Clear')
 
@@ -56,6 +55,7 @@ class MainWindow(QuolMainWindow):
         self.layout.addLayout(self.prompt_layout)
         self.layout.addWidget(self.send_btn)
 
+        self.reload_btn_gpt.clicked.connect(lambda: self.gpt.reload(self.reload_btn_gpt, self.clear_btn, self.send_btn))
         self.connect_signals()
 
     def on_update_config(self):
@@ -73,13 +73,11 @@ class MainWindow(QuolMainWindow):
             self.send_btn.clicked.connect(lambda: self.gpt.on_send(self.prompt, self.img_btn))
 
             self.ai_list.setDisabled(True)
-            self.gpt.show()
         else:
             self.clear_btn.clicked.connect(self.on_clear)
             self.prompt.returnPressed.connect(self.send_prompt)
             self.send_btn.clicked.connect(self.send_prompt)
             self.ai_list.setDisabled(False)
-            self.gpt.hide()
 
     def swap_widgets(self):
         # swap self.ai_list with self.reload_btn_gpt

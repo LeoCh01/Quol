@@ -1,15 +1,18 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait
 from seleniumbase import Driver
 
+MAX_RETRIES = 3
 
-class AI:
+
+class Simulator:
     def __init__(self):
         self.driver = None
         self.responses = []
         self.use = 'chatgpt'
+        self.is_loaded = False
 
     def reload(self, use):
         if self.driver:
@@ -17,10 +20,11 @@ class AI:
                 self.driver.quit()
             except Exception as e:
                 print('Error quitting driver:', e)
-                pass
 
         self.driver = Driver(uc=True, headless=False, disable_csp=True)
         self.use = use
+        self.is_loaded = False
+        self.responses = []
 
         if self.use == 'chatgpt':
             self.driver.uc_open('https://chat.openai.com/')
@@ -30,7 +34,8 @@ class AI:
 
         elif self.use == 'grok':
             self.driver.uc_open('https://grok.com')
-        self.responses = []
+
+        self.is_loaded = True
         print('AI loaded')
 
     def refresh(self):
@@ -51,13 +56,15 @@ class AI:
             self.driver = None
 
     def submit(self, msg, img_path=None):
+        if not self.driver:
+            return 'Error: AI not loaded.'
+
         if self.use == 'chatgpt':
             return self.gpt(msg, img_path)
         elif self.use == 'grok':
             return self.grok(msg, img_path)
 
-    def gpt(self, msg, img_path=None):
-
+    def gpt(self, msg, img_path=None) -> str:
         text_input = self.driver.find_element(By.CLASS_NAME, 'ProseMirror')
         text_input.send_keys(msg)
 
@@ -66,32 +73,48 @@ class AI:
             file_input.send_keys(img_path)
 
         wait = WebDriverWait(self.driver, 30)
-        button = wait.until(expected_conditions.element_to_be_clickable((By.ID, "composer-submit-button")))
-        button.click()
+
+        for attempt in range(MAX_RETRIES):
+            try:
+                print(f"Looking for submit button (attempt {attempt + 1})...")
+                button = wait.until(EC.element_to_be_clickable((By.ID, "composer-submit-button")))
+                button.click()
+                break
+            except StaleElementReferenceException:
+                print(f"StaleElementReferenceException on attempt {attempt + 1}, retrying...")
+                continue
+        else:
+            print("Failed to click the submit button after retries.")
+            return 'Error: Unable to submit the prompt.'
 
         print('Waiting for ".markdown" tag...')
-        wait.until(expected_conditions.presence_of_element_located((By.CLASS_NAME, 'markdown')))
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'markdown')))
 
         while True:
             try:
-                yield self.driver.find_elements(By.CLASS_NAME, 'markdown')[-1].get_attribute('outerHTML')
-            except StaleElementReferenceException:
-                print('StaleElementReferenceException, retrying...')
-                continue
-            except NoSuchElementException:
-                print('NoSuchElementException, retrying...')
+                latest = self.driver.find_elements(By.CLASS_NAME, 'markdown')[-1]
+                yield latest.get_attribute('outerHTML')
+            except (StaleElementReferenceException, NoSuchElementException):
+                print('Element error (stale or missing), retrying...')
                 continue
             except Exception as e:
                 print('Unexpected error:', e)
                 continue
 
             try:
+                print('Waiting for response stream to complete...')
                 self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Stop streaming"]')
             except NoSuchElementException:
                 break
 
-        self.responses.append(self.driver.find_elements(By.CLASS_NAME, 'markdown')[-1].get_attribute('outerHTML'))
-        yield self.responses[-1]
+        print('Response received, processing...')
+
+        try:
+            last_response = self.driver.find_elements(By.CLASS_NAME, 'markdown')[-1].get_attribute('outerHTML')
+            self.responses.append(last_response)
+            yield last_response
+        except Exception as e:
+            print("Failed to capture final response:", e)
 
     def grok(self, msg, img_path=None):
         return ''
