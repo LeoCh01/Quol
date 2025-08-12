@@ -21,7 +21,7 @@ def initialize_app():
 
     # Set up logging
     logging.basicConfig(
-        filename='res/error.log',
+        filename='error.log',
         filemode='a',
         level=logging.ERROR,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

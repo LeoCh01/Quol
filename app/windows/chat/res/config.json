@@ -11,6 +11,7 @@
     "apikey": ""
   },
   "config": {
+    "gpt": false,
     "auto_focus": false,
     "history": true,
     "max_history": 10
@@ -26,7 +27,7 @@
       730,
       10,
       190,
-      1
+      135
     ]
   }
 }

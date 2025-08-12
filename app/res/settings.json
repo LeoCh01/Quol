@@ -16,7 +16,6 @@
     "color_picker",
     "keymap",
     "clipboard",
-    "request",
-    "ai"
+    "request"
   ]
 }
