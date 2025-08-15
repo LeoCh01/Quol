@@ -21,7 +21,7 @@ class Simulator:
             except Exception as e:
                 print('Error quitting driver:', e)
 
-        self.driver = Driver(uc=True, headless=False, disable_csp=True)
+        self.driver = Driver(uc=True, headless=True, disable_csp=True)
         self.use = use
         self.is_loaded = False
         self.responses = []
@@ -48,6 +48,7 @@ class Simulator:
             self.reload(self.use)
 
     def close(self):
+        self.is_loaded = False
         if self.driver:
             try:
                 self.driver.quit()
@@ -105,6 +106,7 @@ class Simulator:
                 print('Waiting for response stream to complete...')
                 self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Stop streaming"]')
             except NoSuchElementException:
+                print('No stop button found, assuming response complete.')
                 break
 
         print('Response received, processing...')
@@ -115,6 +117,9 @@ class Simulator:
             yield last_response
         except Exception as e:
             print("Failed to capture final response:", e)
+            return 'Error: Unable to capture final response.'
+
+        print('Final response processing complete.')
 
     def grok(self, msg, img_path=None):
         return ''

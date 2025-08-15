@@ -100,6 +100,7 @@ class GPTWindow(QuolSubWindow):
             reload_button.setText("Reload")
             send_btn.setEnabled(True)
             clear_btn.setEnabled(True)
+            self.set_output('<p>PT loaded successfully.</p>')
 
         self.simulate_thread = ReloadThread(self.simulator)
         self.simulate_thread.finished_signal.connect(on_finished)

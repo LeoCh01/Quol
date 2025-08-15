@@ -62,12 +62,14 @@ class MainWindow(QuolMainWindow):
         self.clear_btn.clicked.disconnect()
         self.prompt.returnPressed.disconnect()
         self.send_btn.clicked.disconnect()
+        self.gpt.close()
+        self.chat_window.close()
 
         self.connect_signals()
 
     def connect_signals(self):
         self.swap_widgets()
-        if self.config['config']['gpt']:
+        if self.config['config']['gpt_mode']:
             self.clear_btn.clicked.connect(self.gpt.on_clear)
             self.prompt.returnPressed.connect(lambda: self.gpt.on_send(self.prompt, self.img_btn))
             self.send_btn.clicked.connect(lambda: self.gpt.on_send(self.prompt, self.img_btn))
@@ -80,8 +82,7 @@ class MainWindow(QuolMainWindow):
             self.ai_list.setDisabled(False)
 
     def swap_widgets(self):
-        # swap self.ai_list with self.reload_btn_gpt
-        if self.config['config']['gpt']:
+        if self.config['config']['gpt_mode']:
             self.top_layout.replaceWidget(self.ai_list, self.reload_btn_gpt)
             self.reload_btn_gpt.show()
             self.ai_list.hide()
@@ -89,7 +90,6 @@ class MainWindow(QuolMainWindow):
             self.top_layout.replaceWidget(self.reload_btn_gpt, self.ai_list)
             self.ai_list.show()
             self.reload_btn_gpt.hide()
-
 
     def on_clear(self):
         self.chat_window.chat_response.clear()
@@ -164,7 +164,7 @@ class MainWindow(QuolMainWindow):
             self.send_btn.setText('Send')
             self.send_btn.setEnabled(True)
 
-    def close(self):
+    def closeEvent(self, event):
         self.chat_window.close()
         self.gpt.close()
         super().close()

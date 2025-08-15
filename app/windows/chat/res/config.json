@@ -11,7 +11,7 @@
     "apikey": ""
   },
   "config": {
-    "gpt": true,
+    "gpt_mode": true,
     "auto_focus": false,
     "history": true,
     "max_history": 10
