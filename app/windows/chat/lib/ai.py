@@ -2,7 +2,7 @@ import base64
 import datetime
 
 import httpx
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, QThread, Signal
 from qasync import asyncSlot
 import ollama
 
@@ -95,31 +95,28 @@ class AI:
             self.history.pop(0)
 
     def ollama(self, model, prompt):
-        if not self.ollama_client:
-            self.ollama_client = ollama.Client(host='http://localhost:11434')
-
-        messages = {
-            'role': 'user',
-            'content': prompt,
-        }
-
+        image_path = None
         if self.is_img:
-            messages['images'] = [self.main_window.window_info.path + '/res/img/screenshot.png']
+            image_path = self.main_window.window_info.path + '/res/img/screenshot.png'
 
-        try:
-            response = self.ollama_client.chat(model=model, stream=True, messages=[messages])
+        self.thread = OllamaThread(model=model, prompt=prompt, image_path=image_path)
 
-            text = ''
-            for chunk in response:
-                text += chunk['message']['content']
-                self.chat_window.set_output(text)
+        self.thread.output_signal.connect(self.chat_window.set_output)
+        self.thread.finished_signal.connect(lambda text: self.on_ollama_finished(prompt, text))
+        self.thread.error_signal.connect(self.on_ollama_error)
 
-            with open(self.main_window.window_info.path + '/res/ollama.log', 'a', encoding='utf-8') as f:
-                f.write(f'{datetime.datetime.now()}\nQ: {prompt}\nA: {text.replace("\n\n", "\n")}\n\n')
-        except Exception as e:
-            self.chat_window.set_output(f'Error: {str(e)}')
-        finally:
-            self.main_window.set_button_loading_state(False)
+        self.thread.start()
+
+    def on_ollama_finished(self, prompt, text):
+        with open(self.main_window.window_info.path + '/res/ollama.log', 'a', encoding='utf-8') as f:
+            f.write(f'{datetime.datetime.now()}\nQ: {prompt}\nA: {text.replace("\n\n", "\n")}\n\n')
+
+        self.text_content = text
+        self.main_window.set_button_loading_state(False)
+
+    def on_ollama_error(self, error):
+        self.chat_window.set_output(f'Error: {error}')
+        self.main_window.set_button_loading_state(False)
 
     def gemini(self, model, prompt, key):
         key = key or 'APIKEY'
@@ -177,3 +174,39 @@ class AI:
         data['messages'].append(cur)
         self.add_history('groq', prompt, img_data, True)
         return url, headers, data
+
+
+class OllamaThread(QThread):
+    output_signal = Signal(str)
+    finished_signal = Signal(str)
+    error_signal = Signal(str)
+
+    def __init__(self, model, prompt, image_path=None, parent=None):
+        super().__init__(parent)
+        self.model = model
+        self.prompt = prompt
+        self.image_path = image_path
+        self.client = ollama.Client(host='http://localhost:11434')
+
+    def run(self):
+        try:
+            messages = {
+                'role': 'user',
+                'content': self.prompt,
+            }
+
+            if self.image_path:
+                messages['images'] = [self.image_path]
+
+            response = self.client.chat(model=self.model, stream=True, messages=[messages])
+
+            text = ''
+            for chunk in response:
+                content = chunk['message']['content']
+                text += content
+                self.output_signal.emit(text)
+
+            self.finished_signal.emit(text)
+
+        except Exception as e:
+            self.error_signal.emit(str(e))
