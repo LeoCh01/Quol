@@ -14,14 +14,14 @@ class Simulator:
         self.use = 'chatgpt'
         self.is_loaded = False
 
-    def reload(self, use):
+    def reload(self, use, headless=True):
         if self.driver:
             try:
                 self.driver.quit()
             except Exception as e:
                 print('Error quitting driver:', e)
 
-        self.driver = Driver(uc=True, headless=True, disable_csp=True)
+        self.driver = Driver(uc=True, headless=headless, disable_csp=True)
         self.use = use
         self.is_loaded = False
         self.responses = []

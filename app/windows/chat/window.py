@@ -69,7 +69,7 @@ class MainWindow(QuolMainWindow):
 
     def connect_signals(self):
         self.swap_widgets()
-        if self.config['config']['gpt_mode']:
+        if self.config['gpt']['mode']:
             self.clear_btn.clicked.connect(self.gpt.on_clear)
             self.prompt.returnPressed.connect(lambda: self.gpt.on_send(self.prompt, self.img_btn))
             self.send_btn.clicked.connect(lambda: self.gpt.on_send(self.prompt, self.img_btn))
@@ -82,7 +82,7 @@ class MainWindow(QuolMainWindow):
             self.ai_list.setDisabled(False)
 
     def swap_widgets(self):
-        if self.config['config']['gpt_mode']:
+        if self.config['gpt']['mode']:
             self.top_layout.replaceWidget(self.ai_list, self.reload_btn_gpt)
             self.reload_btn_gpt.show()
             self.ai_list.hide()

@@ -7,7 +7,6 @@ from qasync import asyncSlot
 import ollama
 
 
-
 class AI:
     def __init__(self, main_window: 'MainWindow', chat_window: 'ChatWindow'):
         self.main_window = main_window
@@ -99,23 +98,28 @@ class AI:
         if not self.ollama_client:
             self.ollama_client = ollama.Client(host='http://localhost:11434')
 
+        messages = {
+            'role': 'user',
+            'content': prompt,
+        }
+
+        if self.is_img:
+            messages['images'] = [self.main_window.window_info.path + '/res/img/screenshot.png']
+
         try:
-            response = self.ollama_client.chat(
-                model=model,
-                stream=True,
-                messages=[{
-                    'role': 'user',
-                    'content': prompt,
-                    'images': [self.main_window.window_info.path + '/res/img/screenshot.png']
-                }]
-            )
+            response = self.ollama_client.chat(model=model, stream=True, messages=[messages])
 
             text = ''
             for chunk in response:
                 text += chunk['message']['content']
                 self.chat_window.set_output(text)
+
+            with open(self.main_window.window_info.path + '/res/ollama.log', 'a', encoding='utf-8') as f:
+                f.write(f'{datetime.datetime.now()}\nQ: {prompt}\nA: {text.replace("\n\n", "\n")}\n\n')
         except Exception as e:
             self.chat_window.set_output(f'Error: {str(e)}')
+        finally:
+            self.main_window.set_button_loading_state(False)
 
     def gemini(self, model, prompt, key):
         key = key or 'APIKEY'

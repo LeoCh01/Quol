@@ -100,9 +100,9 @@ class GPTWindow(QuolSubWindow):
             reload_button.setText("Reload")
             send_btn.setEnabled(True)
             clear_btn.setEnabled(True)
-            self.set_output('<p>PT loaded successfully.</p>')
+            self.set_output('<p>GPT loaded successfully.</p>')
 
-        self.simulate_thread = ReloadThread(self.simulator)
+        self.simulate_thread = ReloadThread(self.simulator, self.main_window.config['gpt']['headless'])
         self.simulate_thread.finished_signal.connect(on_finished)
         self.simulate_thread.start()
 
@@ -134,6 +134,8 @@ class GPTWindow(QuolSubWindow):
         QApplication.processEvents()
 
     def closeEvent(self, event):
+        self.hide()
+        self.output_box.clear()
         if self.simulate_thread and self.simulate_thread.isRunning():
             self.simulate_thread.requestInterruption()
             self.simulate_thread.wait()
@@ -144,12 +146,13 @@ class GPTWindow(QuolSubWindow):
 class ReloadThread(QThread):
     finished_signal = Signal()
 
-    def __init__(self, ai):
+    def __init__(self, ai, headless):
         super().__init__()
         self.simulator = ai
+        self.headless = headless
 
     def run(self):
-        self.simulator.reload('chatgpt')
+        self.simulator.reload('chatgpt', headless=self.headless)
         self.finished_signal.emit()
 
 

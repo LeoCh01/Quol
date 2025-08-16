@@ -1,6 +1,5 @@
 CURRENT
 - add api requests tester
-- add screen recorder
 - chat reformat
 - fix clipboard save bug
 - fix clipboard copy repeat

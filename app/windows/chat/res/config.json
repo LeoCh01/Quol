@@ -10,8 +10,11 @@
     "model": "meta-llama/llama-4-scout-17b-16e-instruct",
     "apikey": ""
   },
+  "gpt": {
+    "mode": false,
+    "headless": false
+  },
   "config": {
-    "gpt_mode": true,
     "auto_focus": false,
     "history": true,
     "max_history": 10
