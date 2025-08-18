@@ -1,7 +1,7 @@
 CURRENT
 - add api requests tester
 - chat reformat
-- add ChatGPT to chat (web scrape)
+- add ChatGPT web scrape (experimental)
 - fix async for ollama
 - add keymap groupings
 - fix clipboard save bug

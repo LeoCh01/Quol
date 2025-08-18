@@ -11,8 +11,8 @@
     "apikey": ""
   },
   "gpt": {
-    "mode": true,
-    "headless": true
+    "mode": false,
+    "headless": false
   },
   "config": {
     "auto_focus": false,
