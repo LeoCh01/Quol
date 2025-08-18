@@ -12,7 +12,7 @@
   },
   "gpt": {
     "mode": false,
-    "headless": false
+    "headless": true
   },
   "config": {
     "auto_focus": false,

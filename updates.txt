@@ -1,15 +1,16 @@
 CURRENT
 - add api requests tester
 - chat reformat
+- fix async for ollama
+- add keymap groupings
 - fix clipboard save bug
 - fix clipboard copy repeat
-- fix keymap reload bug
 - fix dynamic script loading
 - add splash screen
 
 TODO
-- stream api calls
-- tooltips
+- add script updater for new versions
+- add window/plugin manager
+- add tooltips
 - make process table update on click
 - fix fps on rec
-- fix ollama
