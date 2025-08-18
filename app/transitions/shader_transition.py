@@ -12,6 +12,7 @@ from lib.quol_transition import QuolTransition
 from lib.transition_loader import TransitionInfo
 
 
+# Disabled for now
 class ShaderTransition(QuolTransition, QWidget):
     def __init__(self, transition_info: TransitionInfo, window: QuolBaseWindow, vertex_source: str, fragment_src: str):
         QuolTransition.__init__(self, transition_info, window)

@@ -77,18 +77,18 @@ class Simulator:
 
         for attempt in range(MAX_RETRIES):
             try:
-                print(f"Looking for submit button (attempt {attempt + 1})...")
+                # print(f"Looking for submit button (attempt {attempt + 1})...")
                 button = wait.until(EC.element_to_be_clickable((By.ID, "composer-submit-button")))
                 button.click()
                 break
             except StaleElementReferenceException:
-                print(f"StaleElementReferenceException on attempt {attempt + 1}, retrying...")
+                # print(f"StaleElementReferenceException on attempt {attempt + 1}, retrying...")
                 continue
         else:
-            print("Failed to click the submit button after retries.")
+            # print("Failed to click the submit button after retries.")
             return 'Error: Unable to submit the prompt.'
 
-        print('Waiting for ".markdown" tag...')
+        # print('Waiting for ".markdown" tag...')
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'markdown')))
 
         while True:
@@ -96,30 +96,30 @@ class Simulator:
                 latest = self.driver.find_elements(By.CLASS_NAME, 'markdown')[-1]
                 yield latest.get_attribute('outerHTML')
             except (StaleElementReferenceException, NoSuchElementException):
-                print('Element error (stale or missing), retrying...')
+                # print('Element error (stale or missing), retrying...')
                 continue
             except Exception as e:
-                print('Unexpected error:', e)
+                # print('Unexpected error:', e)
                 continue
 
             try:
-                print('Waiting for response stream to complete...')
+                # print('Waiting for response stream to complete...')
                 self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Stop streaming"]')
             except NoSuchElementException:
-                print('No stop button found, assuming response complete.')
+                # print('No stop button found, assuming response complete.')
                 break
 
-        print('Response received, processing...')
+        # print('Response received, processing...')
 
         try:
             last_response = self.driver.find_elements(By.CLASS_NAME, 'markdown')[-1].get_attribute('outerHTML')
             self.responses.append(last_response)
             yield last_response
         except Exception as e:
-            print("Failed to capture final response:", e)
+            # print("Failed to capture final response:", e)
             return 'Error: Unable to capture final response.'
 
-        print('Final response processing complete.')
+        # print('Final response processing complete.')
 
     def grok(self, msg, img_path=None):
         return ''

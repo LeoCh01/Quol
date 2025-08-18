@@ -9,13 +9,26 @@ a = Analysis(
         ('app/transitions', 'transitions'),
         ('app/lib', 'lib')
     ],
-    hiddenimports=['ollama', 'markdown', 'pygments', 'httpx', 'qasync.asyncSlot', 'pynput', 'PySide6.QtOpenGLWidgets', 'PySide6.QtOpenGL', 'OpenGL.GL', 'seleniumbase', 'selenium', 'selenium.webdriver.support.expected_conditions'],
+    hiddenimports=[
+        'ollama',
+        'markdown',
+        'pygments',
+        'httpx',
+        'pynput',
+        'selenium.webdriver.common.by',
+        'selenium.webdriver.support.expected_conditions',
+        'selenium.common.exceptions',
+        'selenium.webdriver.support.wait',
+        'seleniumbase'
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
         'doctest',
         'xmlrpc',
+        'lxml',
+        'html5lib',
 
         'pygments.formatters.bbcode',
         'pygments.formatters.img',

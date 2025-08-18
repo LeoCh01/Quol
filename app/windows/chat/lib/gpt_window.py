@@ -1,7 +1,6 @@
 from PySide6.QtCore import QThread, Signal, QTimer
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QHBoxLayout, QTextBrowser, QApplication
-from bs4 import BeautifulSoup
 
 from lib.quol_window import QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
@@ -111,22 +110,16 @@ class GPTWindow(QuolSubWindow):
             f'''
                 <table width="100%">
                   <tr>
-                    <td align="{'left' if s == 'ai' else 'right'}" class="{'ai-block' if s == 'ai' else 'user-block'}">
-                        {content}
-                    </td>
+                    <td align="{'left' if s == 'ai' else 'right'}" class="{'ai-block' if s == 'ai' else 'user-block'}">{content}</td>
                   </tr>
                 </table>
             ''' for s, content in self.history + [['ai', text]]
         )
 
-        soup = BeautifulSoup(data, 'html.parser')
-        for tag in soup.find_all(class_='text-token-text-secondary'):
-            tag.decompose()
-
         scrollbar = self.output_box.verticalScrollBar()
         scroll_pos = scrollbar.value()
 
-        formatted_text = f'{self.style_tag}<body>{soup.decode_contents()}</body>'
+        formatted_text = f'{self.style_tag}<body>{data}</body>'
         self.output_box.setHtml(formatted_text)
 
         scrollbar.setValue(scroll_pos)
