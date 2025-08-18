@@ -13,7 +13,7 @@ Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, de
 - **CMD Runner:** Save and execute custom command line instructions.
 - **Clipboard:** Store copy history and sticky notes.
 - **Request:** Test API requests.
-- - **Record:** Record screen. 
+- **Record:** Record screen. 
 - **Chance:** Flip a coin, roll a dice.
 - **Customize:** Create and Add custom windows without rebuilding.
 
@@ -103,11 +103,13 @@ To create a new window, you can add a folder to the `windows` directory and add 
    ├── windows.py
    ├── config.json (optional)
    └── res/ (optional)
+    └── lib/ (optional)
    ```
 
    - `windows.py`: main window script.
    - `config.json`: configurations linked to window script.
    - `res/`: images and other miscellaneous items.
+   - `lib/`: additional libraries/scripts if needed.
 
 2. **Enable the new window:**
 
