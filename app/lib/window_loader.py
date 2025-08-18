@@ -15,15 +15,26 @@ class WindowLoader:
         self.path = f'{os.getcwd()}\\windows\\{self.name}'
 
     def load(self):
-        module_path = self.path + '\\window.py'
+        module_path = os.path.join(self.path, 'window.py')
 
         if os.path.exists(module_path):
+            if self.path not in sys.path:
+                sys.path.insert(0, self.path)
+
+            # load lib
+            lib_path = os.path.join(self.path, 'lib')
+            if os.path.isdir(lib_path) and lib_path not in sys.path:
+                sys.path.insert(0, lib_path)
+
             spec = importlib.util.spec_from_file_location(self.name, module_path)
             self.module = importlib.util.module_from_spec(spec)
             sys.modules[self.name] = self.module
             spec.loader.exec_module(self.module)
         else:
             logging.error(f'Script {self.name} does not exist at {module_path}.')
+            return False
+
+        return True
 
     def create_window(self, context, app=None):
         return self.module.MainWindow(WindowInfo(self.path), context)
@@ -40,7 +51,7 @@ class SystemWindowLoader(WindowLoader):
 class WindowInfo:
     def __init__(self, path):
         self.path = path
-        self.config_path = path + '\\config.json'
+        self.config_path = path + '\\res\\config.json'
 
     def save_config(self, config):
         write_json(self.config_path, config)

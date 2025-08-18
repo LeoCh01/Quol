@@ -1,10 +1,17 @@
 CURRENT
-- refactor code, less coupling
-- rework chat autofocus
-- add transition loader
-- add resizeable window class
-- clipboard note bugfixes
+- add api requests tester
+- chat reformat
+- add ChatGPT web scrape (experimental)
+- fix async for ollama
+- add keymap groupings
+- fix clipboard save bug
+- fix clipboard copy repeat
+- fix dynamic script loading
+- add splash screen
 
 TODO
-- stream api calls
-- tooltips
+- add script updater for new versions
+- add window/plugin manager
+- add tooltips
+- make process table update on click
+- fix fps on rec

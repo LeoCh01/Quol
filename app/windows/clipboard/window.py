@@ -1,14 +1,17 @@
 from typing import Optional
 
 import keyboard
-from PySide6.QtCore import Signal, QSize, QTimer, QPropertyAnimation, QRect, QEasingCurve
+from PySide6.QtCore import Signal, QTimer, QRect
 from PySide6.QtGui import QIcon, Qt
-from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy, QTextEdit, \
-    QWidget, QLabel, QLineEdit
+from PySide6.QtWidgets import QGroupBox, QVBoxLayout, QPushButton, QHBoxLayout, QApplication, QSizePolicy
 
 from lib.io_helpers import read_json, write_json
-from lib.quol_window import QuolMainWindow, QuolResizableSubWindow, QuolDialogWindow
+from lib.quol_window import QuolMainWindow
 from lib.window_loader import WindowInfo, WindowContext
+from lib.note_name_dialog import NoteNameDialog
+from lib.button import CustomButton
+from lib.sticky_window import StickyWindow
+from lib.copy_popup import CopiedPopup
 
 
 class MainWindow(QuolMainWindow):
@@ -38,7 +41,8 @@ class MainWindow(QuolMainWindow):
         self.clip_groupbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.layout.addWidget(self.clip_groupbox)
 
-        self.copy_hotkey = keyboard.add_hotkey('ctrl+c', lambda: self.copy_signal.emit())
+        self.copy_pressed = False
+        keyboard.hook(lambda e: self.on_action(e))
 
         self.setFixedHeight(self.config['length'] * 30 + 110)
         self.clip_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -59,8 +63,27 @@ class MainWindow(QuolMainWindow):
             if note:
                 self.on_note(k, note, (i * 15, self.config['length'] * 30 + 200 + i * 45))
 
+    def handle_key_press(self, event):
+        if event.name == 'c' and keyboard.is_pressed('ctrl') and not self.copy_pressed:
+            self.copy_pressed = True
+            self.copy_signal.emit()
+
+    def handle_key_release(self, event):
+        print(f'Key released: {event.name}')
+        if event.name == 'c':
+            self.copy_pressed = False
+
     def create_copy_btn(self, text):
         return CustomButton(QIcon(self.window_info.path + '/res/img/copy.png'), text, self.clipboard['copy'])
+
+    def on_action(self, event):
+        if event.event_type == 'down':
+            if event.name == 'c' and keyboard.is_pressed('ctrl') and not self.copy_pressed:
+                self.copy_pressed = True
+                self.copy_signal.emit()
+        elif event.event_type == 'up':
+            if event.name == 'c':
+                self.copy_pressed = False
 
     def save_clipboard(self):
         write_json(self.clipboard_path, self.clipboard)
@@ -81,6 +104,7 @@ class MainWindow(QuolMainWindow):
             self.clip_layout.itemAt(self.config['length'] - 1).widget().deleteLater()
 
         self.clip_layout.insertWidget(0, self.create_copy_btn(self.clipboard['copy'][-1]))
+        self.save_clipboard()
 
     def on_clear(self):
         self.clipboard['copy'] = []
@@ -136,151 +160,3 @@ class MainWindow(QuolMainWindow):
             sticky.close()
 
         self.sticky_notes.clear()
-
-
-class CustomButton(QPushButton):
-    def __init__(self, icon, text, clipboard):
-        self.full_text = text
-        if len(text) > 18:
-            text = text[:16] + '...'
-
-        super().__init__(icon, text)
-
-        self.setIconSize(QSize(12, 12))
-        self.setFixedHeight(24)
-        self.setStyleSheet('text-align: left;')
-        self.copy_clipboard = clipboard
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            QApplication.clipboard().setText(self.full_text)
-        super().mousePressEvent(event)
-
-
-class StickyWindow(QuolResizableSubWindow):
-
-    def __init__(self, main_window: MainWindow, wid: str, text: str, pos: tuple):
-        super().__init__(main_window, wid)
-
-        self.setGeometry(pos[0], pos[1], 300, 300)
-        self.setMinimumSize(150, 150)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-        self.wid = wid
-        self.text_edit = QTextEdit(self)
-        self.text_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.text_edit.setPlaceholderText('...')
-        self.text_edit.setText(text)
-        self.text_edit.textChanged.connect(self.save_note)
-        self.layout.addWidget(self.text_edit)
-
-        self.main_window: MainWindow = main_window
-
-    def save_note(self):
-        self.main_window.clipboard['sticky'][self.wid] = self.text_edit.toPlainText()
-        self.main_window.save_clipboard()
-
-    def close(self):
-        super().close()
-
-        if not self.main_window.clipboard['sticky'].get(self.wid):
-            del self.main_window.clipboard['sticky'][self.wid]
-            self.main_window.save_clipboard()
-
-        self.main_window.sticky_notes.pop(self.wid, None)
-
-        if not self.main_window.sticky_notes:
-            self.main_window.window_context.toggle.disconnect(self.toggle_windows)
-
-
-class NoteNameDialog(QuolDialogWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent, "Note")
-        self.setGeometry(45, 130, 300, 1)
-
-        self.name_input = QLineEdit(self)
-        self.name_input.setPlaceholderText("Enter note name...")
-        self.layout.addWidget(self.name_input)
-
-    def get_name(self):
-        return self.name_input.text().strip()
-
-
-class CopiedPopup:
-    def __init__(self, text):
-        screen_w = QApplication.primaryScreen().size().width()
-        screen_h = QApplication.primaryScreen().size().height()
-
-        self.top = CopiedPopupSub('', QRect(0, -30, screen_w, 50), 30, [0, -1])
-        self.bottom = CopiedPopupSub(text, QRect(0, screen_h - 20, screen_w, 50), 30, [0, 1])
-        self.left = CopiedPopupSub('', QRect(-30, 0, 50, screen_h), 30, [-1, 0])
-        self.right = CopiedPopupSub('', QRect(screen_w - 20, 0, 50, screen_h), 30, [1, 0])
-
-    def play(self):
-        self.top.play()
-        self.bottom.play()
-        self.left.play()
-        self.right.play()
-
-
-class CopiedPopupSub(QWidget):
-    def __init__(self, text, geometry, h, d):
-        super().__init__(geometry=geometry)
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setStyleSheet(
-            f'background: qlineargradient(x1:{int(d[0] == -1)}, y1:{int(d[1] == -1)}, x2:{int(d[0] == 1)}, y2:{int(d[1] == 1)}, stop:0 #00000000, stop:1 #000000);'
-        )
-
-        layout = QVBoxLayout(self)
-        self.text = QLabel(text, self)
-        self.text.setStyleSheet('color: #fff;')
-        self.text.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.text)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
-
-        self.fade_in_animation = QPropertyAnimation(self, b"windowOpacity")
-        self.move_in_animation = QPropertyAnimation(self, b"pos")
-        self.fade_out_animation = QPropertyAnimation(self, b"windowOpacity")
-        self.move_out_animation = QPropertyAnimation(self, b"pos")
-
-        self.t1 = 300
-        self.t2 = 500
-        self.h = h
-        self.d = d
-
-    def play(self):
-        self.show()
-        self.raise_()
-
-        self.start_fade()
-
-    def start_fade(self):
-        self.fade_in_animation.setDuration(self.t1)
-        self.fade_in_animation.setStartValue(0)
-        self.fade_in_animation.setEndValue(1)
-
-        self.move_in_animation.setEasingCurve(QEasingCurve.Type.OutExpo)
-        self.move_in_animation.setDuration(self.t2)
-        self.move_in_animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()).topLeft())
-        self.move_in_animation.setEndValue(QRect(self.x() - self.h * self.d[0], self.y() - self.h * self.d[1], self.width(), self.height()).topLeft())
-
-        self.fade_in_animation.start()
-        self.move_in_animation.start()
-
-        QTimer.singleShot(self.t1 + 200, self.start_fade_out)
-
-    def start_fade_out(self):
-        self.fade_out_animation.setDuration(self.t1)
-        self.fade_out_animation.setStartValue(1)
-        self.fade_out_animation.setEndValue(0)
-
-        self.move_out_animation.setDuration(self.t2)
-        self.move_out_animation.setStartValue(QRect(self.x(), self.y(), self.width(), self.height()).topLeft())
-        self.move_out_animation.setEndValue(QRect(self.x() + self.h * self.d[0], self.y() + self.h * self.d[1], self.width(), self.height()).topLeft())
-
-        self.fade_out_animation.start()
-        self.move_out_animation.start()
-
-        QTimer.singleShot(self.t2, self.hide)

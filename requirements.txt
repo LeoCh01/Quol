@@ -5,6 +5,12 @@ markdown
 pygments
 httpx
 qasync
+seleniumbase
+pynput
 
-# Pillow
 # pyinstaller
+# Pillow
+
+# psutil
+# gputil
+# OpenGL

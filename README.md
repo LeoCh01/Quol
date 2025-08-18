@@ -12,6 +12,8 @@ Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, de
 - **Color Picker:** Select and copy HEX color values on your screen.
 - **CMD Runner:** Save and execute custom command line instructions.
 - **Clipboard:** Store copy history and sticky notes.
+- **Request:** Test API requests.
+- - **Record:** Record screen. 
 - **Chance:** Flip a coin, roll a dice.
 - **Customize:** Create and Add custom windows without rebuilding.
 
