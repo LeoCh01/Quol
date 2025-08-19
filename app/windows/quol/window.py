@@ -28,6 +28,8 @@ class MainWindow(QuolMainWindow):
         self.q.setStyleSheet('background-color: #c44; color: white;')
         self.q.clicked.connect(self.app.exit_app)
 
+        self.manager = QPushButton('Manage Windows')
+
         self.grid_layout = QGridLayout()
         self.grid_layout.addWidget(self.ver, 0, 0, 1, 2)
         self.grid_layout.addWidget(self.reload, 1, 0)
@@ -78,3 +80,4 @@ class MainWindow(QuolMainWindow):
         else:
             self.settings.remove(self.app_name)
             print(f'Removed {self.app_name} from startup')
+

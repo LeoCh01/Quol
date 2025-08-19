@@ -56,8 +56,8 @@ class App(QObject):
         context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin, self.get_is_hidden)
 
         for name in self.settings.get('windows'):
-            if name == 'info':
-                plugin = SystemWindowLoader('info')
+            if name == 'quol':
+                plugin = SystemWindowLoader('quol')
                 plugin.load()
                 window = plugin.create_window(context, self)
             else:

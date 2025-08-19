@@ -7,15 +7,5 @@
   "style": "dark",
   "transition": "rand",
   "is_default_pos": false,
-  "windows": [
-    "info",
-    "chance",
-    "chat",
-    "draw",
-    "run_command",
-    "color_picker",
-    "keymap",
-    "clipboard",
-    "request"
-  ]
+  "windows": ["quol", "chance", "chat", "draw", "run_command", "color_picker", "keymap", "clipboard", "request"]
 }

@@ -1,5 +1,3 @@
-import os
-
 from PySide6 import QtCore
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QPushButton, QLabel, QGridLayout
