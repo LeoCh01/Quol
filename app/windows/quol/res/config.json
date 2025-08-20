@@ -7,13 +7,12 @@
       10,
       10,
       180,
-      108
+      136
     ],
     "windows": [
       "quol",
-      "chance"
+      "clipboard-v1"
     ],
     "name": "Quol"
-  },
-  "name": "Quol"
+  }
 }

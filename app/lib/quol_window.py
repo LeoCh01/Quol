@@ -302,20 +302,20 @@ class QuolConfigWindow(QuolSubWindow):
 
         def create_item(key, value):
             if isinstance(value, bool):
-                checkbox = QCheckBox(self)
+                checkbox = QCheckBox()
                 checkbox.setChecked(value)
                 layout = QHBoxLayout()
                 layout.addWidget(QLabel(key))
                 layout.addWidget(checkbox)
                 return layout
             elif isinstance(value, dict):
-                group_box = QGroupBox(key, self)
+                group_box = QGroupBox(key)
                 group_layout = QVBoxLayout(group_box)
                 for k, v in value.items():
                     add_to_layout(group_layout, create_item(k, v))
                 return group_box
             else:
-                input_field = QLineEdit(self)
+                input_field = QLineEdit()
                 input_field.setText(str(value))
                 layout = QHBoxLayout()
                 layout.addWidget(QLabel(key))

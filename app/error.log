@@ -15,3 +15,34 @@ Traceback (most recent call last):
     self.settings_to_config()
     ^^^^^^^^^^^^^^^^^^^^^^^
 AttributeError: 'MainWindow' object has no attribute 'settings_to_config'
+2025-08-20 16:22:44,722 - root - ERROR - module 'quol' has no attribute 'MainWindow'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 39, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 25, in __init__
+    self.load_windows()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 62, in load_windows
+    window = plugin.create_window(context, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 48, in create_window
+    return self.module.MainWindow(app, WindowInfo(self.path), context)
+           ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'quol' has no attribute 'MainWindow'. Did you mean: 'ManageWindow'?
+2025-08-20 16:24:28,536 - root - ERROR - No module named 'imageio'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 39, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 25, in __init__
+    self.load_windows()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 66, in load_windows
+    if not plugin.load():
+           ^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 32, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\windows\record\window.py", line 5, in <module>
+    import imageio.v2 as imageio
+ModuleNotFoundError: No module named 'imageio'

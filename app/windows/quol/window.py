@@ -1,14 +1,16 @@
-import json
 import os
 import sys
 
-from PySide6.QtCore import QSettings, QUrl
+from PySide6.QtCore import QSettings, QUrl, QSize
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, QCheckBox
+from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
+    QCheckBox, QTabWidget, QVBoxLayout
+from qasync import asyncSlot
 
 from lib.io_helpers import write_json
 from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
+from lib.api import fetch_store_items
 
 RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
 
@@ -43,7 +45,7 @@ class MainWindow(QuolMainWindow):
 
         self.manage_windows_window = None
 
-        self.app_name = self.config['name']
+        self.app_name = self.config['_']['name']
         self.app_path = self.get_app_path()
         self.settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
 
@@ -96,12 +98,33 @@ class MainWindow(QuolMainWindow):
 class ManageWindow(QuolSubWindow):
     def __init__(self, main_window):
         super().__init__(main_window, "Manage Windows")
-        self.setGeometry(300, 300, 300, 300)
+        self.setGeometry(300, 300, 400, 400)
 
+        self.tabs = QTabWidget()
+        self.installed_tab = QWidget()
+        self.store_tab = QWidget()
+
+        self.tabs.addTab(self.installed_tab, "Installed")
+        self.tabs.addTab(self.store_tab, "Store")
+
+        self.layout.addWidget(self.tabs)
+
+        self.setup_installed_tab()
+        self.setup_store_tab()
+
+    def setup_installed_tab(self):
+        self.installed_layout = QVBoxLayout()
         self.list_widget = QListWidget()
-        self.layout.addWidget(self.list_widget)
-
+        self.installed_layout.addWidget(self.list_widget)
+        self.installed_tab.setLayout(self.installed_layout)
         self.refresh_list()
+
+    def setup_store_tab(self):
+        self.store_layout = QVBoxLayout()
+        self.store_list_widget = QListWidget()
+        self.store_layout.addWidget(self.store_list_widget)
+        self.store_tab.setLayout(self.store_layout)
+        self.refresh_store_list()
 
     def refresh_list(self):
         windows_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -114,31 +137,107 @@ class ManageWindow(QuolSubWindow):
 
         self.list_widget.clear()
 
-        for window in installed:
+        for window in sorted(installed):
+            if '-v' in window:
+                name_part, version = window.rsplit('-v', 1)
+                version = 'v' + version
+            else:
+                name_part = window
+                version = 'v0'
+
+            display_name = f"{name_part} ({version})"
+
             item_widget = QWidget()
             layout = QHBoxLayout(item_widget)
             layout.setContentsMargins(5, 2, 5, 2)
 
-            label = QLabel(window)
+            name_label = QLabel(display_name)
+            status_label = QLabel("Active" if window in active else "Inactive")
             checkbox = QCheckBox()
             checkbox.setChecked(window in active)
-            checkbox.setText("Active" if window in active else "Inactive")
 
-            checkbox.stateChanged.connect(lambda state, cb=checkbox, w=window: self.on_update_checkbox(state, cb, w))
-            layout.addWidget(label)
+            checkbox.stateChanged.connect(lambda s, w=window, sl=status_label: self.on_update_checkbox(s, w, sl))
+
+            layout.addWidget(name_label)
             layout.addStretch()
+            layout.addWidget(status_label)
             layout.addWidget(checkbox)
 
             item = QListWidgetItem(self.list_widget)
-            item.setSizeHint(item_widget.sizeHint())
+            item.setSizeHint(QSize(0, 32))
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, item_widget)
 
-    def on_update_checkbox(self, checked, cb, w):
-        cb.setText("Active" if checked else "Inactive")
+    def on_update_checkbox(self, checked, w, status_label):
+        status_label.setText("Active" if checked else "Inactive")
 
         if checked and w not in self.main_window.config['_']['windows']:
             self.main_window.config['_']['windows'].append(w)
         elif not checked and w in self.main_window.config['_']['windows']:
             self.main_window.config['_']['windows'].remove(w)
+
         self.main_window.config_to_settings()
+
+    @asyncSlot()
+    async def refresh_store_list(self):
+        store_items = await fetch_store_items()
+
+        windows_dir = os.path.join(os.path.dirname(__file__), '..')
+        windows_dir = os.path.abspath(windows_dir)
+        installed = [name for name in os.listdir(windows_dir)
+                     if os.path.isdir(os.path.join(windows_dir, name))
+                     and not name.startswith('__') and name != 'quol']
+
+        self.store_list_widget.clear()
+
+        for entry in sorted(store_items, key=lambda x: x['name']):
+            raw_name = entry['name']
+            if not raw_name.endswith('.zip'):
+                continue
+
+            full_tool_name = raw_name[:-4]  # Remove '.zip'
+
+            if '-v' in full_tool_name:
+                name_part, version = full_tool_name.rsplit('-v', 1)
+                version = 'v' + version
+            else:
+                name_part = full_tool_name
+                version = 'v0'
+
+            matching_installed = [x for x in installed if x.startswith(name_part + '-v')]
+            current_version_installed = name_part + '-' + version in matching_installed
+
+            item_widget = QWidget()
+            layout = QHBoxLayout(item_widget)
+            layout.setContentsMargins(5, 2, 5, 2)
+
+            name_label = QLabel(f"{name_part} ({version})")
+
+            if current_version_installed:
+                status_label = QLabel("Installed")
+                layout.addWidget(name_label)
+                layout.addStretch()
+                layout.addWidget(status_label)
+            elif matching_installed:
+                update_button = QPushButton("Update")
+                update_button.clicked.connect(lambda _, name=full_tool_name: self.update_item(name))
+                layout.addWidget(name_label)
+                layout.addStretch()
+                layout.addWidget(update_button)
+            else:
+                install_button = QPushButton("Install")
+                install_button.clicked.connect(lambda _, name=full_tool_name: self.install_item(name))
+                layout.addWidget(name_label)
+                layout.addStretch()
+                layout.addWidget(install_button)
+
+            item = QListWidgetItem(self.store_list_widget)
+            item.setSizeHint(QSize(0, 32))
+            self.store_list_widget.addItem(item)
+            self.store_list_widget.setItemWidget(item, item_widget)
+
+    def install_item(self, name):
+        print(f"Install clicked for: {name}")
+
+    def update_item(self, name):
+        print(f"Update clicked for: {name}")
