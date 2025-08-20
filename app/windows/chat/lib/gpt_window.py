@@ -10,12 +10,11 @@ test_response = ['']
 
 
 class GPTWindow(QuolSubWindow):
-    def __init__(self, main_window: 'MainWindow'):
+    def __init__(self, main_window):
         super().__init__(main_window, 'GPT')
         self.setGeometry(1200, 410, 500, 600)
         self.window_info: WindowInfo = main_window.window_info
         self.window_context: WindowContext = main_window.window_context
-        self.main_window = main_window
 
         self.output_box = QTextBrowser(self)
         self.output_box.setOpenExternalLinks(True)

@@ -8,6 +8,12 @@
       10,
       180,
       108
-    ]
-  }
+    ],
+    "windows": [
+      "quol",
+      "chance"
+    ],
+    "name": "Quol"
+  },
+  "name": "Quol"
 }

@@ -9,10 +9,9 @@ from lib.quol_window import QuolSubWindow
 
 
 class ChatWindow(QuolSubWindow):
-    def __init__(self, main_window: 'MainWindow'):
-        screen_geometry = QGuiApplication.primaryScreen().geometry()
+    def __init__(self, main_window):
         super().__init__(main_window, 'Chat')
-        self.main_window = main_window
+        screen_geometry = QGuiApplication.primaryScreen().geometry()
         self.setGeometry(QRect(screen_geometry.width() - 510, screen_geometry.height() - 610, 500, 600))
 
         with open(main_window.window_info.path + '/res/styles.css') as f:

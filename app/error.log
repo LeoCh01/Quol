@@ -1,0 +1,17 @@
+2025-08-19 23:51:31,755 - root - ERROR - 'MainWindow' object has no attribute 'settings_to_config'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 39, in initialize_app
+    application = App()
+                  ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 25, in __init__
+    self.load_windows()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 62, in load_windows
+    window = plugin.create_window(context, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 48, in create_window
+    return self.module.MainWindow(app, WindowInfo(self.path), context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\windows\quol\window.py", line 21, in __init__
+    self.settings_to_config()
+    ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'settings_to_config'

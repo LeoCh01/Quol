@@ -35,7 +35,7 @@ This application Runs at the top layer and is toggleable through a hotkey. Layou
 
 ### Option 1: Installing from ZIP and Running the Executable
 
-To quickly set up and run the application:
+Click [here](https://github.com/LeoCh01/Quol/releases) for the latest release of Quol.
 
 1. **Download and Extract the ZIP file:**
 
@@ -61,13 +61,13 @@ To run the application locally or build it as a standalone executable, follow th
    - Create a virtual environment in project directory:
 
    ```bash
-   python -m venv venv
+   python -m venv .venv
    ```
 
    - Activate the virtual environment:
 
    ```bash
-   venv\Scripts\activate
+   .venv\Scripts\activate
    ```
 
 3. **Install the required dependencies:**

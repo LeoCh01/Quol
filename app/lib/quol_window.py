@@ -247,7 +247,6 @@ class QuolDialogWindow(QuolSubWindow):
         super().__init__(main_window, title)
 
         self.setGeometry(300, 300, 400, 200)
-        self.main_window = main_window
 
         self.button_layout = QHBoxLayout(self._lower)
         self.accept_button = QPushButton("Accept")
