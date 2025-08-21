@@ -10,7 +10,7 @@ from qasync import asyncSlot
 from lib.io_helpers import write_json
 from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
-from lib.api import fetch_store_items
+from lib.api import get_store_items, download_item, update_item
 
 RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
 
@@ -127,8 +127,7 @@ class ManageWindow(QuolSubWindow):
         self.refresh_store_list()
 
     def refresh_list(self):
-        windows_dir = os.path.join(os.path.dirname(__file__), '..')
-        windows_dir = os.path.abspath(windows_dir)
+        windows_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
         installed = [name for name in os.listdir(windows_dir)
                      if os.path.isdir(os.path.join(windows_dir, name))
@@ -164,7 +163,7 @@ class ManageWindow(QuolSubWindow):
             layout.addWidget(checkbox)
 
             item = QListWidgetItem(self.list_widget)
-            item.setSizeHint(QSize(0, 32))
+            item.setSizeHint(QSize(0, 35))
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, item_widget)
 
@@ -180,7 +179,7 @@ class ManageWindow(QuolSubWindow):
 
     @asyncSlot()
     async def refresh_store_list(self):
-        store_items = await fetch_store_items()
+        store_items = await get_store_items()
 
         windows_dir = os.path.join(os.path.dirname(__file__), '..')
         windows_dir = os.path.abspath(windows_dir)
@@ -220,24 +219,34 @@ class ManageWindow(QuolSubWindow):
                 layout.addWidget(status_label)
             elif matching_installed:
                 update_button = QPushButton("Update")
-                update_button.clicked.connect(lambda _, name=full_tool_name: self.update_item(name))
+                update_button.setStyleSheet("padding: 5px;")
+                update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0]: self.on_update(new_name, old_name))
                 layout.addWidget(name_label)
                 layout.addStretch()
                 layout.addWidget(update_button)
             else:
                 install_button = QPushButton("Install")
-                install_button.clicked.connect(lambda _, name=full_tool_name: self.install_item(name))
+                install_button.setStyleSheet("padding: 5px;")
+                install_button.clicked.connect(lambda _, name=full_tool_name: self.on_install(name))
                 layout.addWidget(name_label)
                 layout.addStretch()
                 layout.addWidget(install_button)
 
             item = QListWidgetItem(self.store_list_widget)
-            item.setSizeHint(QSize(0, 32))
+            item.setSizeHint(QSize(0, 35))
             self.store_list_widget.addItem(item)
             self.store_list_widget.setItemWidget(item, item_widget)
 
-    def install_item(self, name):
+    @asyncSlot()
+    async def on_install(self, name):
         print(f"Install clicked for: {name}")
+        await download_item(name)
+        self.refresh_list()
+        await self.refresh_store_list()
 
-    def update_item(self, name):
-        print(f"Update clicked for: {name}")
+    @asyncSlot()
+    async def on_update(self, new_name, old_name):
+        print(f"Update clicked for: {new_name} (old: {old_name})")
+        await update_item(new_name, old_name)
+        self.refresh_list()
+        await self.refresh_store_list()

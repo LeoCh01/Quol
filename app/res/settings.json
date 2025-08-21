@@ -8,7 +8,6 @@
   "transition": "rand",
   "is_default_pos": false,
   "windows": [
-    "quol",
-    "clipboard-v1"
+    "quol"
   ]
 }
