@@ -41,8 +41,9 @@ class WindowLoader:
 
 
 class SystemWindowLoader(WindowLoader):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self):
+        super().__init__('quol')
+        self.path = f'{os.getcwd()}\\lib\\quol'
 
     def create_window(self, context, app=None):
         return self.module.MainWindow(app, WindowInfo(self.path), context)

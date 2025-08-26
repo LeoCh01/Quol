@@ -1,12 +1,9 @@
 import shutil
-
 import httpx
 import zipfile
 import io
 import os
 from typing import List, Dict, Optional
-
-WINDOWS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
 async def get_store_items() -> Optional[List[Dict]]:
@@ -21,7 +18,7 @@ async def get_store_items() -> Optional[List[Dict]]:
         return None
 
 
-async def download_item(item_name: str) -> bool:
+async def download_item(item_name: str, path: str) -> bool:
     raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol-Tools/main/tools/{item_name}.zip"
 
     try:
@@ -31,9 +28,9 @@ async def download_item(item_name: str) -> bool:
             zip_file = io.BytesIO(response.content)
 
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            zip_ref.extractall(WINDOWS_PATH)
+            zip_ref.extractall(path)
 
-        print(f"Successfully extracted {item_name} to {WINDOWS_PATH}")
+        print(f"Successfully extracted {item_name} to {path}")
         return True
 
     except httpx.RequestError as e:
@@ -47,8 +44,8 @@ async def download_item(item_name: str) -> bool:
         return False
 
 
-async def update_item(new_item_name: str, old_item_name: str) -> bool:
-    old_item_path = os.path.join(WINDOWS_PATH, old_item_name)
+async def update_item(new_item_name: str, old_item_name: str, path: str) -> bool:
+    old_item_path = os.path.join(path, old_item_name)
 
     try:
         if os.path.exists(old_item_path):

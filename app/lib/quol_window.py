@@ -118,6 +118,11 @@ class QuolMainWindow(QuolBaseWindow):
         """
         pass
 
+    def close(self):
+        super().close()
+        if self.config_window:
+            self.config_window.close()
+
 
 class QuolSubWindow(QuolBaseWindow):
     def __init__(self, main_window: QuolMainWindow, title):

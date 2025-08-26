@@ -8,6 +8,6 @@
   "transition": "rand",
   "is_default_pos": false,
   "windows": [
-    "quol"
+    "example-v1"
   ]
 }

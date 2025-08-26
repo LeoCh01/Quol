@@ -13,6 +13,7 @@ from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
 
 RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
+WINDOWS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../windows'))
 
 
 class MainWindow(QuolMainWindow):
@@ -94,6 +95,11 @@ class MainWindow(QuolMainWindow):
             self.settings.remove(self.app_name)
             print(f'Removed {self.app_name} from startup')
 
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        if self.manage_windows_window is not None:
+            self.manage_windows_window.close()
+
 
 class ManageWindow(QuolSubWindow):
     def __init__(self, main_window):
@@ -127,10 +133,8 @@ class ManageWindow(QuolSubWindow):
         self.refresh_store_list()
 
     def refresh_list(self):
-        windows_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-        installed = [name for name in os.listdir(windows_dir)
-                     if os.path.isdir(os.path.join(windows_dir, name))
+        installed = [name for name in os.listdir(WINDOWS_PATH)
+                     if os.path.isdir(os.path.join(WINDOWS_PATH, name))
                      and not name.startswith('__') and name != 'quol']
         active = self.main_window.config['_']['windows']
 
@@ -181,10 +185,8 @@ class ManageWindow(QuolSubWindow):
     async def refresh_store_list(self):
         store_items = await get_store_items()
 
-        windows_dir = os.path.join(os.path.dirname(__file__), '..')
-        windows_dir = os.path.abspath(windows_dir)
-        installed = [name for name in os.listdir(windows_dir)
-                     if os.path.isdir(os.path.join(windows_dir, name))
+        installed = [name for name in os.listdir(WINDOWS_PATH)
+                     if os.path.isdir(os.path.join(WINDOWS_PATH, name))
                      and not name.startswith('__') and name != 'quol']
 
         self.store_list_widget.clear()
@@ -214,20 +216,22 @@ class ManageWindow(QuolSubWindow):
 
             if current_version_installed:
                 status_label = QLabel("Installed")
+                status_label.setStyleSheet("color: #4CAF50;")
                 layout.addWidget(name_label)
                 layout.addStretch()
                 layout.addWidget(status_label)
             elif matching_installed:
                 update_button = QPushButton("Update")
                 update_button.setStyleSheet("padding: 5px;")
-                update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0]: self.on_update(new_name, old_name))
+                update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0], b=update_button: self.on_update(new_name, old_name, b))
                 layout.addWidget(name_label)
                 layout.addStretch()
                 layout.addWidget(update_button)
             else:
                 install_button = QPushButton("Install")
                 install_button.setStyleSheet("padding: 5px;")
-                install_button.clicked.connect(lambda _, name=full_tool_name: self.on_install(name))
+                install_button.clicked.connect(lambda _, name=full_tool_name, b=install_button: self.on_install(name, b))
+
                 layout.addWidget(name_label)
                 layout.addStretch()
                 layout.addWidget(install_button)
@@ -238,15 +242,38 @@ class ManageWindow(QuolSubWindow):
             self.store_list_widget.setItemWidget(item, item_widget)
 
     @asyncSlot()
-    async def on_install(self, name):
+    async def on_install(self, name, button):
         print(f"Install clicked for: {name}")
-        await download_item(name)
-        self.refresh_list()
+
+        button.setDisabled(True)
+        button.setText("Installing...")
+
+        try:
+            await download_item(name, WINDOWS_PATH)
+            self.refresh_list()
+
+        except Exception as e:
+            print(f"Error installing {name}: {str(e)}")
+
         await self.refresh_store_list()
 
     @asyncSlot()
-    async def on_update(self, new_name, old_name):
+    async def on_update(self, new_name, old_name, button):
         print(f"Update clicked for: {new_name} (old: {old_name})")
-        await update_item(new_name, old_name)
+
+        is_active = old_name in self.main_window.config['_']['windows']
+
+        button.setDisabled(True)
+        button.setText("Updating...")
+
+        try:
+            await update_item(new_name, old_name, WINDOWS_PATH)
+        except Exception as e:
+            print(f"Error updating {new_name}: {str(e)}")
+
+        if is_active:
+            self.main_window.config['_']['windows'].remove(old_name)
+            self.main_window.config['_']['windows'].append(new_name)
+
         self.refresh_list()
         await self.refresh_store_list()
