@@ -1,6 +1,6 @@
 import sys
 import subprocess
-import requests  # Required for API calls
+import requests
 from PySide6.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QFileDialog, QLabel,
     QHBoxLayout, QFrame, QMessageBox
@@ -8,22 +8,29 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QMouseEvent, QPalette, QColor
 from PySide6.QtCore import Qt, QPoint
 
+from lib.io_helpers import read_json
 
-# ---- Update Checker ----
-def is_update_available():
+
+def check_for_update():
     try:
-        # Replace with your real API URL
-        response = requests.get("https://example.com/api/check_update")
-        response.raise_for_status()
-
+        response = requests.get('https://raw.githubusercontent.com/LeoCh01/Quol/main/app/res/settings.json')
         data = response.json()
-        return data.get("update_available", False)
+        settings = read_json('settings.json')
+
+        return data['version'] != settings['version']
     except Exception as e:
         print(f"Update check failed: {e}")
-        return False  # Fail silently and proceed as if no update
+        return False
 
 
-# ---- Custom Title Bar ----
+def run_app():
+    try:
+        print('test')
+        subprocess.Popen(["Quol.exe"], shell=True)
+    except Exception as e:
+        print(f"Failed to launch app: {e}")
+
+
 class CustomTitleBar(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -43,7 +50,6 @@ class CustomTitleBar(QFrame):
         layout.addWidget(self.close_btn)
 
 
-# ---- Main Launcher App ----
 class AppLauncher(QWidget):
     def __init__(self):
         super().__init__()
@@ -61,41 +67,29 @@ class AppLauncher(QWidget):
         self.main_content.setStyleSheet("background-color: #2b2b2b;")
         content_layout = QVBoxLayout(self.main_content)
 
-        self.label = QLabel("Select an app or script to launch")
+        self.label = QLabel(f'There is a new update Available!')
         self.label.setStyleSheet("color: white;")
         content_layout.addWidget(self.label)
 
-        self.select_button = QPushButton("Browse and Select File")
-        self.select_button.clicked.connect(self.select_file)
-        content_layout.addWidget(self.select_button)
+        self.update_btn = QPushButton('Update Now')
+        self.update_btn.clicked.connect(self.on_update_clicked)
+        content_layout.addWidget(self.update_btn)
 
-        self.launch_button = QPushButton("Launch")
-        self.launch_button.clicked.connect(self.launch_app)
-        self.launch_button.setEnabled(False)
-        content_layout.addWidget(self.launch_button)
+        self.cont_btn = QPushButton('Continue to App')
+        self.cont_btn.clicked.connect(self.on_continue_clicked)
+        content_layout.addWidget(self.cont_btn)
 
         self.layout.addWidget(self.main_content)
 
-        self.selected_file = None
         self.drag_pos = QPoint()
 
-    def select_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File to Launch")
-        if file_path:
-            self.selected_file = file_path
-            self.label.setText(f"Selected: {file_path}")
-            self.launch_button.setEnabled(True)
+    def on_update_clicked(self):
+        pass
 
-    def launch_app(self):
-        if self.selected_file:
-            try:
-                subprocess.Popen([self.selected_file], shell=True)
-                self.label.setText(f"Launched: {self.selected_file}")
-                self.close()  # Close launcher after launching
-            except Exception as e:
-                self.label.setText(f"Error: {e}")
+    def on_continue_clicked(self):
+        # run_app()
+        self.close()
 
-    # Drag window
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
             self.drag_pos = event.globalPosition().toPoint()
@@ -125,38 +119,16 @@ def apply_dark_theme(app):
     app.setPalette(dark_palette)
 
 
-# ---- MAIN ENTRY ----
 def main():
-    # Update check
-    if is_update_available():
+    if check_for_update():
         app = QApplication(sys.argv)
         apply_dark_theme(app)
-
-        # Ask user if they want to update
-        reply = QMessageBox.question(
-            None, "Update Available",
-            "A new update is available. Do you want to update now?",
-            QMessageBox.Yes | QMessageBox.No
-        )
-
-        if reply == QMessageBox.Yes:
-            # Simulate update logic here
-            QMessageBox.information(None, "Updating", "Update process would start here.")
-            sys.exit(0)
-        else:
-            # Show launcher if user skips update
-            launcher = AppLauncher()
-            launcher.show()
-            sys.exit(app.exec())
+        launcher = AppLauncher()
+        launcher.show()
+        sys.exit(app.exec())
 
     else:
-        # No update – directly run the app (hardcoded path or behavior)
-        try:
-            # Replace with path to your main executable
-            subprocess.Popen(["your_app.exe"], shell=True)
-        except Exception as e:
-            print(f"Failed to launch app: {e}")
-        sys.exit(0)
+        run_app()
 
 
 if __name__ == "__main__":

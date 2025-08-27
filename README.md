@@ -96,7 +96,7 @@ To run the application locally or build it as a standalone executable, follow th
 
 ## Adding Custom Tools
 
-To create a new tool, you can add a folder to the `windows` directory and add the folder name in the `res/settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
+To create a new tool, you can add a folder to the `windows` directory and add the folder name in the `settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
 
 1. **Create your window:**
 
@@ -126,7 +126,7 @@ To create a new tool, you can add a folder to the `windows` directory and add th
    }
    ```
 
-   - Open the `res/settings.json` file.
+   - Open the `settings.json` file.
    - Add the name of your folder to the `windows` array.
 
 By following these steps, you can easily add custom tools without rebuilding the application.

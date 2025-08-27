@@ -5,7 +5,6 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('app/res', 'res'),
         ('app/transitions', 'transitions'),
         ('app/lib', 'lib')
     ],
@@ -63,13 +62,12 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Quol',
+    name='runner',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_dir='C:/Users/leoch/Downloads/upx-5.0.1-win64/upx-5.0.1-win64',
-    upx_exclude=['vcruntime140.dll', 'python*.dll', 'Quol.exe'],
+    upx_exclude=['vcruntime140.dll', 'python*.dll', 'runner.exe'],
     runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,

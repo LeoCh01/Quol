@@ -33,10 +33,10 @@ class App(QObject):
         self.is_reset: bool = self.settings.get('is_default_pos', True)
 
     def save_settings(self):
-        write_json('res/settings.json', self.settings)
+        write_json('settings.json', self.settings)
 
     def load_settings(self):
-        self.settings = read_json('res/settings.json')
+        self.settings = read_json('settings.json')
 
     def load_style_sheet(self):
         stylesheet = read_text(f'res/styles/{self.settings.get("style")}/styles.qss')
