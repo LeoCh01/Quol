@@ -54,7 +54,7 @@ async def update_item(new_item_name: str, old_item_name: str, path: str) -> bool
             else:
                 os.remove(old_item_path)
 
-        return await download_item(new_item_name)
+        return await download_item(new_item_name, path)
 
     except Exception as e:
         print(f"Error updating {old_item_name} to {new_item_name}: {e}")

@@ -4,12 +4,8 @@ a = Analysis(
     ['app/main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('app/res', 'res'),
-        ('app/transitions', 'transitions'),
-        ('app/lib', 'lib')
-    ],
-    hiddenimports=['PySide6', 'httpx'],
+    datas=[],
+    hiddenimports=['PySide6', 'requests'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

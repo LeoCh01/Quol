@@ -248,12 +248,8 @@ class ManageWindow(QuolSubWindow):
         button.setDisabled(True)
         button.setText("Installing...")
 
-        try:
-            await download_item(name, WINDOWS_PATH)
-            self.refresh_list()
-
-        except Exception as e:
-            print(f"Error installing {name}: {str(e)}")
+        await download_item(name, WINDOWS_PATH)
+        self.refresh_list()
 
         await self.refresh_store_list()
 
@@ -266,10 +262,7 @@ class ManageWindow(QuolSubWindow):
         button.setDisabled(True)
         button.setText("Updating...")
 
-        try:
-            await update_item(new_name, old_name, WINDOWS_PATH)
-        except Exception as e:
-            print(f"Error updating {new_name}: {str(e)}")
+        await update_item(new_name, old_name, WINDOWS_PATH)
 
         if is_active:
             self.main_window.config['_']['windows'].remove(old_name)

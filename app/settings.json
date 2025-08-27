@@ -7,7 +7,5 @@
   "style": "dark",
   "transition": "rand",
   "is_default_pos": false,
-  "windows": [
-    "example-v1"
-  ]
+  "windows": []
 }

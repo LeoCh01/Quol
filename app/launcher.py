@@ -1,21 +1,20 @@
+import json
 import sys
 import subprocess
 import requests
-from PySide6.QtWidgets import (
-    QApplication, QWidget, QPushButton, QVBoxLayout, QFileDialog, QLabel,
-    QHBoxLayout, QFrame, QMessageBox
-)
-from PySide6.QtGui import QMouseEvent, QPalette, QColor
-from PySide6.QtCore import Qt, QPoint
 
-from lib.io_helpers import read_json
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QFrame
+from PySide6.QtGui import QMouseEvent
+from PySide6.QtCore import Qt, QPoint
 
 
 def check_for_update():
     try:
         response = requests.get('https://raw.githubusercontent.com/LeoCh01/Quol/main/app/res/settings.json')
         data = response.json()
-        settings = read_json('settings.json')
+
+        with open('settings.json', 'r') as f:
+            settings = json.load(f)
 
         return data['version'] != settings['version']
     except Exception as e:
@@ -24,9 +23,8 @@ def check_for_update():
 
 
 def run_app():
-    try:
-        print('test')
-        subprocess.Popen(["Quol.exe"], shell=True)
+    try:  # TODO change later
+        subprocess.Popen(["..\\dist\\Quol.exe"], shell=True)
     except Exception as e:
         print(f"Failed to launch app: {e}")
 
@@ -56,6 +54,24 @@ class AppLauncher(QWidget):
         self.setWindowTitle("Custom Launcher")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
+        self.setStyleSheet('''
+            QWidget {
+                background-color: #333;
+                color: white;
+            }
+
+            QPushButton {
+                background-color: #444;
+                color: white;
+                border: none;
+                padding: 6px;
+            }
+
+            QPushButton:hover {
+                background-color: #f00;
+            }
+        ''')
+
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
@@ -64,11 +80,9 @@ class AppLauncher(QWidget):
         self.title_bar.close_btn.clicked.connect(self.close)
 
         self.main_content = QFrame()
-        self.main_content.setStyleSheet("background-color: #2b2b2b;")
         content_layout = QVBoxLayout(self.main_content)
 
         self.label = QLabel(f'There is a new update Available!')
-        self.label.setStyleSheet("color: white;")
         content_layout.addWidget(self.label)
 
         self.update_btn = QPushButton('Update Now')
@@ -87,7 +101,7 @@ class AppLauncher(QWidget):
         pass
 
     def on_continue_clicked(self):
-        # run_app()
+        run_app()
         self.close()
 
     def mousePressEvent(self, event: QMouseEvent):
@@ -100,29 +114,9 @@ class AppLauncher(QWidget):
             self.drag_pos = event.globalPosition().toPoint()
 
 
-# ---- Apply Dark Theme ----
-def apply_dark_theme(app):
-    dark_palette = QPalette()
-    dark_palette.setColor(QPalette.Window, QColor(30, 30, 30))
-    dark_palette.setColor(QPalette.WindowText, Qt.white)
-    dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
-    dark_palette.setColor(QPalette.AlternateBase, QColor(30, 30, 30))
-    dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
-    dark_palette.setColor(QPalette.ToolTipText, Qt.white)
-    dark_palette.setColor(QPalette.Text, Qt.white)
-    dark_palette.setColor(QPalette.Button, QColor(45, 45, 45))
-    dark_palette.setColor(QPalette.ButtonText, Qt.white)
-    dark_palette.setColor(QPalette.BrightText, Qt.red)
-    dark_palette.setColor(QPalette.Highlight, QColor(80, 80, 255))
-    dark_palette.setColor(QPalette.HighlightedText, Qt.white)
-    app.setStyle("Fusion")
-    app.setPalette(dark_palette)
-
-
 def main():
     if check_for_update():
         app = QApplication(sys.argv)
-        apply_dark_theme(app)
         launcher = AppLauncher()
         launcher.show()
         sys.exit(app.exec())
