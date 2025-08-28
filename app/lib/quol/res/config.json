@@ -9,13 +9,7 @@
       180,
       1
     ],
-    "windows": [
-      "chat-v1",
-      "example-v1",
-      "keymap-v1",
-      "clipboard-v1",
-      "draw-v1"
-    ],
+    "windows": [],
     "name": "Quol"
   }
 }

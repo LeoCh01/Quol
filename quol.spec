@@ -1,6 +1,36 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-a = Analysis(
+a1 = Analysis(
+    ['app/launcher.py'],
+    pathex=[],
+    binaries=[],
+    datas=[],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+pyz1 = PYZ(a1.pure)
+exe1 = EXE(
+    pyz1,
+    a1.scripts,
+    [],
+    exclude_binaries=True,
+    name='Quol',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    icon=['app/res/icons/icon.ico'],
+)
+
+a2 = Analysis(
     ['app/main.py'],
     pathex=[],
     binaries=[],
@@ -18,7 +48,7 @@ a = Analysis(
         'selenium.webdriver.support.expected_conditions',
         'selenium.common.exceptions',
         'selenium.webdriver.support.wait',
-        'seleniumbase'
+        'seleniumbase',
     ],
     hookspath=[],
     hooksconfig={},
@@ -54,26 +84,31 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-pyz = PYZ(a.pure)
 
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.datas,
+pyz2 = PYZ(a2.pure)
+exe2 = EXE(
+    pyz2,
+    a2.scripts,
     [],
-    name='runner',
+    exclude_binaries=True,
+    name='QuolMain',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_exclude=['vcruntime140.dll', 'python*.dll', 'runner.exe'],
-    runtime_tmpdir=None,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon=['app/res/icons/icon.ico'],
 )
+
+coll = COLLECT(
+    exe1,
+    exe2,
+    a1.binaries + a2.binaries,
+    a1.datas + a2.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='Quol',
+)
+
