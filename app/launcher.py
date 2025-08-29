@@ -1,5 +1,7 @@
 import json
+import logging
 import os
+import shutil
 import sys
 import subprocess
 import zipfile
@@ -10,7 +12,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, Q
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtCore import Qt, QPoint
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+CURRENT_DIR = os.getcwd()
 
 
 def check_for_update():
@@ -34,19 +36,35 @@ def download_latest(version):
         f.write(response.content)
 
 
-def clear_old_files():
-    for root, dirs, files in os.walk(CURRENT_DIR):
-        for file in files:
-            if not file.startswith('windows/'):
-                file_path = os.path.join(root, file)
-                os.remove(file_path)
-
-
 def extract():
+    #  TODO move this somewhere else
+    folders_to_remove = ['lib', 'res', 'transitions', '_internal']
+
+    for folder in folders_to_remove:
+        folder_path = os.path.join(CURRENT_DIR, folder)
+        logging.info(folder_path)
+        if os.path.exists(folder_path):
+            logging.info(f"Removing folder: {folder_path}")
+            try:
+                shutil.rmtree(folder_path)
+            except Exception as e:
+                logging.info(f"Failed to remove {folder}: {e}")
+
+    logging.info('\n\ndone\n\n')
+
     with zipfile.ZipFile('quol.zip', 'r') as zip_ref:
         for file in zip_ref.namelist():
-            if not file.startswith('windows/'):
-                zip_ref.extract(file, CURRENT_DIR)
+            if not file.startswith('windows/') and not file.startswith('Quol.exe'):
+                target_path = os.path.join(CURRENT_DIR, file)
+
+                if file.endswith('/'):
+                    os.makedirs(target_path, exist_ok=True)
+                    logging.info('folder :: ' + target_path)
+                else:
+                    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                    logging.info('file? :: ' + target_path)
+                    with zip_ref.open(file) as source, open(target_path, 'wb') as target:
+                        target.write(source.read())
 
 
 def run_app():
@@ -60,7 +78,7 @@ class CustomTitleBar(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedHeight(40)
-        self.setStyleSheet('background-color: #222222;')
+        self.setStyleSheet('background-color: #222;')
 
         layout = QHBoxLayout(self)
 
@@ -127,7 +145,7 @@ class AppLauncher(QWidget):
 
     def on_update_clicked(self):
         download_latest(self.ver)
-        clear_old_files()
+        # clear_old_files()
         extract()
         self.close()
 
@@ -146,6 +164,14 @@ class AppLauncher(QWidget):
 
 
 def main():
+    logging.basicConfig(
+        filename='info.log',
+        filemode='a',
+        level=logging.INFO,
+        format='%(message)s',
+    )
+    logging.getLogger().addHandler(logging.StreamHandler())
+
     new_version = check_for_update()
     if new_version:
         app = QApplication(sys.argv)

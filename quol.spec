@@ -34,10 +34,7 @@ a2 = Analysis(
     ['app/main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('app/transitions', 'transitions'),
-        ('app/lib', 'lib')
-    ],
+    datas=[('app/lib', 'lib')],
     hiddenimports=[
         'ollama',
         'markdown',
@@ -49,6 +46,7 @@ a2 = Analysis(
         'selenium.common.exceptions',
         'selenium.webdriver.support.wait',
         'seleniumbase',
+        'pip',
     ],
     hookspath=[],
     hooksconfig={},

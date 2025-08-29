@@ -13,7 +13,7 @@ from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
 
 RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
-WINDOWS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../windows'))
+WINDOWS_PATH = os.getcwd() + os.path.sep + 'windows'
 
 
 class MainWindow(QuolMainWindow):
