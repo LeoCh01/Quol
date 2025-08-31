@@ -13,11 +13,12 @@ from PySide6.QtGui import QMouseEvent
 from PySide6.QtCore import Qt, QPoint
 
 CURRENT_DIR = os.getcwd()
+BRANCH = '3.0-version-manager'
 
 
 def check_for_update():
     try:
-        response = requests.get('https://raw.githubusercontent.com/LeoCh01/Quol/main/app/res/settings.json')
+        response = requests.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
         data = response.json()
 
         with open('settings.json', 'r') as f:
@@ -37,20 +38,22 @@ def download_latest(version):
 
 
 def extract():
-    #  TODO move this somewhere else
-    folders_to_remove = ['lib', 'res', 'transitions', '_internal']
+    response = requests.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/update_settings.json')
+    data = response.json()
+    folders_to_remove = data.get('folders_to_remove', [])
 
     for folder in folders_to_remove:
         folder_path = os.path.join(CURRENT_DIR, folder)
-        logging.info(folder_path)
+        # logging.info(folder_path)
         if os.path.exists(folder_path):
-            logging.info(f"Removing folder: {folder_path}")
+            # logging.info(f"Removing folder: {folder_path}")
             try:
                 shutil.rmtree(folder_path)
             except Exception as e:
-                logging.info(f"Failed to remove {folder}: {e}")
+                # logging.info(f"Failed to remove {folder}: {e}")
+                pass
 
-    logging.info('\n\ndone\n\n')
+    # logging.info('\n\ndone\n\n')
 
     with zipfile.ZipFile('quol.zip', 'r') as zip_ref:
         for file in zip_ref.namelist():
@@ -59,10 +62,10 @@ def extract():
 
                 if file.endswith('/'):
                     os.makedirs(target_path, exist_ok=True)
-                    logging.info('folder :: ' + target_path)
+                    # logging.info('folder :: ' + target_path)
                 else:
                     os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                    logging.info('file? :: ' + target_path)
+                    # logging.info('file? :: ' + target_path)
                     with zip_ref.open(file) as source, open(target_path, 'wb') as target:
                         target.write(source.read())
 
@@ -113,7 +116,7 @@ class AppLauncher(QWidget):
             }
 
             QPushButton:hover {
-                background-color: #f00;
+                background-color: #555;
             }
         ''')
 
@@ -145,7 +148,6 @@ class AppLauncher(QWidget):
 
     def on_update_clicked(self):
         download_latest(self.ver)
-        # clear_old_files()
         extract()
         self.close()
 
