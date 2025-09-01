@@ -1,0 +1,11 @@
+{
+  "name": "Quol",
+  "version": "3.0.0",
+  "description": "versatile tool for windows.",
+  "startup": false,
+  "toggle_key": "`",
+  "style": "dark",
+  "transition": "rand",
+  "is_default_pos": false,
+  "windows": []
+}

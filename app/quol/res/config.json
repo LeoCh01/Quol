@@ -1,0 +1,15 @@
+{
+  "startup": false,
+  "toggle_key": "`",
+  "transition": "rand",
+  "_": {
+    "geometry": [
+      10,
+      10,
+      180,
+      1
+    ],
+    "windows": [],
+    "name": "Quol"
+  }
+}

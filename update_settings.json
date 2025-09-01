@@ -1,0 +1,3 @@
+{
+  "folders_to_remove": ["lib", "res", "transitions", "_internal"]
+}

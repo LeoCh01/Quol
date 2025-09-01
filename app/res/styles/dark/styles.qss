@@ -17,6 +17,8 @@
 
 #content QCheckBox {
     background-color: #444;
+    border-radius: 5px;
+    spacing: 0px;
 }
 
 #content * {
@@ -139,4 +141,35 @@ QTextEdit {
     background-color: #3d3d3d;
     color: white;
     border: 1px solid #555;
+}
+
+#content QTabWidget::pane {
+    border: 1px solid #555;
+    background: #444;
+    top: -1px;
+}
+
+#content QTabBar::tab {
+    background: #333;
+    color: white;
+    padding: 6px 12px;
+    border: 1px solid #555;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    margin-right: 2px;
+}
+
+#content QTabBar::tab:selected {
+    background: #444;
+    border-color: #666;
+}
+
+#content QTabBar::tab:hover {
+    background: #444;
+    border-color: #777;
+}
+
+#content QTabBar {
+    background-color: #444;
 }

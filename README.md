@@ -6,6 +6,8 @@ Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, de
 
 ## Features
 
+Tools can be installed using the built-in store or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository
+
 - **Chat:** Run AI prompts on your screen.
 - **Draw:** Draw and annotate on your screen.
 - **Key mapper:** Create key bindings to custom actions.
@@ -13,7 +15,7 @@ Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, de
 - **CMD Runner:** Save and execute custom command line instructions.
 - **Clipboard:** Store copy history and sticky notes.
 - **Request:** Test API requests.
-- - **Record:** Record screen. 
+- **Record:** Record screen.
 - **Chance:** Flip a coin, roll a dice.
 - **Customize:** Create and Add custom windows without rebuilding.
 
@@ -35,7 +37,7 @@ This application Runs at the top layer and is toggleable through a hotkey. Layou
 
 ### Option 1: Installing from ZIP and Running the Executable
 
-To quickly set up and run the application:
+Click [here](https://github.com/LeoCh01/Quol/releases) for the latest release of Quol.
 
 1. **Download and Extract the ZIP file:**
 
@@ -61,13 +63,13 @@ To run the application locally or build it as a standalone executable, follow th
    - Create a virtual environment in project directory:
 
    ```bash
-   python -m venv venv
+   python -m venv .venv
    ```
 
    - Activate the virtual environment:
 
    ```bash
-   venv\Scripts\activate
+   .venv\Scripts\activate
    ```
 
 3. **Install the required dependencies:**
@@ -92,40 +94,24 @@ To run the application locally or build it as a standalone executable, follow th
      pyinstaller quol.spec
    ```
 
-## Adding Custom Windows
+## Adding Custom Tools
 
-To create a new window, you can add a folder to the `windows` directory and add the folder name in the `res/settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
+To create a new tool, you can add a folder to the `windows` directory and add the folder name in the `settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
 
-1. **Create your window:**
+```
+example/
+├── windows.py
+├── config.json (optional)
+├── res/ (optional)
+└── lib/ (optional)
+```
 
-   ```
-   example/
-   ├── windows.py
-   ├── config.json (optional)
-   └── res/ (optional)
-   ```
+- `windows.py`: main window script.
+- `config.json`: configurations linked to window script.
+- `res/`: images and other miscellaneous items.
+- `lib/`: additional libraries/scripts if needed.
 
-   - `windows.py`: main window script.
-   - `config.json`: configurations linked to window script.
-   - `res/`: images and other miscellaneous items.
-
-2. **Enable the new window:**
-
-   ```json5
-   {
-     "windows": [
-       "window1",
-       "window2",
-       "window3",
-       "example" // <-- Add your custom window here
-     ]
-   }
-   ```
-
-   - Open the `res/settings.json` file.
-   - Add the name of your folder to the `windows` array.
-
-By following these steps, you can easily add custom windows without rebuilding the application.
+By following these steps, you can easily add custom tools without rebuilding the application.
 
 ## Contact
 

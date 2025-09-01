@@ -33,10 +33,10 @@ class App(QObject):
         self.is_reset: bool = self.settings.get('is_default_pos', True)
 
     def save_settings(self):
-        write_json('res/settings.json', self.settings)
+        write_json('settings.json', self.settings)
 
     def load_settings(self):
-        self.settings = read_json('res/settings.json')
+        self.settings = read_json('settings.json')
 
     def load_style_sheet(self):
         stylesheet = read_text(f'res/styles/{self.settings.get("style")}/styles.qss')
@@ -55,20 +55,17 @@ class App(QObject):
         transition_plugin = self.load_transition()
         context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin, self.get_is_hidden)
 
-        for name in self.settings.get('windows'):
-            if name == 'info':
-                plugin = SystemWindowLoader('info')
-                plugin.load()
-                window = plugin.create_window(context, self)
-            else:
-                print('loading ' + name)
-                plugin = WindowLoader(name)
-                if not plugin.load():
-                    print(f'Failed to load window {name}. Skipping...')
-                    continue
-                window = plugin.create_window(context)
+        plugin = SystemWindowLoader()
+        plugin.load()
+        self.windows.append(plugin.create_window(context, self))
 
-            self.windows.append(window)
+        for name in self.settings.get('windows'):
+            print('loading ' + name)
+            plugin = WindowLoader(name)
+            if not plugin.load():
+                print(f'Failed to load window {name}. Skipping...')
+                continue
+            self.windows.append(plugin.create_window(context))
 
         for window in self.windows:
             self.toggle.connect(window.toggle_windows)
