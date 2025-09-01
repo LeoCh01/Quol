@@ -133,6 +133,9 @@ class ManageWindow(QuolSubWindow):
         self.refresh_store_list()
 
     def refresh_list(self):
+        if not os.path.exists(WINDOWS_PATH):
+            os.makedirs(WINDOWS_PATH)
+
         installed = [name for name in os.listdir(WINDOWS_PATH)
                      if os.path.isdir(os.path.join(WINDOWS_PATH, name))
                      and not name.startswith('__') and name != 'quol']
