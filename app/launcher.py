@@ -13,7 +13,7 @@ from PySide6.QtGui import QMouseEvent
 from PySide6.QtCore import Qt, QPoint
 
 CURRENT_DIR = os.getcwd()
-BRANCH = '3.0-version-manager'
+BRANCH = 'main'
 
 
 def check_for_update():
@@ -166,13 +166,13 @@ class AppLauncher(QWidget):
 
 
 def main():
-    logging.basicConfig(
-        filename='info.log',
-        filemode='a',
-        level=logging.INFO,
-        format='%(message)s',
-    )
-    logging.getLogger().addHandler(logging.StreamHandler())
+    # logging.basicConfig(
+    #     filename='info.log',
+    #     filemode='a',
+    #     level=logging.INFO,
+    #     format='%(message)s',
+    # )
+    # logging.getLogger().addHandler(logging.StreamHandler())
 
     new_version = check_for_update()
     if new_version:

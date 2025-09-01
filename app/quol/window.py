@@ -1,7 +1,7 @@
 import os
-import sys
+import winreg as reg
 
-from PySide6.QtCore import QSettings, QUrl, QSize
+from PySide6.QtCore import QUrl, QSize
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
@@ -12,7 +12,6 @@ from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
 
-RUN_PATH = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
 WINDOWS_PATH = os.getcwd() + os.path.sep + 'windows'
 
 
@@ -23,7 +22,7 @@ class MainWindow(QuolMainWindow):
         self.app = app
         self.settings_to_config()
 
-        self.ver = QPushButton(f'v{self.app.settings['version']}')
+        self.ver = QPushButton(f'v{self.app.settings["version"]}')
         self.ver.clicked.connect(self.open_url)
 
         self.reload = QPushButton('Reload')
@@ -47,8 +46,7 @@ class MainWindow(QuolMainWindow):
         self.manage_windows_window = None
 
         self.app_name = self.config['_']['name']
-        self.app_path = self.get_app_path()
-        self.settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
+        self.app_path = os.path.abspath(os.path.join(os.getcwd(), 'Quol.exe'))
 
     def show_manage_windows(self):
         if self.manage_windows_window is None:
@@ -63,10 +61,6 @@ class MainWindow(QuolMainWindow):
     @staticmethod
     def open_url():
         QDesktopServices.openUrl(QUrl('https://github.com/LeoCh01/quol'))
-
-    @staticmethod
-    def get_app_path():
-        return sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
 
     def config_to_settings(self):
         self.app.settings['toggle_key'] = self.config['toggle_key']
@@ -89,11 +83,29 @@ class MainWindow(QuolMainWindow):
             return
 
         if self.config['startup']:
-            self.settings.setValue(self.app_name, self.app_path)
+            self.add_to_startup()
             print(f'Added {self.app_name} to startup with path: {self.app_path}')
         else:
-            self.settings.remove(self.app_name)
+            self.remove_from_startup()
             print(f'Removed {self.app_name} from startup')
+
+    def add_to_startup(self):
+        key = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+        try:
+            reg_key = reg.OpenKey(reg.HKEY_CURRENT_USER, key, 0, reg.KEY_SET_VALUE)
+            reg.SetValueEx(reg_key, self.app_name, 0, reg.REG_SZ, self.app_path)
+            reg.CloseKey(reg_key)
+        except Exception as e:
+            print(f"Error adding to startup: {e}")
+
+    def remove_from_startup(self):
+        key = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+        try:
+            reg_key = reg.OpenKey(reg.HKEY_CURRENT_USER, key, 0, reg.KEY_SET_VALUE)
+            reg.DeleteValue(reg_key, self.app_name)
+            reg.CloseKey(reg_key)
+        except Exception as e:
+            print(f"Error removing from startup: {e}")
 
     def closeEvent(self, event):
         super().closeEvent(event)

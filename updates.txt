@@ -1,11 +1,9 @@
 CURRENT
-- add script updater for new versions
+- add version manager and updater for new versions
 - add window/plugin manager
 - set onedir as default build type
 
 TODO
-
-
 - add tooltips
 - make process table update on click
 - fix fps on rec

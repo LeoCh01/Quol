@@ -98,36 +98,18 @@ To run the application locally or build it as a standalone executable, follow th
 
 To create a new tool, you can add a folder to the `windows` directory and add the folder name in the `settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
 
-1. **Create your window:**
+```
+example/
+├── windows.py
+├── config.json (optional)
+├── res/ (optional)
+└── lib/ (optional)
+```
 
-   ```
-   example/
-   ├── windows.py
-   ├── config.json (optional)
-   └── res/ (optional)
-    └── lib/ (optional)
-   ```
-
-   - `windows.py`: main window script.
-   - `config.json`: configurations linked to window script.
-   - `res/`: images and other miscellaneous items.
-   - `lib/`: additional libraries/scripts if needed.
-
-2. **Enable the new tool:**
-
-   ```json
-   {
-     "windows": [
-       "tool1",
-       "tool2",
-       "tool3",
-       "example" // <-- Add your custom window here
-     ]
-   }
-   ```
-
-   - Open the `settings.json` file.
-   - Add the name of your folder to the `windows` array.
+- `windows.py`: main window script.
+- `config.json`: configurations linked to window script.
+- `res/`: images and other miscellaneous items.
+- `lib/`: additional libraries/scripts if needed.
 
 By following these steps, you can easily add custom tools without rebuilding the application.
 
