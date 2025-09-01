@@ -17,16 +17,16 @@ from lib.app import App
 from lib.loading_screen import LoadingScreen
 
 CURRENT_DIR = os.getcwd()
-BRANCH = '3.0-version-manager'
+BRANCH = 'main'
 
 
 def initialize_logging():
-    logging.basicConfig(
-        filename='info.log',
-        filemode='a',
-        level=logging.INFO,
-        format='%(message)s',
-    )
+    # logging.basicConfig(
+    #     filename='info.log',
+    #     filemode='a',
+    #     level=logging.INFO,
+    #     format='%(message)s',
+    # )
     logging.basicConfig(
         filename='error.log',
         filemode='a',
@@ -54,7 +54,7 @@ def initialize_main_app():
         return app_instance
 
     except Exception as e:
-        logging.error("Failed to initialize main app", exc_info=True)
+        logging.error(f"Failed to initialize main app :: {e}", exc_info=True)
         return None
 
 
@@ -74,7 +74,6 @@ def check_for_update():
 
 
 def download_latest(version, dest_path):
-    version = '2.8.0'
     url = f'https://github.com/LeoCh01/Quol/releases/latest/download/Quol-v{version}.zip'
     response = requests.get(url)
     response.raise_for_status()
@@ -169,7 +168,7 @@ class AppLauncher(QWidget):
         self.label = QLabel(f'New update available! (v{version})')
         content_layout.addWidget(self.label)
 
-        self.update_btn = QPushButton('Update Now')
+        self.update_btn = QPushButton('Update and Exit')
         self.update_btn.clicked.connect(self.on_update_clicked)
         content_layout.addWidget(self.update_btn)
 
