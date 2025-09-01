@@ -7,7 +7,6 @@ httpx
 qasync
 seleniumbase
 pynput
-winreg
 
 # pyinstaller
 # Pillow

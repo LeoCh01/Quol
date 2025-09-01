@@ -1,6 +1,7 @@
 CURRENT
 - add version manager and updater for new versions
 - add window/plugin manager
+- move windows to Quol tools directory
 - set onedir as default build type
 
 TODO
