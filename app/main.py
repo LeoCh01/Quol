@@ -3,14 +3,11 @@ import os
 import asyncio
 import logging
 import requests
-import shutil
 import sys
-import zipfile
-import tempfile
 
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QFrame
-from PySide6.QtGui import QMouseEvent
-from PySide6.QtCore import Qt, QPoint, QTimer
+from PySide6.QtGui import QMouseEvent, QDesktopServices
+from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 from qasync import QEventLoop
 
 from lib.app import App
@@ -38,11 +35,6 @@ def initialize_logging():
 
 def initialize_main_app():
     try:
-        print('Current working directory:', os.getcwd())
-        base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
-        os.chdir(base_dir)
-        print('Switched working directory:', os.getcwd())
-
         splash = LoadingScreen()
         splash.show()
         splash.raise_()
@@ -71,44 +63,6 @@ def check_for_update():
     except Exception as e:
         logging.error(f'Update check failed: {e}')
         return ''
-
-
-def download_latest(version, dest_path):
-    url = f'https://github.com/LeoCh01/Quol/releases/latest/download/Quol-v{version}.zip'
-    response = requests.get(url)
-    response.raise_for_status()
-    with open(dest_path, 'wb') as f:
-        f.write(response.content)
-
-
-def extract_update(zip_path):
-    try:
-        response = requests.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/update_settings.json')
-        response.raise_for_status()
-        data = response.json()
-        folders_to_remove = data.get('folders_to_remove', [])
-
-        for folder in folders_to_remove:
-            folder_path = os.path.join(CURRENT_DIR, folder)
-            if os.path.exists(folder_path):
-                try:
-                    shutil.rmtree(folder_path)
-                except Exception as e:
-                    logging.warning(f"Failed to remove {folder}: {e}")
-
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            for file in zip_ref.namelist():
-                if not file.startswith('windows/') and not file.startswith('Quol.exe'):
-                    target_path = os.path.join(CURRENT_DIR, file)
-                    if file.endswith('/'):
-                        os.makedirs(target_path, exist_ok=True)
-                    else:
-                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                        with zip_ref.open(file) as source, open(target_path, 'wb') as target:
-                            target.write(source.read())
-
-    except Exception as e:
-        logging.error(f'Failed to extract update: {e}', exc_info=True)
 
 
 class CustomTitleBar(QFrame):
@@ -168,7 +122,7 @@ class AppLauncher(QWidget):
         self.label = QLabel(f'New update available! (v{version})')
         content_layout.addWidget(self.label)
 
-        self.update_btn = QPushButton('Update and Exit')
+        self.update_btn = QPushButton('Go to Releases')
         self.update_btn.clicked.connect(self.on_update_clicked)
         content_layout.addWidget(self.update_btn)
 
@@ -183,14 +137,7 @@ class AppLauncher(QWidget):
         self.on_continue = on_continue_callback
 
     def on_update_clicked(self):
-        try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as temp_zip:
-                download_latest(self.version, temp_zip.name)
-                extract_update(temp_zip.name)
-            self.label.setText("Update complete. Launching app...")
-        except Exception as e:
-            self.label.setText(f"Update failed: {e}")
-            logging.error("Update failed", exc_info=True)
+        QDesktopServices.openUrl(QUrl("https://github.com/LeoCh01/Quol/releases/latest"))
         self.close()
 
     def on_continue_clicked(self):
@@ -210,6 +157,11 @@ class AppLauncher(QWidget):
 
 def main():
     print('Starting Quol...')
+    print('Current working directory:', os.getcwd())
+    base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
+    os.chdir(base_dir)
+    print('Switched working directory:', os.getcwd())
+
     initialize_logging()
 
     app = QApplication([])
