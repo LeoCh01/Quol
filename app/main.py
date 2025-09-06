@@ -1,6 +1,5 @@
 import json
 import os
-import asyncio
 import logging
 import requests
 import sys
@@ -8,7 +7,6 @@ import sys
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QFrame
 from PySide6.QtGui import QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
-from qasync import QEventLoop
 
 from lib.app import App
 from lib.loading_screen import LoadingScreen
@@ -165,8 +163,6 @@ def main():
     initialize_logging()
 
     app = QApplication([])
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
 
     new_version = check_for_update()
 
@@ -176,8 +172,7 @@ def main():
     else:
         initialize_main_app()
 
-    with loop:
-        loop.run_forever()
+    app.exec()
 
 
 if __name__ == '__main__':

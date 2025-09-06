@@ -6,13 +6,13 @@ from PySide6.QtCore import QUrl, QSize
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
-from qasync import asyncSlot
 import win32com.client
 
 from lib.io_helpers import write_json
 from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
+from lib.worker import Worker
 
 WINDOWS_PATH = os.getcwd() + os.path.sep + 'windows'
 
@@ -153,6 +153,7 @@ class ManageWindow(QuolSubWindow):
 
         self.layout.addWidget(self.tabs)
 
+        self.workers = []
         self.setup_installed_tab()
         self.setup_store_tab()
 
@@ -222,92 +223,103 @@ class ManageWindow(QuolSubWindow):
 
         self.main_window.config_to_settings()
 
-    @asyncSlot()
-    async def refresh_store_list(self):
-        store_items = await get_store_items()
+    def refresh_store_list(self):
+        worker = Worker(get_store_items)
+        self.workers.append(worker)
 
-        installed = [name for name in os.listdir(WINDOWS_PATH)
-                     if os.path.isdir(os.path.join(WINDOWS_PATH, name))
-                     and not name.startswith('__') and name != 'quol']
+        def on_finished(store_items):
+            self.store_list_widget.clear()
 
-        self.store_list_widget.clear()
+            installed = [name for name in os.listdir(WINDOWS_PATH) if os.path.isdir(os.path.join(WINDOWS_PATH, name))]
 
-        for entry in sorted(store_items, key=lambda x: x['name']):
-            raw_name = entry['name']
-            if not raw_name.endswith('.zip'):
-                continue
+            for entry in sorted(store_items, key=lambda x: x['name']):
+                raw_name = entry['name']
+                if not raw_name.endswith('.zip'):
+                    continue
 
-            full_tool_name = raw_name[:-4]  # Remove '.zip'
+                full_tool_name = raw_name[:-4]  # Remove '.zip'
 
-            if '-v' in full_tool_name:
-                name_part, version = full_tool_name.rsplit('-v', 1)
-                version = 'v' + version
-            else:
-                name_part = full_tool_name
-                version = 'v0'
+                if '-v' in full_tool_name:
+                    name_part, version = full_tool_name.rsplit('-v', 1)
+                    version = 'v' + version
+                else:
+                    name_part = full_tool_name
+                    version = 'v0'
 
-            matching_installed = [x for x in installed if x.startswith(name_part + '-v')]
-            current_version_installed = name_part + '-' + version in matching_installed
+                matching_installed = [x for x in installed if x.startswith(name_part + '-v')]
+                current_version_installed = name_part + '-' + version in matching_installed
 
-            item_widget = QWidget()
-            layout = QHBoxLayout(item_widget)
-            layout.setContentsMargins(5, 2, 5, 2)
+                item_widget = QWidget()
+                layout = QHBoxLayout(item_widget)
+                layout.setContentsMargins(5, 2, 5, 2)
 
-            name_label = QLabel(f"{name_part} ({version})")
+                name_label = QLabel(f"{name_part} ({version})")
 
-            if current_version_installed:
-                status_label = QLabel("Installed")
-                status_label.setStyleSheet("color: #4CAF50;")
-                layout.addWidget(name_label)
-                layout.addStretch()
-                layout.addWidget(status_label)
-            elif matching_installed:
-                update_button = QPushButton("Update")
-                update_button.setStyleSheet("padding: 5px;")
-                update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0], b=update_button: self.on_update(new_name, old_name, b))
-                layout.addWidget(name_label)
-                layout.addStretch()
-                layout.addWidget(update_button)
-            else:
-                install_button = QPushButton("Install")
-                install_button.setStyleSheet("padding: 5px;")
-                install_button.clicked.connect(lambda _, name=full_tool_name, b=install_button: self.on_install(name, b))
+                if current_version_installed:
+                    status_label = QLabel("Installed")
+                    status_label.setStyleSheet("color: #4CAF50;")
+                    layout.addWidget(name_label)
+                    layout.addStretch()
+                    layout.addWidget(status_label)
+                elif matching_installed:
+                    update_button = QPushButton("Update")
+                    update_button.setStyleSheet("padding: 5px; color: yellow;")
+                    update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0],
+                                                         b=update_button: self.on_update(new_name, old_name, b))
+                    layout.addWidget(name_label)
+                    layout.addStretch()
+                    layout.addWidget(update_button)
+                else:
+                    install_button = QPushButton("Install")
+                    install_button.setStyleSheet("padding: 5px;")
+                    install_button.clicked.connect(
+                        lambda _, name=full_tool_name, b=install_button: self.on_install(name, b))
 
-                layout.addWidget(name_label)
-                layout.addStretch()
-                layout.addWidget(install_button)
+                    layout.addWidget(name_label)
+                    layout.addStretch()
+                    layout.addWidget(install_button)
 
-            item = QListWidgetItem(self.store_list_widget)
-            item.setSizeHint(QSize(0, 35))
-            self.store_list_widget.addItem(item)
-            self.store_list_widget.setItemWidget(item, item_widget)
+                item = QListWidgetItem(self.store_list_widget)
+                item.setSizeHint(QSize(0, 35))
+                self.store_list_widget.addItem(item)
+                self.store_list_widget.setItemWidget(item, item_widget)
 
-    @asyncSlot()
-    async def on_install(self, name, button):
-        print(f"Install clicked for: {name}")
+        worker.finished.connect(on_finished)
+        worker.error.connect(lambda e: print(f"Error fetching store items: {e}"))
+        worker.start()
 
+    def on_install(self, name, button):
         button.setDisabled(True)
         button.setText("Installing...")
 
-        await download_item(name, WINDOWS_PATH)
-        self.refresh_list()
+        worker = Worker(download_item, name, WINDOWS_PATH)
+        self.workers.append(worker)
 
-        await self.refresh_store_list()
+        def on_finished(result):
+            self.refresh_list()
+            self.refresh_store_list()
 
-    @asyncSlot()
-    async def on_update(self, new_name, old_name, button):
-        print(f"Update clicked for: {new_name} (old: {old_name})")
+        worker.finished.connect(on_finished)
+        worker.error.connect(lambda e: print(f"Error installing {name}: {e}"))
+        worker.start()
 
-        is_active = old_name in self.main_window.config['_']['windows']
+    def on_update(self, new_name, old_name, button):
 
         button.setDisabled(True)
         button.setText("Updating...")
 
-        await update_item(new_name, old_name, WINDOWS_PATH)
-
-        if is_active:
+        if old_name in self.main_window.config['_']['windows']:
             self.main_window.config['_']['windows'].remove(old_name)
             self.main_window.config['_']['windows'].append(new_name)
 
-        self.refresh_list()
-        await self.refresh_store_list()
+        worker = Worker(update_item, new_name, old_name, WINDOWS_PATH)
+        self.workers.append(worker)
+
+        def on_finished(result):
+            self.refresh_list()
+            self.refresh_store_list()
+            self.workers.remove(worker)
+
+        worker.finished.connect(on_finished)
+        worker.error.connect(lambda e: print(f"Error updating {old_name} to {new_name}: {e}"))
+        worker.start()
