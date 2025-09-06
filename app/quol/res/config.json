@@ -9,7 +9,9 @@
       180,
       1
     ],
-    "windows": [],
+    "windows": [
+      "macro-v1"
+    ],
     "name": "Quol"
   }
 }

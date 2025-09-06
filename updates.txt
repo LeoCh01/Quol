@@ -1,5 +1,6 @@
 CURRENT
 - remove asyncSlot stuff (only using QThreads now)
+- windows dir param in settings
 
 TODO
 - add tooltips

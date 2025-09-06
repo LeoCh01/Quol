@@ -14,8 +14,6 @@ from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
 
-WINDOWS_PATH = os.getcwd() + os.path.sep + 'windows'
-
 
 def add_to_startup_task(app_name, app_path):
     scheduler = win32com.client.Dispatch("Schedule.Service")
@@ -58,6 +56,9 @@ def remove_startup_task(app_name):
 class MainWindow(QuolMainWindow):
     def __init__(self, app, window_info: WindowInfo, window_context: WindowContext):
         super().__init__('Quol', window_info, window_context, default_geometry=(10, 10, 180, 1))
+
+        self.windows_dir = os.path.abspath(os.getcwd() + window_context.settings.get('windows_dir', '\\windows'))
+        print(self.windows_dir)
 
         self.app = app
         self.settings_to_config()
@@ -143,6 +144,7 @@ class ManageWindow(QuolSubWindow):
     def __init__(self, main_window):
         super().__init__(main_window, "Manage Windows")
         self.setGeometry(300, 300, 400, 400)
+        self.windows_dir = main_window.windows_dir
 
         self.tabs = QTabWidget()
         self.installed_tab = QWidget()
@@ -172,11 +174,11 @@ class ManageWindow(QuolSubWindow):
         self.refresh_store_list()
 
     def refresh_list(self):
-        if not os.path.exists(WINDOWS_PATH):
-            os.makedirs(WINDOWS_PATH)
+        if not os.path.exists(self.windows_dir):
+            os.makedirs(self.windows_dir)
 
-        installed = [name for name in os.listdir(WINDOWS_PATH)
-                     if os.path.isdir(os.path.join(WINDOWS_PATH, name))
+        installed = [name for name in os.listdir(self.windows_dir)
+                     if os.path.isdir(os.path.join(self.windows_dir, name))
                      and not name.startswith('__') and name != 'quol']
         active = self.main_window.config['_']['windows']
 
@@ -230,7 +232,7 @@ class ManageWindow(QuolSubWindow):
         def on_finished(store_items):
             self.store_list_widget.clear()
 
-            installed = [name for name in os.listdir(WINDOWS_PATH) if os.path.isdir(os.path.join(WINDOWS_PATH, name))]
+            installed = [name for name in os.listdir(self.windows_dir) if os.path.isdir(os.path.join(self.windows_dir, name))]
 
             for entry in sorted(store_items, key=lambda x: x['name']):
                 raw_name = entry['name']
@@ -292,7 +294,7 @@ class ManageWindow(QuolSubWindow):
         button.setDisabled(True)
         button.setText("Installing...")
 
-        worker = Worker(download_item, name, WINDOWS_PATH)
+        worker = Worker(download_item, name, self.windows_dir)
         self.workers.append(worker)
 
         def on_finished(result):
@@ -312,7 +314,7 @@ class ManageWindow(QuolSubWindow):
             self.main_window.config['_']['windows'].remove(old_name)
             self.main_window.config['_']['windows'].append(new_name)
 
-        worker = Worker(update_item, new_name, old_name, WINDOWS_PATH)
+        worker = Worker(update_item, new_name, old_name, self.windows_dir)
         self.workers.append(worker)
 
         def on_finished(result):

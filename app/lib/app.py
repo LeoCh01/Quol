@@ -19,8 +19,12 @@ class App(QObject):
 
         self.windows: List[QuolMainWindow] = []
         self.settings: Optional[dict] = None
-
         self.load_settings()
+
+        self.windows_dir = self.settings.get('windows_dir', './windows')
+        self.is_hidden: bool = False
+        self.is_reset: bool = self.settings.get('is_default_pos', True)
+
         self.load_style_sheet()
         self.load_windows()
         self.setup_tray_icon()
@@ -28,9 +32,6 @@ class App(QObject):
         self.toggle_key: str = str(self.settings.get('toggle_key', '`'))
         self.toggle_hotkey = None
         self.reset_hotkey(self.toggle_key)
-
-        self.is_hidden: bool = False
-        self.is_reset: bool = self.settings.get('is_default_pos', True)
 
     def save_settings(self):
         write_json('settings.json', self.settings)
@@ -61,7 +62,7 @@ class App(QObject):
 
         for name in self.settings.get('windows'):
             print('loading ' + name)
-            plugin = WindowLoader(name)
+            plugin = WindowLoader(name, self.windows_dir)
             if not plugin.load():
                 print(f'Failed to load window {name}. Skipping...')
                 continue

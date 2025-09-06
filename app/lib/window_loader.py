@@ -9,10 +9,10 @@ from lib.io_helpers import read_json, write_json
 
 
 class WindowLoader:
-    def __init__(self, name):
+    def __init__(self, name, windows_dir='windows'):
         self.name = name
         self.module = None
-        self.path = f'{os.getcwd()}\\windows\\{self.name}'
+        self.path = os.path.abspath(os.getcwd() + f'\\{windows_dir}\\{name}')
 
     def load(self):
         module_path = os.path.join(self.path, 'window.py')
