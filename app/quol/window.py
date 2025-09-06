@@ -108,6 +108,7 @@ class MainWindow(QuolMainWindow):
         return sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
 
     def config_to_settings(self):
+        self.app.settings['is_default_pos'] = self.config['reset_pos']
         self.app.settings['toggle_key'] = self.config['toggle_key']
         self.app.settings['transition'] = self.config['transition']
         self.app.settings['startup'] = self.config['startup']
@@ -115,6 +116,7 @@ class MainWindow(QuolMainWindow):
         self.app.save_settings()
 
     def settings_to_config(self):
+        self.config['reset_pos'] = self.app.settings['is_default_pos']
         self.config['toggle_key'] = self.app.settings['toggle_key']
         self.config['transition'] = self.app.settings['transition']
         self.config['startup'] = self.app.settings['startup']
