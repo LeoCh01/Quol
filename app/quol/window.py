@@ -1,4 +1,3 @@
-import datetime
 import os
 import sys
 
@@ -6,58 +5,20 @@ from PySide6.QtCore import QUrl, QSize
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
-from qasync import asyncSlot
-import win32com.client
 
 from lib.io_helpers import write_json
 from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
-
-WINDOWS_PATH = os.getcwd() + os.path.sep + 'windows'
-
-
-def add_to_startup_task(app_name, app_path):
-    scheduler = win32com.client.Dispatch("Schedule.Service")
-    scheduler.Connect()
-
-    root_folder = scheduler.GetFolder("\\")
-    task_def = scheduler.NewTask(0)
-
-    # Create trigger
-    trigger = task_def.Triggers.Create(1)  # 1 = Logon trigger
-    trigger.StartBoundary = datetime.datetime.now().isoformat()
-
-    # Create action
-    action = task_def.Actions.Create(0)  # 0 = Start a program
-    action.Path = app_path
-
-    task_def.RegistrationInfo.Description = f"Start {app_name} at logon"
-    task_def.Principal.UserId = os.getlogin()
-    task_def.Principal.LogonType = 3  # Logon interactively
-    task_def.Settings.Enabled = True
-    task_def.Settings.StopIfGoingOnBatteries = False
-
-    root_folder.RegisterTaskDefinition(
-        f"{app_name}_autostart",
-        task_def,
-        6,  # CREATE OR UPDATE
-        None,  # No user/password
-        None,
-        3  # Logon interactively
-    )
-
-
-def remove_startup_task(app_name):
-    scheduler = win32com.client.Dispatch("Schedule.Service")
-    scheduler.Connect()
-    root_folder = scheduler.GetFolder("\\")
-    root_folder.DeleteTask(f"{app_name}_autostart", 0)
+from lib.worker import Worker
 
 
 class MainWindow(QuolMainWindow):
     def __init__(self, app, window_info: WindowInfo, window_context: WindowContext):
         super().__init__('Quol', window_info, window_context, default_geometry=(10, 10, 180, 1))
+
+        self.windows_dir = os.path.abspath(os.getcwd() + window_context.settings.get('windows_dir', '\\windows'))
+        print(self.windows_dir)
 
         self.app = app
         self.settings_to_config()
@@ -107,6 +68,7 @@ class MainWindow(QuolMainWindow):
         return sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
 
     def config_to_settings(self):
+        self.app.settings['is_default_pos'] = self.config['reset_pos']
         self.app.settings['toggle_key'] = self.config['toggle_key']
         self.app.settings['transition'] = self.config['transition']
         self.app.settings['startup'] = self.config['startup']
@@ -114,6 +76,7 @@ class MainWindow(QuolMainWindow):
         self.app.save_settings()
 
     def settings_to_config(self):
+        self.config['reset_pos'] = self.app.settings['is_default_pos']
         self.config['toggle_key'] = self.app.settings['toggle_key']
         self.config['transition'] = self.app.settings['transition']
         self.config['startup'] = self.app.settings['startup']
@@ -127,10 +90,10 @@ class MainWindow(QuolMainWindow):
             return
 
         if self.config['startup']:
-            add_to_startup_task(self.app_name, self.app_path)
+            self.app.add_to_startup(self.app_name, self.app_path)
             print(f'Added {self.app_name} to startup with path: {self.app_path}')
         else:
-            remove_startup_task(self.app_name)
+            self.app.remove_from_startup(self.app_name)
             print(f'Removed {self.app_name} from startup')
 
     def closeEvent(self, event):
@@ -143,6 +106,7 @@ class ManageWindow(QuolSubWindow):
     def __init__(self, main_window):
         super().__init__(main_window, "Manage Windows")
         self.setGeometry(300, 300, 400, 400)
+        self.windows_dir = main_window.windows_dir
 
         self.tabs = QTabWidget()
         self.installed_tab = QWidget()
@@ -153,6 +117,7 @@ class ManageWindow(QuolSubWindow):
 
         self.layout.addWidget(self.tabs)
 
+        self.workers = []
         self.setup_installed_tab()
         self.setup_store_tab()
 
@@ -171,11 +136,11 @@ class ManageWindow(QuolSubWindow):
         self.refresh_store_list()
 
     def refresh_list(self):
-        if not os.path.exists(WINDOWS_PATH):
-            os.makedirs(WINDOWS_PATH)
+        if not os.path.exists(self.windows_dir):
+            os.makedirs(self.windows_dir)
 
-        installed = [name for name in os.listdir(WINDOWS_PATH)
-                     if os.path.isdir(os.path.join(WINDOWS_PATH, name))
+        installed = [name for name in os.listdir(self.windows_dir)
+                     if os.path.isdir(os.path.join(self.windows_dir, name))
                      and not name.startswith('__') and name != 'quol']
         active = self.main_window.config['_']['windows']
 
@@ -222,92 +187,103 @@ class ManageWindow(QuolSubWindow):
 
         self.main_window.config_to_settings()
 
-    @asyncSlot()
-    async def refresh_store_list(self):
-        store_items = await get_store_items()
+    def refresh_store_list(self):
+        worker = Worker(get_store_items)
+        self.workers.append(worker)
 
-        installed = [name for name in os.listdir(WINDOWS_PATH)
-                     if os.path.isdir(os.path.join(WINDOWS_PATH, name))
-                     and not name.startswith('__') and name != 'quol']
+        def on_finished(store_items):
+            self.store_list_widget.clear()
 
-        self.store_list_widget.clear()
+            installed = [name for name in os.listdir(self.windows_dir) if os.path.isdir(os.path.join(self.windows_dir, name))]
 
-        for entry in sorted(store_items, key=lambda x: x['name']):
-            raw_name = entry['name']
-            if not raw_name.endswith('.zip'):
-                continue
+            for entry in sorted(store_items, key=lambda x: x['name']):
+                raw_name = entry['name']
+                if not raw_name.endswith('.zip'):
+                    continue
 
-            full_tool_name = raw_name[:-4]  # Remove '.zip'
+                full_tool_name = raw_name[:-4]  # Remove '.zip'
 
-            if '-v' in full_tool_name:
-                name_part, version = full_tool_name.rsplit('-v', 1)
-                version = 'v' + version
-            else:
-                name_part = full_tool_name
-                version = 'v0'
+                if '-v' in full_tool_name:
+                    name_part, version = full_tool_name.rsplit('-v', 1)
+                    version = 'v' + version
+                else:
+                    name_part = full_tool_name
+                    version = 'v0'
 
-            matching_installed = [x for x in installed if x.startswith(name_part + '-v')]
-            current_version_installed = name_part + '-' + version in matching_installed
+                matching_installed = [x for x in installed if x.startswith(name_part + '-v')]
+                current_version_installed = name_part + '-' + version in matching_installed
 
-            item_widget = QWidget()
-            layout = QHBoxLayout(item_widget)
-            layout.setContentsMargins(5, 2, 5, 2)
+                item_widget = QWidget()
+                layout = QHBoxLayout(item_widget)
+                layout.setContentsMargins(5, 2, 5, 2)
 
-            name_label = QLabel(f"{name_part} ({version})")
+                name_label = QLabel(f"{name_part} ({version})")
 
-            if current_version_installed:
-                status_label = QLabel("Installed")
-                status_label.setStyleSheet("color: #4CAF50;")
-                layout.addWidget(name_label)
-                layout.addStretch()
-                layout.addWidget(status_label)
-            elif matching_installed:
-                update_button = QPushButton("Update")
-                update_button.setStyleSheet("padding: 5px;")
-                update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0], b=update_button: self.on_update(new_name, old_name, b))
-                layout.addWidget(name_label)
-                layout.addStretch()
-                layout.addWidget(update_button)
-            else:
-                install_button = QPushButton("Install")
-                install_button.setStyleSheet("padding: 5px;")
-                install_button.clicked.connect(lambda _, name=full_tool_name, b=install_button: self.on_install(name, b))
+                if current_version_installed:
+                    status_label = QLabel("Installed")
+                    status_label.setStyleSheet("color: #4CAF50;")
+                    layout.addWidget(name_label)
+                    layout.addStretch()
+                    layout.addWidget(status_label)
+                elif matching_installed:
+                    update_button = QPushButton("Update")
+                    update_button.setStyleSheet("padding: 5px; color: yellow;")
+                    update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0],
+                                                         b=update_button: self.on_update(new_name, old_name, b))
+                    layout.addWidget(name_label)
+                    layout.addStretch()
+                    layout.addWidget(update_button)
+                else:
+                    install_button = QPushButton("Install")
+                    install_button.setStyleSheet("padding: 5px;")
+                    install_button.clicked.connect(
+                        lambda _, name=full_tool_name, b=install_button: self.on_install(name, b))
 
-                layout.addWidget(name_label)
-                layout.addStretch()
-                layout.addWidget(install_button)
+                    layout.addWidget(name_label)
+                    layout.addStretch()
+                    layout.addWidget(install_button)
 
-            item = QListWidgetItem(self.store_list_widget)
-            item.setSizeHint(QSize(0, 35))
-            self.store_list_widget.addItem(item)
-            self.store_list_widget.setItemWidget(item, item_widget)
+                item = QListWidgetItem(self.store_list_widget)
+                item.setSizeHint(QSize(0, 35))
+                self.store_list_widget.addItem(item)
+                self.store_list_widget.setItemWidget(item, item_widget)
 
-    @asyncSlot()
-    async def on_install(self, name, button):
-        print(f"Install clicked for: {name}")
+        worker.finished.connect(on_finished)
+        worker.error.connect(lambda e: print(f"Error fetching store items: {e}"))
+        worker.start()
 
+    def on_install(self, name, button):
         button.setDisabled(True)
         button.setText("Installing...")
 
-        await download_item(name, WINDOWS_PATH)
-        self.refresh_list()
+        worker = Worker(download_item, name, self.windows_dir)
+        self.workers.append(worker)
 
-        await self.refresh_store_list()
+        def on_finished(result):
+            self.refresh_list()
+            self.refresh_store_list()
 
-    @asyncSlot()
-    async def on_update(self, new_name, old_name, button):
-        print(f"Update clicked for: {new_name} (old: {old_name})")
+        worker.finished.connect(on_finished)
+        worker.error.connect(lambda e: print(f"Error installing {name}: {e}"))
+        worker.start()
 
-        is_active = old_name in self.main_window.config['_']['windows']
+    def on_update(self, new_name, old_name, button):
 
         button.setDisabled(True)
         button.setText("Updating...")
 
-        await update_item(new_name, old_name, WINDOWS_PATH)
-
-        if is_active:
+        if old_name in self.main_window.config['_']['windows']:
             self.main_window.config['_']['windows'].remove(old_name)
             self.main_window.config['_']['windows'].append(new_name)
 
-        self.refresh_list()
-        await self.refresh_store_list()
+        worker = Worker(update_item, new_name, old_name, self.windows_dir)
+        self.workers.append(worker)
+
+        def on_finished(result):
+            self.refresh_list()
+            self.refresh_store_list()
+            self.workers.remove(worker)
+
+        worker.finished.connect(on_finished)
+        worker.error.connect(lambda e: print(f"Error updating {old_name} to {new_name}: {e}"))
+        worker.start()

@@ -1,3 +1,5 @@
+import winreg
+
 import keyboard
 from typing import List, Optional
 
@@ -19,8 +21,12 @@ class App(QObject):
 
         self.windows: List[QuolMainWindow] = []
         self.settings: Optional[dict] = None
-
         self.load_settings()
+
+        self.windows_dir = self.settings.get('windows_dir', './windows')
+        self.is_hidden: bool = False
+        self.is_reset: bool = self.settings.get('is_default_pos', True)
+
         self.load_style_sheet()
         self.load_windows()
         self.setup_tray_icon()
@@ -28,9 +34,6 @@ class App(QObject):
         self.toggle_key: str = str(self.settings.get('toggle_key', '`'))
         self.toggle_hotkey = None
         self.reset_hotkey(self.toggle_key)
-
-        self.is_hidden: bool = False
-        self.is_reset: bool = self.settings.get('is_default_pos', True)
 
     def save_settings(self):
         write_json('settings.json', self.settings)
@@ -61,7 +64,7 @@ class App(QObject):
 
         for name in self.settings.get('windows'):
             print('loading ' + name)
-            plugin = WindowLoader(name)
+            plugin = WindowLoader(name, self.windows_dir)
             if not plugin.load():
                 print(f'Failed to load window {name}. Skipping...')
                 continue
@@ -140,3 +143,55 @@ class App(QObject):
         self.is_hidden = False
 
         self.load_windows()
+
+    @staticmethod
+    def add_to_startup(self, app_name: str, app_path: str) -> bool:
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                0,
+                winreg.KEY_SET_VALUE
+            )
+            winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, app_path)
+            winreg.CloseKey(key)
+            return True
+        except Exception as e:
+            print(f"Failed to add to startup: {e}")
+            return False
+
+    @staticmethod
+    def remove_from_startup(app_name: str) -> bool:
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                0,
+                winreg.KEY_ALL_ACCESS
+            )
+            winreg.DeleteValue(key, app_name)
+            winreg.CloseKey(key)
+            return True
+        except FileNotFoundError:
+            return True
+        except Exception as e:
+            print(f"Failed to remove from startup: {e}")
+            return False
+
+    @staticmethod
+    def is_in_startup(self, app_name: str) -> bool:
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                0,
+                winreg.KEY_READ
+            )
+            value, regtype = winreg.QueryValueEx(key, app_name)
+            winreg.CloseKey(key)
+            return True
+        except FileNotFoundError:
+            return False
+        except Exception as e:
+            print(f"Error checking startup: {e}")
+            return False

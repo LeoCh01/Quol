@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, Signal, QRect, QPoint
 from PySide6.QtGui import QPainterPath, QRegion
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QPushButton, QGroupBox, QCheckBox, QLabel, QLineEdit
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QPushButton, QGroupBox, QCheckBox, QLabel, \
+    QLineEdit, QApplication
 
 from lib.io_helpers import read_json
 from lib.quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
@@ -98,6 +99,7 @@ class QuolMainWindow(QuolBaseWindow):
             self.config['_']['geometry'] = [*default_geometry]
             self.window_info.save_config(self.config)
         else:
+            self.config['_']['geometry'][3] = 1
             self.setGeometry(QRect(*self.config['_']['geometry']))
 
         if show_config:
@@ -251,7 +253,9 @@ class QuolDialogWindow(QuolSubWindow):
     def __init__(self, main_window: QuolMainWindow, title: str):
         super().__init__(main_window, title)
 
-        self.setGeometry(300, 300, 400, 200)
+        # self.setGeometry(500, 500, 400, 200)
+        self.setGeometry(QApplication.primaryScreen().availableGeometry().center().x() - 200,
+                         QApplication.primaryScreen().availableGeometry().center().y() - 100, 400, 200)
 
         self.button_layout = QHBoxLayout(self._lower)
         self.accept_button = QPushButton("Accept")
@@ -281,7 +285,9 @@ class QuolConfigWindow(QuolSubWindow):
     def __init__(self, main_window: QuolMainWindow, title: str):
         super().__init__(main_window, title)
 
-        self.setGeometry(300, 300, 400, 1)
+        # self.setGeometry(500, 500, 400, 1)
+        self.setGeometry(QApplication.primaryScreen().availableGeometry().center().x() - 200,
+                         QApplication.primaryScreen().availableGeometry().center().y() - 100, 400, 1)
 
         self.config_layout = QVBoxLayout()
         self.layout.addLayout(self.config_layout)

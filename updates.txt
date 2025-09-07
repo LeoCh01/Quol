@@ -1,8 +1,8 @@
 CURRENT
-- add version manager and updater for new versions
-- add window/plugin manager
-- move windows to Quol tools directory
-- set onedir as default build type
+- remove asyncSlot stuff (only using QThreads now)
+- windows dir param in settings
+- fix dynamic window height on load
+- fix set as startup app
 
 TODO
 - add tooltips

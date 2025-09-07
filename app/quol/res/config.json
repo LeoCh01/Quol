@@ -1,5 +1,6 @@
 {
   "startup": false,
+  "reset_pos": true,
   "toggle_key": "`",
   "transition": "rand",
   "_": {
@@ -9,7 +10,17 @@
       180,
       1
     ],
-    "windows": [],
+    "windows": [
+      "macro-v1",
+      "chance-v1",
+      "chat-v2",
+      "clipboard-v1",
+      "color_picker-v1",
+      "draw-v1",
+      "keymap-v2",
+      "request-v1",
+      "run_command-v1"
+    ],
     "name": "Quol"
   }
 }

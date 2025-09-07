@@ -16,7 +16,6 @@ a2 = Analysis(
         'selenium.common.exceptions',
         'selenium.webdriver.support.wait',
         'seleniumbase',
-        'win32com',
     ],
     hookspath=[],
     hooksconfig={},
