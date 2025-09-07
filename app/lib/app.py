@@ -1,3 +1,5 @@
+import winreg
+
 import keyboard
 from typing import List, Optional
 
@@ -141,3 +143,55 @@ class App(QObject):
         self.is_hidden = False
 
         self.load_windows()
+
+    @staticmethod
+    def add_to_startup(self, app_name: str, app_path: str) -> bool:
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                0,
+                winreg.KEY_SET_VALUE
+            )
+            winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, app_path)
+            winreg.CloseKey(key)
+            return True
+        except Exception as e:
+            print(f"Failed to add to startup: {e}")
+            return False
+
+    @staticmethod
+    def remove_from_startup(app_name: str) -> bool:
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                0,
+                winreg.KEY_ALL_ACCESS
+            )
+            winreg.DeleteValue(key, app_name)
+            winreg.CloseKey(key)
+            return True
+        except FileNotFoundError:
+            return True
+        except Exception as e:
+            print(f"Failed to remove from startup: {e}")
+            return False
+
+    @staticmethod
+    def is_in_startup(self, app_name: str) -> bool:
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                0,
+                winreg.KEY_READ
+            )
+            value, regtype = winreg.QueryValueEx(key, app_name)
+            winreg.CloseKey(key)
+            return True
+        except FileNotFoundError:
+            return False
+        except Exception as e:
+            print(f"Error checking startup: {e}")
+            return False

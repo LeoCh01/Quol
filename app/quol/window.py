@@ -1,4 +1,3 @@
-import datetime
 import os
 import sys
 
@@ -6,51 +5,12 @@ from PySide6.QtCore import QUrl, QSize
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
-import win32com.client
 
 from lib.io_helpers import write_json
 from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
-
-
-def add_to_startup_task(app_name, app_path):
-    scheduler = win32com.client.Dispatch("Schedule.Service")
-    scheduler.Connect()
-
-    root_folder = scheduler.GetFolder("\\")
-    task_def = scheduler.NewTask(0)
-
-    # Create trigger
-    trigger = task_def.Triggers.Create(1)  # 1 = Logon trigger
-    trigger.StartBoundary = datetime.datetime.now().isoformat()
-
-    # Create action
-    action = task_def.Actions.Create(0)  # 0 = Start a program
-    action.Path = app_path
-
-    task_def.RegistrationInfo.Description = f"Start {app_name} at logon"
-    task_def.Principal.UserId = os.getlogin()
-    task_def.Principal.LogonType = 3  # Logon interactively
-    task_def.Settings.Enabled = True
-    task_def.Settings.StopIfGoingOnBatteries = False
-
-    root_folder.RegisterTaskDefinition(
-        f"{app_name}_autostart",
-        task_def,
-        6,  # CREATE OR UPDATE
-        None,  # No user/password
-        None,
-        3  # Logon interactively
-    )
-
-
-def remove_startup_task(app_name):
-    scheduler = win32com.client.Dispatch("Schedule.Service")
-    scheduler.Connect()
-    root_folder = scheduler.GetFolder("\\")
-    root_folder.DeleteTask(f"{app_name}_autostart", 0)
 
 
 class MainWindow(QuolMainWindow):
@@ -130,10 +90,10 @@ class MainWindow(QuolMainWindow):
             return
 
         if self.config['startup']:
-            add_to_startup_task(self.app_name, self.app_path)
+            self.app.add_to_startup(self.app_name, self.app_path)
             print(f'Added {self.app_name} to startup with path: {self.app_path}')
         else:
-            remove_startup_task(self.app_name)
+            self.app.remove_from_startup(self.app_name)
             print(f'Removed {self.app_name} from startup')
 
     def closeEvent(self, event):
