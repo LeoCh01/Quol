@@ -7,6 +7,16 @@
   "style": "dark",
   "transition": "rand",
   "is_default_pos": true,
-  "windows_dir": "./windows",
-  "windows": []
+  "windows_dir": "./../../Quol Tools/src",
+  "windows": [
+    "chance-v1",
+    "chat-v2",
+    "clipboard-v1",
+    "color_picker-v1",
+    "draw-v1",
+    "keymap-v2",
+    "macro-v1",
+    "request-v1",
+    "run_command-v1"
+  ]
 }

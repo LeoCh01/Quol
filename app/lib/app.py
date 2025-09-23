@@ -145,7 +145,7 @@ class App(QObject):
         self.load_windows()
 
     @staticmethod
-    def add_to_startup(self, app_name: str, app_path: str) -> bool:
+    def add_to_startup(app_name: str, app_path: str) -> bool:
         try:
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
@@ -179,7 +179,7 @@ class App(QObject):
             return False
 
     @staticmethod
-    def is_in_startup(self, app_name: str) -> bool:
+    def is_in_startup(app_name: str) -> bool:
         try:
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,

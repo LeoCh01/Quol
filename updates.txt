@@ -1,10 +1,9 @@
 CURRENT
-- remove asyncSlot stuff (only using QThreads now)
-- windows dir param in settings
-- fix dynamic window height on load
-- fix set as startup app
 
 TODO
+- global event hooks for keypresses and mouse clicks
+- python 3.14 migration
 - add tooltips
+- figure out why key hooks stop working after a while
 - make process table update on click
 - fix fps on rec
