@@ -1,5 +1,4 @@
 import threading
-from pynput import keyboard, mouse
 from pynput.keyboard import Listener as KeyboardListener
 from pynput.mouse import Listener as MouseListener
 
@@ -139,15 +138,28 @@ class GlobalInputManager:
     def _win32_event_filter(self, msg, data):
 
         def run(callbacks):
-            key = VK_TO_STR.get(data.vkCode, '')
             for callback, suppressed in callbacks:
                 callback(key)
                 if key in suppressed:
                     self._keyboard_listener.suppress_event()
 
+        key = VK_TO_STR.get(data.vkCode, '')
+
         if msg == 256:  # WM_KEYDOWN
+            if key:
+                self._pressed_keys.add(key.lower())
+
+            # Check hotkeys
+            for hotkey_combo, cb in self.hotkey_callbacks.items():
+                hotkey_keys = set(hotkey_combo.split('+'))
+                if hotkey_keys.issubset(self._pressed_keys):
+                    for c in cb:
+                        c()
+
             run(self.key_press_callbacks)
         elif msg == 257:  # WM_KEYUP
+            if key:
+                self._pressed_keys.discard(key.lower())
             run(self.key_release_callbacks)
 
     def _on_mouse_move(self, x, y):
@@ -158,7 +170,7 @@ class GlobalInputManager:
         for callback in self.mouse_click_callbacks:
             callback(x, y, button.name if button else None, pressed)
 
-    def add_hotkey(self, combo, callback):  # TODO: add to on_press
+    def add_hotkey(self, combo, callback):
         combo = combo.lower()
         if combo not in self.hotkey_callbacks:
             self.hotkey_callbacks[combo] = []

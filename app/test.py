@@ -6,6 +6,7 @@ from lib.global_input_manager import GlobalInputManager
 
 class MainWindow(QWidget):
     key_pressed = Signal(str)
+    hotkey_pressed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -22,7 +23,8 @@ class MainWindow(QWidget):
         self.input_manager = GlobalInputManager()
         self.input_manager.start()
 
-        self.input_manager.add_key_press_listener(self.on_key_press, suppressed=('a', 'b'))
+        self.input_manager.add_key_press_listener(self.on_key_press, suppressed=('a', 'h'))
+        self.input_manager.add_hotkey('ctrl+c', self.say_bye)
 
     def on_key_press(self, key_str):
         if key_str.lower() in 'abc':
@@ -32,6 +34,11 @@ class MainWindow(QWidget):
     def say_hello(self, c):
         print(f'pressed {c}')
         self.label.setText(f'pressed {c}')
+
+    @Slot()
+    def say_bye(self):
+        print('bye')
+        self.label.setText('bye')
 
     def closeEvent(self, event):
         self.input_manager.stop()
