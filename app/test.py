@@ -1,6 +1,6 @@
 import sys
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import Signal, Slot
 from lib.global_input_manager import GlobalInputManager
 
 
@@ -23,12 +23,15 @@ class MainWindow(QWidget):
         self.input_manager = GlobalInputManager()
         self.input_manager.start()
 
-        self.input_manager.add_key_press_listener(self.on_key_press, suppressed=('a', 'h'))
-        self.input_manager.add_hotkey('ctrl+c', self.say_bye)
+        self.key1 = self.input_manager.add_key_press_listener(self.on_key_press, suppressed=('a', 'h'))
+        self.key2 = self.input_manager.add_hotkey('ctrl+c', self.say_bye)
 
     def on_key_press(self, key_str):
         if key_str.lower() in 'abc':
             self.key_pressed.emit(key_str)
+        elif key_str.lower() == 'd':
+            self.input_manager.remove_hotkey(self.key2)
+            print('removed key listener')
 
     @Slot(str)
     def say_hello(self, c):

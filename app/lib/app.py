@@ -1,12 +1,11 @@
 import winreg
-
-import keyboard
 from typing import List, Optional
 
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 
+from lib.global_input_manager import GlobalInputManager
 from lib.io_helpers import read_text, read_json, write_json
 from lib.quol_window import QuolMainWindow
 from lib.transition_loader import TransitionLoader
@@ -27,12 +26,15 @@ class App(QObject):
         self.is_hidden: bool = False
         self.is_reset: bool = self.settings.get('is_default_pos', True)
 
+        self.input_manager = GlobalInputManager()
+        self.input_manager.start()
+
         self.load_style_sheet()
         self.load_windows()
         self.setup_tray_icon()
 
         self.toggle_key: str = str(self.settings.get('toggle_key', '`'))
-        self.toggle_hotkey = None
+        self.toggle_key_key = None
         self.reset_hotkey(self.toggle_key)
 
     def save_settings(self):
@@ -56,7 +58,7 @@ class App(QObject):
 
     def load_windows(self):
         transition_plugin = self.load_transition()
-        context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin, self.get_is_hidden)
+        context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin, self.get_is_hidden, self.input_manager)
 
         plugin = SystemWindowLoader()
         plugin.load()
@@ -75,11 +77,9 @@ class App(QObject):
             window.show()
 
     def reset_hotkey(self, new_key: str):
-        if self.toggle_hotkey:
-            keyboard.remove_hotkey(self.toggle_hotkey)
-
+        self.input_manager.remove_hotkey(self.toggle_key_key)
         self.toggle_key = new_key
-        self.toggle_hotkey = keyboard.add_hotkey(new_key, self.toggle_windows, suppress=True)
+        self.toggle_key_key = self.input_manager.add_hotkey(new_key, self.toggle_windows, suppressed=True)
 
     def toggle_windows(self):
         self.toggle.emit(self.is_hidden, False)
@@ -129,8 +129,8 @@ class App(QObject):
             w.close()
 
         self.windows.clear()
-        self.toggle_hotkey = None
-        keyboard.unhook_all()
+        self.toggle_key_key = None
+        self.input_manager.stop()
 
     def restart(self):
         self.hide()
@@ -138,6 +138,7 @@ class App(QObject):
         self.load_settings()
         self.load_style_sheet()
 
+        self.input_manager.start()
         self.reset_hotkey(str(self.settings.get('toggle_key', '`')))
         self.is_reset = self.settings.get('is_default_pos', True)
         self.is_hidden = False
