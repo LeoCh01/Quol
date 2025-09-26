@@ -34,7 +34,7 @@ class App(QObject):
         self.setup_tray_icon()
 
         self.toggle_key: str = str(self.settings.get('toggle_key', '`'))
-        self.toggle_key_key = None
+        self.toggle_key_id = None
         self.reset_hotkey(self.toggle_key)
 
     def save_settings(self):
@@ -77,9 +77,9 @@ class App(QObject):
             window.show()
 
     def reset_hotkey(self, new_key: str):
-        self.input_manager.remove_hotkey(self.toggle_key_key)
+        self.input_manager.remove_hotkey(self.toggle_key_id)
         self.toggle_key = new_key
-        self.toggle_key_key = self.input_manager.add_hotkey(new_key, self.toggle_windows, suppressed=True)
+        self.toggle_key_id = self.input_manager.add_hotkey(new_key, self.toggle_windows, suppressed=True)
 
     def toggle_windows(self):
         self.toggle.emit(self.is_hidden, False)
@@ -104,12 +104,12 @@ class App(QObject):
         tray_icon.setToolTip('Quol')
         tray_menu = QMenu()
 
-        hide_action = QAction('Hide', self)
-        hide_action.triggered.connect(self.hide)
-        tray_menu.addAction(hide_action)
+        close_all_action = QAction('Close', self)
+        close_all_action.triggered.connect(self.close_all)
+        tray_menu.addAction(close_all_action)
 
         reload_action = QAction('Reload', self)
-        reload_action.triggered.connect(self.restart)
+        reload_action.triggered.connect(self.reload)
         tray_menu.addAction(reload_action)
 
         quit_action = QAction('Quit', self)
@@ -120,20 +120,20 @@ class App(QObject):
         tray_icon.show()
 
     def exit_app(self):
-        self.hide()
+        self.close_all()
         QApplication.quit()
 
-    def hide(self):
+    def close_all(self):
         for w in self.windows:
             self.toggle.disconnect(w.toggle_windows)
             w.close()
 
         self.windows.clear()
-        self.toggle_key_key = None
+        self.toggle_key_id = None
         self.input_manager.stop()
 
-    def restart(self):
-        self.hide()
+    def reload(self):
+        self.close_all()
 
         self.load_settings()
         self.load_style_sheet()

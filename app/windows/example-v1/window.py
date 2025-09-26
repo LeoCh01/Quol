@@ -1,5 +1,4 @@
 from PySide6.QtWidgets import QLabel
-from pynput.keyboard import Listener
 
 from lib.quol_window import QuolMainWindow
 from lib.window_loader import WindowInfo, WindowContext
@@ -23,17 +22,14 @@ class MainWindow(QuolMainWindow):
         self.number = QLabel(add_to_str(self.config['a'], self.config['b']))
         self.layout.addWidget(self.number)
 
+        # input_manager allows listening to keyboard and mouse events
         self.key_label = QLabel("Last Key: None")
         self.layout.addWidget(self.key_label)
-        self.start_key_listener()
+        self.window_context.input_manager.add_key_press_listener(self.on_key_press)
 
     def on_update_config(self):
         # This method is called when the config is updated.
         self.number.setText(add_to_str(self.config['a'], self.config['b']))
-
-    def start_key_listener(self):
-        self.listener = Listener(on_press=self.on_key_press)
-        self.listener.start()
 
     def on_key_press(self, key):
         try:

@@ -7,9 +7,6 @@ VK_TO_STR = {
     0x08: 'backspace',
     0x09: 'tab',
     0x0D: 'enter',
-    0x10: 'shift',
-    0x11: 'ctrl',
-    0x12: 'alt',
     0x13: 'pause',
     0x14: 'caps_lock',
     0x1B: 'esc',
@@ -110,13 +107,17 @@ VK_TO_STR = {
     0xDD: ']',
     0xDE: '\'',
 
-    # Modifier keys
+    # Modifier keys ?
     0xA0: 'shift',
     0xA1: 'shift_r',
     0xA2: 'ctrl',
     0xA3: 'ctrl_r',
     0xA4: 'alt',
     0xA5: 'alt_r',
+
+    # 0x10: 'shift',
+    # 0x11: 'ctrl',
+    # 0x12: 'alt',
 }
 
 STR_TO_VK = {v: k for k, v in VK_TO_STR.items()}
@@ -178,46 +179,47 @@ class GlobalInputManager:
         self.hotkey_callbacks[key] = (combo, callback, suppressed)
         return key
 
-    def remove_hotkey(self, key):
-        print('removing hotkey', key)
-        print(self.hotkey_callbacks)
-        self.hotkey_callbacks.pop(key, None)
+    def remove_hotkey(self, uid):
+        self.hotkey_callbacks.pop(uid, None)
 
     def add_key_press_listener(self, callback, suppressed=tuple()):
-        key = str(uuid.uuid4())
-        self.key_press_callbacks[key] = (callback, suppressed)
-        return key
+        uid = str(uuid.uuid4())
+        self.key_press_callbacks[uid] = (callback, suppressed)
+        return uid
 
-    def remove_key_press_listener(self, key):
-        self.key_press_callbacks.pop(key, None)
+    def remove_key_press_listener(self, uid):
+        self.key_press_callbacks.pop(uid, None)
 
     def add_key_release_listener(self, callback, suppressed=tuple()):
-        key = str(uuid.uuid4())
-        self.key_release_callbacks[key] = (callback, suppressed)
-        return key
+        uid = str(uuid.uuid4())
+        self.key_release_callbacks[uid] = (callback, suppressed)
+        return uid
 
-    def remove_key_release_listener(self, key):
-        self.key_release_callbacks.pop(key, None)
+    def remove_key_release_listener(self, uid):
+        self.key_release_callbacks.pop(uid, None)
 
     def add_mouse_move_listener(self, callback):
-        key = str(uuid.uuid4())
-        self.mouse_move_callbacks[key] = callback
-        return key
+        uid = str(uuid.uuid4())
+        self.mouse_move_callbacks[uid] = callback
+        return uid
 
-    def remove_mouse_move_listener(self, key):
-        self.mouse_move_callbacks.pop(key, None)
+    def remove_mouse_move_listener(self, uid):
+        self.mouse_move_callbacks.pop(uid, None)
 
     def add_mouse_click_listener(self, callback):
-        key = str(uuid.uuid4())
-        self.mouse_click_callbacks[key] = callback
-        return key
+        uid = str(uuid.uuid4())
+        self.mouse_click_callbacks[uid] = callback
+        return uid
 
-    def remove_mouse_click_listener(self, key):
-        self.mouse_click_callbacks.pop(key, None)
+    def remove_mouse_click_listener(self, uid):
+        self.mouse_click_callbacks.pop(uid, None)
 
     def start(self):
         if self._running:
             return
+        if self._listeners_thread and self._listeners_thread.is_alive():
+            return
+
         self._running = True
         self._listeners_thread = threading.Thread(target=self._run_listeners, daemon=True)
         self._listeners_thread.start()

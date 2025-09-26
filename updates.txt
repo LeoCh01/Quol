@@ -1,7 +1,7 @@
 CURRENT
+- global event hooks for keypresses and mouse clicks
 
 TODO
-- global event hooks for keypresses and mouse clicks
 - python 3.14 migration
 - add tooltips
 - figure out why key hooks stop working after a while

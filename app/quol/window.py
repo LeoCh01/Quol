@@ -27,7 +27,7 @@ class MainWindow(QuolMainWindow):
         self.ver.clicked.connect(self.open_url)
 
         self.reload = QPushButton('Reload')
-        self.reload.clicked.connect(self.app.restart)
+        self.reload.clicked.connect(self.app.reload)
 
         self.q = QPushButton('Quit')
         self.q.setStyleSheet('background-color: #c44; color: white;')
@@ -57,7 +57,7 @@ class MainWindow(QuolMainWindow):
     def on_update_config(self):
         self.toggle_startup()
         self.config_to_settings()
-        self.app.restart()
+        self.app.reload()
 
     @staticmethod
     def open_url():
