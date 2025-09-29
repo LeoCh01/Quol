@@ -1,6 +1,7 @@
 import threading
 import uuid
 from pynput.keyboard import Listener as KeyboardListener
+from pynput.keyboard import Controller
 from pynput.mouse import Listener as MouseListener
 
 VK_TO_STR = {
@@ -131,7 +132,10 @@ class GlobalInputManager:
         self.mouse_move_callbacks = {}  # {key: callback_fn}
         self.mouse_click_callbacks = {}  # {key: callback_fn}
 
+        self._key_controller = Controller()
+
         self._pressed_keys = set()
+        self._active_hotkeys = set()
         self._keyboard_listener = None
         self._mouse_listener = None
         self._listeners_thread = None
@@ -151,15 +155,19 @@ class GlobalInputManager:
                 self._pressed_keys.add(key.lower())
 
             # Check hotkeys
-            for hotkey in self.hotkey_callbacks.values():
-                combo, cb, supp = hotkey
+            for hotkey_id, (combo, cb, supp) in self.hotkey_callbacks.items():
                 hotkey_keys = set(combo.split('+'))
                 if hotkey_keys.issubset(self._pressed_keys):
-                    cb()
-                    if supp:
-                        self._keyboard_listener.suppress_event()
+                    if hotkey_id not in self._active_hotkeys:
+                        self._active_hotkeys.add(hotkey_id)
+                        cb()
+                        if supp:
+                            self._keyboard_listener.suppress_event()
+                else:
+                    self._active_hotkeys.discard(hotkey_id)
 
             run(self.key_press_callbacks)
+
         elif msg == 257:  # WM_KEYUP
             if key:
                 self._pressed_keys.discard(key.lower())
@@ -182,7 +190,7 @@ class GlobalInputManager:
     def remove_hotkey(self, uid):
         self.hotkey_callbacks.pop(uid, None)
 
-    def add_key_press_listener(self, callback, suppressed=tuple()):
+    def add_key_press_listener(self, callback, suppressed: tuple = ()):
         uid = str(uuid.uuid4())
         self.key_press_callbacks[uid] = (callback, suppressed)
         return uid
@@ -190,7 +198,7 @@ class GlobalInputManager:
     def remove_key_press_listener(self, uid):
         self.key_press_callbacks.pop(uid, None)
 
-    def add_key_release_listener(self, callback, suppressed=tuple()):
+    def add_key_release_listener(self, callback, suppressed: tuple = ()):
         uid = str(uuid.uuid4())
         self.key_release_callbacks[uid] = (callback, suppressed)
         return uid
@@ -213,6 +221,15 @@ class GlobalInputManager:
 
     def remove_mouse_click_listener(self, uid):
         self.mouse_click_callbacks.pop(uid, None)
+
+    def send_keys(self, combo: str):
+        keys = combo.lower().split('+')
+
+        for k in keys:
+            try:
+                self._key_controller.type(k)
+            except ValueError:
+                pass
 
     def start(self):
         if self._running:

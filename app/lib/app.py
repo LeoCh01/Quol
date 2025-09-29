@@ -63,6 +63,7 @@ class App(QObject):
         plugin = SystemWindowLoader()
         plugin.load()
         self.windows.append(plugin.create_window(context, self))
+        working_windows = []
 
         for name in self.settings.get('windows'):
             print('loading ' + name)
@@ -70,7 +71,11 @@ class App(QObject):
             if not plugin.load():
                 print(f'Failed to load window {name}. Skipping...')
                 continue
+            working_windows.append(name)
             self.windows.append(plugin.create_window(context))
+
+        self.settings['windows'] = working_windows
+        self.save_settings()
 
         for window in self.windows:
             self.toggle.connect(window.toggle_windows)
