@@ -1,7 +1,6 @@
 import threading
 import uuid
-from pynput.keyboard import Listener as KeyboardListener
-from pynput.keyboard import Controller
+from pynput.keyboard import Listener as KeyboardListener, Key, Controller
 from pynput.mouse import Listener as MouseListener
 
 VK_TO_STR = {
@@ -123,6 +122,48 @@ VK_TO_STR = {
 
 STR_TO_VK = {v: k for k, v in VK_TO_STR.items()}
 
+STR_TO_PY = {
+    'backspace': Key.backspace,
+    'tab': Key.tab,
+    'enter': Key.enter,
+    'pause': Key.pause,
+    'caps_lock': Key.caps_lock,
+    'esc': Key.esc,
+    ' ': Key.space,
+    'space': Key.space,
+    'page_up': Key.page_up,
+    'page_down': Key.page_down,
+    'end': Key.end,
+    'home': Key.home,
+    'left': Key.left,
+    'up': Key.up,
+    'right': Key.right,
+    'down': Key.down,
+    'print_screen': Key.print_screen,
+    'insert': Key.insert,
+    'delete': Key.delete,
+
+    'f1': Key.f1,
+    'f2': Key.f2,
+    'f3': Key.f3,
+    'f4': Key.f4,
+    'f5': Key.f5,
+    'f6': Key.f6,
+    'f7': Key.f7,
+    'f8': Key.f8,
+    'f9': Key.f9,
+    'f10': Key.f10,
+    'f11': Key.f11,
+    'f12': Key.f12,
+
+    'shift': Key.shift,
+    'shift_r': Key.shift_r,
+    'ctrl': Key.ctrl,
+    'ctrl_r': Key.ctrl_r,
+    'alt': Key.alt,
+    'alt_r': Key.alt_r,
+}
+
 
 class GlobalInputManager:
     def __init__(self):
@@ -140,38 +181,47 @@ class GlobalInputManager:
         self._mouse_listener = None
         self._listeners_thread = None
         self._running = False
+        self.send_event = False
 
     def _win32_event_filter(self, msg, data):
         def run(callbacks_dict):
-            for callback, suppressed in callbacks_dict.values():
+            for callback, suppressed in list(callbacks_dict.values()):
                 callback(key)
                 if key in suppressed:
-                    self._keyboard_listener.suppress_event()
+                    self._filter_suppressed = True
+
+        if self.send_event:
+            return
 
         key = VK_TO_STR.get(data.vkCode, '')
+        self._filter_suppressed = False
 
         if msg == 256:  # WM_KEYDOWN
             if key:
                 self._pressed_keys.add(key.lower())
 
             # Check hotkeys
-            for hotkey_id, (combo, cb, supp) in self.hotkey_callbacks.items():
+            for hid, (combo, cb, supp) in self.hotkey_callbacks.items():
                 hotkey_keys = set(combo.split('+'))
                 if hotkey_keys.issubset(self._pressed_keys):
-                    if hotkey_id not in self._active_hotkeys:
-                        self._active_hotkeys.add(hotkey_id)
+                    if hid not in self._active_hotkeys:
+                        self._active_hotkeys.add(hid)
                         cb()
                         if supp:
-                            self._keyboard_listener.suppress_event()
+                            self._filter_suppressed = True
                 else:
-                    self._active_hotkeys.discard(hotkey_id)
-
+                    self._active_hotkeys.discard(hid)
             run(self.key_press_callbacks)
 
         elif msg == 257:  # WM_KEYUP
             if key:
                 self._pressed_keys.discard(key.lower())
+            if not self._pressed_keys:
+                self._active_hotkeys.clear()
             run(self.key_release_callbacks)
+
+        if self._filter_suppressed:
+            self._keyboard_listener.suppress_event()
 
     def _on_mouse_move(self, x, y):
         for callback in self.mouse_move_callbacks.values():
@@ -225,11 +275,20 @@ class GlobalInputManager:
     def send_keys(self, combo: str):
         keys = combo.lower().split('+')
 
+        self.send_event = True
         for k in keys:
             try:
-                self._key_controller.type(k)
+                k = STR_TO_PY.get(k, k)
+                self._key_controller.press(k)
             except ValueError:
                 pass
+        for k in reversed(keys):
+            try:
+                k = STR_TO_PY.get(k, k)
+                self._key_controller.release(k)
+            except ValueError:
+                pass
+        self.send_event = False
 
     def start(self):
         if self._running:

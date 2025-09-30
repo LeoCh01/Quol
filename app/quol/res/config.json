@@ -13,7 +13,8 @@
     "windows": [
       "chat-v3",
       "macro-v1",
-      "keymap-v2"
+      "keymap-v2",
+      "color_picker-v1"
     ],
     "name": "Quol"
   }
