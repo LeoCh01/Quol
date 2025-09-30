@@ -2,7 +2,7 @@
   "startup": false,
   "reset_pos": true,
   "toggle_key": "`",
-  "transition": "down",
+  "transition": "rand",
   "_": {
     "geometry": [
       10,
@@ -10,12 +10,7 @@
       180,
       1
     ],
-    "windows": [
-      "chat-v3",
-      "macro-v1",
-      "keymap-v2",
-      "color_picker-v1"
-    ],
+    "windows": [],
     "name": "Quol"
   }
 }

@@ -1,17 +1,12 @@
 {
   "name": "Quol",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "versatile tool for windows.",
   "startup": false,
   "toggle_key": "`",
   "style": "dark",
-  "transition": "down",
+  "transition": "rand",
   "is_default_pos": true,
-  "windows_dir": "./../../Quol Tools/src",
-  "windows": [
-    "chat-v3",
-    "macro-v1",
-    "keymap-v2",
-    "color_picker-v1"
-  ]
+  "windows_dir": "./windows",
+  "windows": []
 }
