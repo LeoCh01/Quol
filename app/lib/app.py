@@ -9,7 +9,7 @@ from lib.global_input_manager import GlobalInputManager
 from lib.io_helpers import read_text, read_json, write_json
 from lib.quol_window import QuolMainWindow
 from lib.transition_loader import TransitionLoader
-from lib.window_loader import WindowLoader, WindowContext, SystemWindowLoader
+from lib.window_loader import ToolLoader, WindowContext, SystemToolLoader
 
 
 class App(QObject):
@@ -18,11 +18,11 @@ class App(QObject):
     def __init__(self):
         super().__init__()
 
-        self.windows: List[QuolMainWindow] = []
+        self.tools: List[QuolMainWindow] = []
         self.settings: Optional[dict] = None
         self.load_settings()
 
-        self.windows_dir = self.settings.get('windows_dir', './windows')
+        self.tools_dir = self.settings.get('tools_dir', './tools')
         self.is_hidden: bool = False
         self.is_reset: bool = self.settings.get('is_default_pos', True)
 
@@ -30,7 +30,7 @@ class App(QObject):
         self.input_manager.start()
 
         self.load_style_sheet()
-        self.load_windows()
+        self.load_tools()
         self.setup_tray_icon()
 
         self.toggle_key: str = str(self.settings.get('toggle_key', '`'))
@@ -56,41 +56,41 @@ class App(QObject):
     def get_is_hidden(self):
         return self.is_hidden
 
-    def load_windows(self):
+    def load_tools(self):
         transition_plugin = self.load_transition()
-        context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin, self.get_is_hidden, self.input_manager)
+        context = WindowContext(self.toggle, self.toggle_tools, self.toggle_tools_instant, self.settings, transition_plugin, self.get_is_hidden, self.input_manager)
 
-        plugin = SystemWindowLoader()
+        plugin = SystemToolLoader()
         plugin.load()
-        self.windows.append(plugin.create_window(context, self))
-        working_windows = []
+        self.tools.append(plugin.create_window(context, self))
+        working_tools = []
 
-        for name in self.settings.get('windows'):
+        for name in self.settings.get('tools'):
             print('loading ' + name)
-            plugin = WindowLoader(name, self.windows_dir)
+            plugin = ToolLoader(name, self.tools_dir)
             if not plugin.load():
                 print(f'Failed to load window {name}. Skipping...')
                 continue
-            working_windows.append(name)
-            self.windows.append(plugin.create_window(context))
+            working_tools.append(name)
+            self.tools.append(plugin.create_window(context))
 
-        self.settings['windows'] = working_windows
+        self.settings['tools'] = working_tools
         self.save_settings()
 
-        for window in self.windows:
+        for window in self.tools:
             self.toggle.connect(window.toggle_windows)
             window.show()
 
     def reset_hotkey(self, new_key: str):
         self.input_manager.remove_hotkey(self.toggle_key_id)
         self.toggle_key = new_key
-        self.toggle_key_id = self.input_manager.add_hotkey(new_key, self.toggle_windows, suppressed=True)
+        self.toggle_key_id = self.input_manager.add_hotkey(new_key, self.toggle_tools, suppressed=True)
 
-    def toggle_windows(self):
+    def toggle_tools(self):
         self.toggle.emit(self.is_hidden, False)
         self.is_hidden = not self.is_hidden
 
-    def toggle_windows_instant(self, show):
+    def toggle_tools_instant(self, show):
         self.toggle.emit(show, True)
 
     def set_toggle_key(self, key):
@@ -129,11 +129,11 @@ class App(QObject):
         QApplication.quit()
 
     def close_all(self):
-        for w in self.windows:
+        for w in self.tools:
             self.toggle.disconnect(w.toggle_windows)
             w.close()
 
-        self.windows.clear()
+        self.tools.clear()
         self.toggle_key_id = None
         self.input_manager.stop()
 
@@ -148,7 +148,7 @@ class App(QObject):
         self.is_reset = self.settings.get('is_default_pos', True)
         self.is_hidden = False
 
-        self.load_windows()
+        self.load_tools()
 
     @staticmethod
     def add_to_startup(app_name: str, app_path: str) -> bool:

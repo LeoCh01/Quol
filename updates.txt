@@ -1,11 +1,11 @@
 CURRENT
 - global event hooks for key and mouse events
+- fix toggle key not working over time
 - add version dependency check
 - remove tool from settings if tool does not exist
 
 TODO
 - python 3.14 migration
 - add tooltips
-- figure out why key hooks stop working after a while
 - make process table update on click
 - fix fps on rec
