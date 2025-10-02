@@ -1,6 +1,6 @@
 CURRENT
 - global event hooks for key and mouse events
-- fix toggle key not working over time
+- fix toggle key not working overtime
 - add version dependency check
 - remove tool from settings if tool does not exist
 
