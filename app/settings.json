@@ -1,12 +1,13 @@
 {
   "name": "Quol",
-  "version": "3.1.0",
-  "description": "versatile tool for windows.",
+  "version": "3.2.0",
+  "description": "versatile toolbox for windows.",
   "startup": false,
   "toggle_key": "`",
   "style": "dark",
   "transition": "rand",
   "is_default_pos": true,
-  "windows_dir": "./windows",
-  "windows": []
+  "tools_dir": "./tools",
+  "tools": [],
+  "show_updates": true
 }

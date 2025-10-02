@@ -2,26 +2,19 @@
 
 ## Overview
 
-Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, designed to serve as a versatile helper tool for Windows. The tool provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
+Quol (Quick-Tool) is an overlay desktop application built using **PySide6**, designed to serve as a versatile toolbox for Windows. The toolbox provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
 
 ## Features
-
-Tools can be installed using the built-in store or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository
 
 - **Chat:** Run AI prompts on your screen.
 - **Draw:** Draw and annotate on your screen.
 - **Key mapper:** Create key bindings to custom actions.
 - **Color Picker:** Select and copy HEX color values on your screen.
-- **CMD Runner:** Save and execute custom command line instructions.
-- **Clipboard:** Store copy history and sticky notes.
-- **Request:** Test API requests.
-- **Record:** Record screen.
-- **Chance:** Flip a coin, roll a dice.
-- **Customize:** Create and Add custom windows without rebuilding.
 
-This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences.
+This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences. More features can be found in the built-in store or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository.
 
-<img src="demo/snip.png" width="500">
+[//]: # '<img src="demo/snip.png" width="500">'
+
 <table>
   <tr>
     <td><img src="demo/quol-chat.gif" width="250"></td>
@@ -58,17 +51,10 @@ To run the application locally or build it as a standalone executable, follow th
    git clone https://github.com/LeoCh01/quol.git
    ```
 
-2. **Set up the Python environment (Python 3.12 recommended):**
-
-   - Create a virtual environment in project directory:
+2. **Set up the Python environment (Python 3.12 or greater recommended):**
 
    ```bash
    python -m venv .venv
-   ```
-
-   - Activate the virtual environment:
-
-   ```bash
    .venv\Scripts\activate
    ```
 
@@ -96,20 +82,19 @@ To run the application locally or build it as a standalone executable, follow th
 
 ## Adding Custom Tools
 
-To create a new tool, you can add a folder to the `windows` directory and add the folder name in the `settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
+To create a new tool, you can add a folder to the `tools` directory and add the folder name in the `settings.json` file. You can use the template provided in `tools/example` folder as a starting point.
 
 ```
 example/
 ├── windows.py
-├── config.json (optional)
-├── res/ (optional)
+├── res/config.json
 └── lib/ (optional)
 ```
 
 - `windows.py`: main window script.
-- `config.json`: configurations linked to window script.
 - `res/`: images and other miscellaneous items.
-- `lib/`: additional libraries/scripts if needed.
+- `res/config.json`: configurations linked to window script.
+- `lib/`: additional libraries/scripts to be dynamically loaded.
 
 By following these steps, you can easily add custom tools without rebuilding the application.
 

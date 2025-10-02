@@ -8,11 +8,11 @@ from PySide6.QtCore import Signal
 from lib.io_helpers import read_json, write_json
 
 
-class WindowLoader:
-    def __init__(self, name, windows_dir='windows'):
+class ToolLoader:
+    def __init__(self, name, tools_dir):
         self.name = name
         self.module = None
-        self.path = os.path.abspath(os.getcwd() + f'\\{windows_dir}\\{name}')
+        self.path = os.path.abspath(os.getcwd() + f'\\{tools_dir}\\{name}')
 
     def load(self):
         module_path = os.path.join(self.path, 'window.py')
@@ -40,9 +40,9 @@ class WindowLoader:
         return self.module.MainWindow(WindowInfo(self.path), context)
 
 
-class SystemWindowLoader(WindowLoader):
+class SystemToolLoader(ToolLoader):
     def __init__(self):
-        super().__init__('quol')
+        super().__init__('quol', '')
         self.path = f'{os.getcwd()}\\quol'
 
     def create_window(self, context, app=None):
@@ -62,10 +62,11 @@ class WindowInfo:
 
 
 class WindowContext:
-    def __init__(self, toggle: Signal(bool, bool), toggle_windows, toggle_windows_instant, settings, transition_plugin, get_is_hidden):
+    def __init__(self, toggle: Signal(bool, bool), toggle_tools, toggle_tools_instant, settings, transition_plugin, get_is_hidden, input_manager):
         self.toggle = toggle
-        self.toggle_windows = toggle_windows
-        self.toggle_windows_instant = toggle_windows_instant
+        self.toggle_windows = toggle_tools
+        self.toggle_windows_instant = toggle_tools_instant
         self.transition_plugin = transition_plugin
         self.settings = settings
         self.get_is_hidden = get_is_hidden
+        self.input_manager = input_manager

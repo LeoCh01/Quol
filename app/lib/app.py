@@ -1,16 +1,16 @@
+import os
 import winreg
-
-import keyboard
 from typing import List, Optional
 
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 
+from lib.global_input_manager import GlobalInputManager
 from lib.io_helpers import read_text, read_json, write_json
 from lib.quol_window import QuolMainWindow
 from lib.transition_loader import TransitionLoader
-from lib.window_loader import WindowLoader, WindowContext, SystemWindowLoader
+from lib.window_loader import ToolLoader, WindowContext, SystemToolLoader
 
 
 class App(QObject):
@@ -19,27 +19,30 @@ class App(QObject):
     def __init__(self):
         super().__init__()
 
-        self.windows: List[QuolMainWindow] = []
+        self.tools: List[QuolMainWindow] = []
         self.settings: Optional[dict] = None
         self.load_settings()
 
-        self.windows_dir = self.settings.get('windows_dir', './windows')
+        self.tools_dir = self.settings.get('tools_dir', './tools')
         self.is_hidden: bool = False
         self.is_reset: bool = self.settings.get('is_default_pos', True)
 
+        self.input_manager = GlobalInputManager()
+        self.input_manager.start()
+
         self.load_style_sheet()
-        self.load_windows()
+        self.load_tools()
         self.setup_tray_icon()
 
         self.toggle_key: str = str(self.settings.get('toggle_key', '`'))
-        self.toggle_hotkey = None
+        self.toggle_key_id = None
         self.reset_hotkey(self.toggle_key)
 
     def save_settings(self):
         write_json('settings.json', self.settings)
 
     def load_settings(self):
-        self.settings = read_json('settings.json')
+        self.settings = read_json(os.getcwd() + '/settings.json')
 
     def load_style_sheet(self):
         stylesheet = read_text(f'res/styles/{self.settings.get("style")}/styles.qss')
@@ -54,38 +57,41 @@ class App(QObject):
     def get_is_hidden(self):
         return self.is_hidden
 
-    def load_windows(self):
+    def load_tools(self):
         transition_plugin = self.load_transition()
-        context = WindowContext(self.toggle, self.toggle_windows, self.toggle_windows_instant, self.settings, transition_plugin, self.get_is_hidden)
+        context = WindowContext(self.toggle, self.toggle_tools, self.toggle_tools_instant, self.settings, transition_plugin, self.get_is_hidden, self.input_manager)
 
-        plugin = SystemWindowLoader()
+        plugin = SystemToolLoader()
         plugin.load()
-        self.windows.append(plugin.create_window(context, self))
+        self.tools.append(plugin.create_window(context, self))
+        working_tools = []
 
-        for name in self.settings.get('windows'):
+        for name in self.settings.get('tools'):
             print('loading ' + name)
-            plugin = WindowLoader(name, self.windows_dir)
+            plugin = ToolLoader(name, self.tools_dir)
             if not plugin.load():
                 print(f'Failed to load window {name}. Skipping...')
                 continue
-            self.windows.append(plugin.create_window(context))
+            working_tools.append(name)
+            self.tools.append(plugin.create_window(context))
 
-        for window in self.windows:
+        self.settings['tools'] = working_tools
+        self.save_settings()
+
+        for window in self.tools:
             self.toggle.connect(window.toggle_windows)
             window.show()
 
     def reset_hotkey(self, new_key: str):
-        if self.toggle_hotkey:
-            keyboard.remove_hotkey(self.toggle_hotkey)
-
+        self.input_manager.remove_hotkey(self.toggle_key_id)
         self.toggle_key = new_key
-        self.toggle_hotkey = keyboard.add_hotkey(new_key, self.toggle_windows, suppress=True)
+        self.toggle_key_id = self.input_manager.add_hotkey(new_key, self.toggle_tools, suppressed=True)
 
-    def toggle_windows(self):
+    def toggle_tools(self):
         self.toggle.emit(self.is_hidden, False)
         self.is_hidden = not self.is_hidden
 
-    def toggle_windows_instant(self, show):
+    def toggle_tools_instant(self, show):
         self.toggle.emit(show, True)
 
     def set_toggle_key(self, key):
@@ -104,12 +110,12 @@ class App(QObject):
         tray_icon.setToolTip('Quol')
         tray_menu = QMenu()
 
-        hide_action = QAction('Hide', self)
-        hide_action.triggered.connect(self.hide)
-        tray_menu.addAction(hide_action)
+        close_all_action = QAction('Close', self)
+        close_all_action.triggered.connect(self.close_all)
+        tray_menu.addAction(close_all_action)
 
         reload_action = QAction('Reload', self)
-        reload_action.triggered.connect(self.restart)
+        reload_action.triggered.connect(self.reload)
         tray_menu.addAction(reload_action)
 
         quit_action = QAction('Quit', self)
@@ -120,32 +126,33 @@ class App(QObject):
         tray_icon.show()
 
     def exit_app(self):
-        self.hide()
+        self.close_all()
         QApplication.quit()
 
-    def hide(self):
-        for w in self.windows:
+    def close_all(self):
+        for w in self.tools:
             self.toggle.disconnect(w.toggle_windows)
             w.close()
 
-        self.windows.clear()
-        self.toggle_hotkey = None
-        keyboard.unhook_all()
+        self.tools.clear()
+        self.toggle_key_id = None
+        self.input_manager.stop()
 
-    def restart(self):
-        self.hide()
+    def reload(self):
+        self.close_all()
 
         self.load_settings()
         self.load_style_sheet()
 
+        self.input_manager.start()
         self.reset_hotkey(str(self.settings.get('toggle_key', '`')))
         self.is_reset = self.settings.get('is_default_pos', True)
         self.is_hidden = False
 
-        self.load_windows()
+        self.load_tools()
 
     @staticmethod
-    def add_to_startup(self, app_name: str, app_path: str) -> bool:
+    def add_to_startup(app_name: str, app_path: str) -> bool:
         try:
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
@@ -179,7 +186,7 @@ class App(QObject):
             return False
 
     @staticmethod
-    def is_in_startup(self, app_name: str) -> bool:
+    def is_in_startup(app_name: str) -> bool:
         try:
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,

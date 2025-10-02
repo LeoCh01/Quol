@@ -17,8 +17,8 @@ class MainWindow(QuolMainWindow):
     def __init__(self, app, window_info: WindowInfo, window_context: WindowContext):
         super().__init__('Quol', window_info, window_context, default_geometry=(10, 10, 180, 1))
 
-        self.windows_dir = os.path.abspath(os.getcwd() + window_context.settings.get('windows_dir', '\\windows'))
-        print(self.windows_dir)
+        self.tools_dir = os.path.abspath(os.getcwd() + window_context.settings.get('tools_dir', './tools'))
+        print(self.tools_dir)
 
         self.app = app
         self.settings_to_config()
@@ -27,14 +27,14 @@ class MainWindow(QuolMainWindow):
         self.ver.clicked.connect(self.open_url)
 
         self.reload = QPushButton('Reload')
-        self.reload.clicked.connect(self.app.restart)
+        self.reload.clicked.connect(self.app.reload)
 
         self.q = QPushButton('Quit')
         self.q.setStyleSheet('background-color: #c44; color: white;')
         self.q.clicked.connect(self.app.exit_app)
 
-        self.manager = QPushButton('Manage Windows')
-        self.manager.clicked.connect(self.show_manage_windows)
+        self.manager = QPushButton('Manage Tools')
+        self.manager.clicked.connect(self.show_manage_tools)
 
         self.grid_layout = QGridLayout()
         self.grid_layout.addWidget(self.ver, 0, 0, 1, 2)
@@ -44,20 +44,20 @@ class MainWindow(QuolMainWindow):
 
         self.layout.addLayout(self.grid_layout)
 
-        self.manage_windows_window = None
+        self.manage_tools_tool = None
 
         self.app_name = self.config['_']['name']
         self.app_path = self.get_app_path()
 
-    def show_manage_windows(self):
-        if self.manage_windows_window is None:
-            self.manage_windows_window = ManageWindow(self)
-        self.manage_windows_window.show()
+    def show_manage_tools(self):
+        if self.manage_tools_tool is None:
+            self.manage_tools_tool = ManageWindow(self)
+        self.manage_tools_tool.show()
 
     def on_update_config(self):
         self.toggle_startup()
         self.config_to_settings()
-        self.app.restart()
+        self.app.reload()
 
     @staticmethod
     def open_url():
@@ -72,7 +72,7 @@ class MainWindow(QuolMainWindow):
         self.app.settings['toggle_key'] = self.config['toggle_key']
         self.app.settings['transition'] = self.config['transition']
         self.app.settings['startup'] = self.config['startup']
-        self.app.settings['windows'] = self.config['_']['windows']
+        self.app.settings['tools'] = self.config['_']['tools']
         self.app.save_settings()
 
     def settings_to_config(self):
@@ -81,7 +81,7 @@ class MainWindow(QuolMainWindow):
         self.config['transition'] = self.app.settings['transition']
         self.config['startup'] = self.app.settings['startup']
         self.config['_']['name'] = self.app.settings['name']
-        self.config['_']['windows'] = self.app.settings['windows']
+        self.config['_']['tools'] = self.app.settings['tools']
 
         write_json(self.window_info.config_path, self.config)
 
@@ -98,15 +98,15 @@ class MainWindow(QuolMainWindow):
 
     def closeEvent(self, event):
         super().closeEvent(event)
-        if self.manage_windows_window is not None:
-            self.manage_windows_window.close()
+        if self.manage_tools_tool is not None:
+            self.manage_tools_tool.close()
 
 
 class ManageWindow(QuolSubWindow):
     def __init__(self, main_window):
-        super().__init__(main_window, "Manage Windows")
+        super().__init__(main_window, "Manage Tools")
         self.setGeometry(300, 300, 400, 400)
-        self.windows_dir = main_window.windows_dir
+        self.tools_dir = main_window.tools_dir
 
         self.tabs = QTabWidget()
         self.installed_tab = QWidget()
@@ -124,6 +124,9 @@ class ManageWindow(QuolSubWindow):
     def setup_installed_tab(self):
         self.installed_layout = QVBoxLayout()
         self.list_widget = QListWidget()
+        select_all_checkbox = QCheckBox(" Select All")
+        select_all_checkbox.stateChanged.connect(self.on_update_checkbox_all)
+        self.installed_layout.addWidget(select_all_checkbox)
         self.installed_layout.addWidget(self.list_widget)
         self.installed_tab.setLayout(self.installed_layout)
         self.refresh_list()
@@ -136,15 +139,17 @@ class ManageWindow(QuolSubWindow):
         self.refresh_store_list()
 
     def refresh_list(self):
-        if not os.path.exists(self.windows_dir):
-            os.makedirs(self.windows_dir)
+        if not os.path.exists(self.tools_dir):
+            os.makedirs(self.tools_dir)
 
-        installed = [name for name in os.listdir(self.windows_dir)
-                     if os.path.isdir(os.path.join(self.windows_dir, name))
+        installed = [name for name in os.listdir(self.tools_dir)
+                     if os.path.isdir(os.path.join(self.tools_dir, name))
                      and not name.startswith('__') and name != 'quol']
-        active = self.main_window.config['_']['windows']
+        active = self.main_window.config['_']['tools']
 
         self.list_widget.clear()
+
+        self.checkbox_list = []
 
         for window in sorted(installed):
             if '-v' in window:
@@ -164,8 +169,8 @@ class ManageWindow(QuolSubWindow):
             status_label = QLabel("Active" if window in active else "Inactive")
             checkbox = QCheckBox()
             checkbox.setChecked(window in active)
-
             checkbox.stateChanged.connect(lambda s, w=window, sl=status_label: self.on_update_checkbox(s, w, sl))
+            self.checkbox_list.append(checkbox)
 
             layout.addWidget(name_label)
             layout.addStretch()
@@ -180,12 +185,16 @@ class ManageWindow(QuolSubWindow):
     def on_update_checkbox(self, checked, w, status_label):
         status_label.setText("Active" if checked else "Inactive")
 
-        if checked and w not in self.main_window.config['_']['windows']:
-            self.main_window.config['_']['windows'].append(w)
-        elif not checked and w in self.main_window.config['_']['windows']:
-            self.main_window.config['_']['windows'].remove(w)
+        if checked and w not in self.main_window.config['_']['tools']:
+            self.main_window.config['_']['tools'].append(w)
+        elif not checked and w in self.main_window.config['_']['tools']:
+            self.main_window.config['_']['tools'].remove(w)
 
         self.main_window.config_to_settings()
+
+    def on_update_checkbox_all(self, state):
+        for checkbox in self.checkbox_list:
+            checkbox.setChecked(state == 2)
 
     def refresh_store_list(self):
         worker = Worker(get_store_items)
@@ -194,7 +203,7 @@ class ManageWindow(QuolSubWindow):
         def on_finished(store_items):
             self.store_list_widget.clear()
 
-            installed = [name for name in os.listdir(self.windows_dir) if os.path.isdir(os.path.join(self.windows_dir, name))]
+            installed = [name for name in os.listdir(self.tools_dir) if os.path.isdir(os.path.join(self.tools_dir, name))]
 
             for entry in sorted(store_items, key=lambda x: x['name']):
                 raw_name = entry['name']
@@ -256,7 +265,7 @@ class ManageWindow(QuolSubWindow):
         button.setDisabled(True)
         button.setText("Installing...")
 
-        worker = Worker(download_item, name, self.windows_dir)
+        worker = Worker(download_item, name, self.tools_dir)
         self.workers.append(worker)
 
         def on_finished(result):
@@ -272,11 +281,11 @@ class ManageWindow(QuolSubWindow):
         button.setDisabled(True)
         button.setText("Updating...")
 
-        if old_name in self.main_window.config['_']['windows']:
-            self.main_window.config['_']['windows'].remove(old_name)
-            self.main_window.config['_']['windows'].append(new_name)
+        if old_name in self.main_window.config['_']['tools']:
+            self.main_window.config['_']['tools'].remove(old_name)
+            self.main_window.config['_']['tools'].append(new_name)
 
-        worker = Worker(update_item, new_name, old_name, self.windows_dir)
+        worker = Worker(update_item, new_name, old_name, self.tools_dir)
         self.workers.append(worker)
 
         def on_finished(result):
