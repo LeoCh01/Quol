@@ -8,5 +8,6 @@
   "transition": "rand",
   "is_default_pos": true,
   "tools_dir": "./tools",
-  "tools": []
+  "tools": [],
+  "show_updates": true
 }

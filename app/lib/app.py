@@ -1,3 +1,4 @@
+import os
 import winreg
 from typing import List, Optional
 
@@ -41,7 +42,7 @@ class App(QObject):
         write_json('settings.json', self.settings)
 
     def load_settings(self):
-        self.settings = read_json('settings.json')
+        self.settings = read_json(os.getcwd() + '/settings.json')
 
     def load_style_sheet(self):
         stylesheet = read_text(f'res/styles/{self.settings.get("style")}/styles.qss')
