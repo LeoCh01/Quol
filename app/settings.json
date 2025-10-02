@@ -5,8 +5,8 @@
   "startup": false,
   "toggle_key": "`",
   "style": "dark",
-  "transition": "down",
+  "transition": "rand",
   "is_default_pos": true,
-  "tools_dir": "./../../Quol Tools/src",
+  "tools_dir": "./tools",
   "tools": []
 }
