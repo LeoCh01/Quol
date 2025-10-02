@@ -10,17 +10,7 @@
       180,
       1
     ],
-    "tools": [
-      "color_picker",
-      "chance",
-      "chat",
-      "draw",
-      "keymap",
-      "request",
-      "macro",
-      "run_command",
-      "clipboard"
-    ],
+    "tools": [],
     "name": "Quol"
   }
 }

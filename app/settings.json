@@ -8,15 +8,5 @@
   "transition": "down",
   "is_default_pos": true,
   "tools_dir": "./../../Quol Tools/src",
-  "tools": [
-    "color_picker",
-    "chance",
-    "chat",
-    "draw",
-    "keymap",
-    "request",
-    "macro",
-    "run_command",
-    "clipboard"
-  ]
+  "tools": []
 }

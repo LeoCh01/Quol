@@ -124,6 +124,9 @@ class ManageWindow(QuolSubWindow):
     def setup_installed_tab(self):
         self.installed_layout = QVBoxLayout()
         self.list_widget = QListWidget()
+        select_all_checkbox = QCheckBox(" Select All")
+        select_all_checkbox.stateChanged.connect(self.on_update_checkbox_all)
+        self.installed_layout.addWidget(select_all_checkbox)
         self.installed_layout.addWidget(self.list_widget)
         self.installed_tab.setLayout(self.installed_layout)
         self.refresh_list()
@@ -146,6 +149,8 @@ class ManageWindow(QuolSubWindow):
 
         self.list_widget.clear()
 
+        self.checkbox_list = []
+
         for window in sorted(installed):
             if '-v' in window:
                 name_part, version = window.rsplit('-v', 1)
@@ -164,8 +169,8 @@ class ManageWindow(QuolSubWindow):
             status_label = QLabel("Active" if window in active else "Inactive")
             checkbox = QCheckBox()
             checkbox.setChecked(window in active)
-
             checkbox.stateChanged.connect(lambda s, w=window, sl=status_label: self.on_update_checkbox(s, w, sl))
+            self.checkbox_list.append(checkbox)
 
             layout.addWidget(name_label)
             layout.addStretch()
@@ -186,6 +191,10 @@ class ManageWindow(QuolSubWindow):
             self.main_window.config['_']['tools'].remove(w)
 
         self.main_window.config_to_settings()
+
+    def on_update_checkbox_all(self, state):
+        for checkbox in self.checkbox_list:
+            checkbox.setChecked(state == 2)
 
     def refresh_store_list(self):
         worker = Worker(get_store_items)

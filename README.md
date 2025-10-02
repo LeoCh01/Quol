@@ -2,7 +2,7 @@
 
 ## Overview
 
-Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, designed to serve as a versatile helper tool for Windows. The tool provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
+Quol (Quick-Tool) is a top-layer desktop application built using **PySide6**, designed to serve as a versatile toolbox for Windows. The toolbox provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
 
 ## Features
 
@@ -82,7 +82,7 @@ To run the application locally or build it as a standalone executable, follow th
 
 ## Adding Custom Tools
 
-To create a new tool, you can add a folder to the `windows` directory and add the folder name in the `settings.json` file. You can use the template provided in `windows/example` folder as a starting point.
+To create a new tool, you can add a folder to the `tools` directory and add the folder name in the `settings.json` file. You can use the template provided in `tools/example` folder as a starting point.
 
 ```
 example/
