@@ -12,7 +12,7 @@ from lib.io_helpers import read_json, write_json
 from lib.loading_screen import LoadingScreen
 
 CURRENT_DIR = os.getcwd()
-BRANCH = 'main'
+BRANCH = '3.3-lib-updater'
 
 
 def initialize_logging():
@@ -58,7 +58,11 @@ def check_for_update():
         response.raise_for_status()
         data = response.json()
 
-        return data['version'] if data['version'] != settings['version'] else ''
+        v1 = '.'.join(settings['version'].split('.')[:2])
+        v2 = '.'.join(data['version'].split('.')[:2])
+
+        return data['version'] if v2 != v1 else ''
+
     except Exception as e:
         logging.error(f'Update check failed: {e}')
         return ''
@@ -151,8 +155,8 @@ class AppLauncher(QWidget):
         self.close()
 
     def on_continue_clicked(self):
-        self.on_continue()
         self.hide()
+        self.on_continue()
         QTimer.singleShot(100, self.close)
 
     def mousePressEvent(self, event: QMouseEvent):
