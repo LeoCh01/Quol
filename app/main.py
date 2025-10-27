@@ -3,7 +3,10 @@ import logging
 import requests
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QFrame, QCheckBox
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QPushButton, QVBoxLayout,
+    QLabel, QHBoxLayout, QFrame, QCheckBox
+)
 from PySide6.QtGui import QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 
@@ -11,17 +14,10 @@ from lib.app import App
 from lib.io_helpers import read_json, write_json
 from lib.loading_screen import LoadingScreen
 
-CURRENT_DIR = os.getcwd()
 BRANCH = '3.3-lib-updater'
 
 
 def initialize_logging():
-    # logging.basicConfig(
-    #     filename='info.log',
-    #     filemode='a',
-    #     level=logging.INFO,
-    #     format='%(message)s',
-    # )
     logging.basicConfig(
         filename='error.log',
         filemode='a',
@@ -40,7 +36,6 @@ def initialize_main_app():
         app_instance = App()
 
         splash.close()
-
         return app_instance
 
     except Exception as e:
@@ -48,24 +43,24 @@ def initialize_main_app():
         return None
 
 
-def check_for_update():
+def check_for_update() -> tuple:  # version, is_new_patch_version
     try:
         settings = read_json(os.getcwd() + '/settings.json')
         if not settings.get('show_updates', True):
-            return ''
+            return '', ''
 
         response = requests.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
         response.raise_for_status()
         data = response.json()
 
-        v1 = '.'.join(settings['version'].split('.')[:2])
-        v2 = '.'.join(data['version'].split('.')[:2])
+        v1 = settings['version'].split('.')
+        v2 = data['version'].split('.')
 
-        return data['version'] if v2 != v1 else ''
+        return data['version'] if v2[:2] != v1[:2] else '', data['version'] if v2[-1] != v1[-1] else ''
 
     except Exception as e:
         logging.error(f'Update check failed: {e}')
-        return ''
+        return '', ''
 
 
 def on_dont_show_changed(state):
@@ -81,6 +76,7 @@ class CustomTitleBar(QFrame):
         self.setStyleSheet('background-color: #222;')
 
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(8, 0, 8, 0)
 
         self.title = QLabel('Launcher')
         self.title.setStyleSheet('color: white; font-weight: bold;')
@@ -94,8 +90,12 @@ class CustomTitleBar(QFrame):
 
 
 class AppLauncher(QWidget):
-    def __init__(self, version, on_continue_callback):
+    def __init__(self, major, patch, on_continue_callback):
         super().__init__()
+        self.version = major or patch
+        self.on_continue = on_continue_callback
+        self.drag_pos = QPoint()
+
         self.setWindowTitle('Updater')
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setFixedSize(300, 175)
@@ -125,10 +125,16 @@ class AppLauncher(QWidget):
         self.layout.addWidget(self.title_bar)
         self.title_bar.close_btn.clicked.connect(self.close)
 
+        if major:
+            self.init_major_update_ui()
+        else:
+            self.init_patch_update_ui()
+
+    def init_major_update_ui(self):
         self.main_content = QFrame()
         content_layout = QVBoxLayout(self.main_content)
 
-        self.label = QLabel(f'New update available! (v{version})')
+        self.label = QLabel(f'New update available! (v{self.version})')
         content_layout.addWidget(self.label)
 
         self.update_btn = QPushButton('Go to Releases')
@@ -146,12 +152,33 @@ class AppLauncher(QWidget):
 
         self.layout.addWidget(self.main_content)
 
-        self.drag_pos = QPoint()
-        self.version = version
-        self.on_continue = on_continue_callback
+    def init_patch_update_ui(self):
+        self.main_content = QFrame()
+        content_layout = QVBoxLayout(self.main_content)
+
+        self.label = QLabel(f'Patch update available! (v{self.version})')
+        content_layout.addWidget(self.label)
+
+        self.update_btn = QPushButton('Update')
+        self.update_btn.clicked.connect(self.on_patch_update)
+        content_layout.addWidget(self.update_btn)
+
+        self.cont_btn = QPushButton('Continue without Updating')
+        self.cont_btn.clicked.connect(self.on_continue_clicked)
+        content_layout.addWidget(self.cont_btn)
+
+        self.dont_show = QCheckBox("Don't show this again")
+        self.dont_show.stateChanged.connect(lambda state: on_dont_show_changed(state))
+        self.dont_show.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+        content_layout.addWidget(self.dont_show)
+
+        self.layout.addWidget(self.main_content)
 
     def on_update_clicked(self):
         QDesktopServices.openUrl(QUrl("https://github.com/LeoCh01/Quol/releases/latest"))
+        self.close()
+
+    def on_patch_update(self):  # TODO
         self.close()
 
     def on_continue_clicked(self):
@@ -180,10 +207,10 @@ def main():
 
     app = QApplication([])
 
-    new_version = check_for_update()
+    major, patch = check_for_update()
 
-    if new_version:
-        launcher = AppLauncher(new_version, initialize_main_app)
+    if major or patch:
+        launcher = AppLauncher(major, patch, initialize_main_app)
         launcher.show()
     else:
         initialize_main_app()
