@@ -350,3 +350,5 @@ class GlobalInputManager:
             self._mouse_listener = m_listener
             k_listener.join()
             m_listener.join()
+
+            
