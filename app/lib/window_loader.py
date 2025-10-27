@@ -11,11 +11,8 @@ from lib.io_helpers import read_json, write_json
 
 class ToolLoader:
     def __init__(self, name, tools_dir):
-class ToolLoader:
-    def __init__(self, name, tools_dir):
         self.name = name
         self.module = None
-        self.path = os.path.abspath(os.getcwd() + f'\\{tools_dir}\\{name}')
         self.path = os.path.abspath(os.getcwd() + f'\\{tools_dir}\\{name}')
 
     def load(self):
@@ -45,9 +42,7 @@ class ToolLoader:
 
 
 class SystemToolLoader(ToolLoader):
-class SystemToolLoader(ToolLoader):
     def __init__(self):
-        super().__init__('quol', '')
         super().__init__('quol', '')
         self.path = f'{os.getcwd()}\\quol'
 
@@ -69,10 +64,7 @@ class WindowInfo:
 
 class WindowContext:
     def __init__(self, toggle: Signal(bool, bool), toggle_tools, toggle_tools_instant, settings, transition_plugin, get_is_hidden, input_manager):
-    def __init__(self, toggle: Signal(bool, bool), toggle_tools, toggle_tools_instant, settings, transition_plugin, get_is_hidden, input_manager):
         self.toggle = toggle
-        self.toggle_windows = toggle_tools
-        self.toggle_windows_instant = toggle_tools_instant
         self.toggle_windows = toggle_tools
         self.toggle_windows_instant = toggle_tools_instant
         self.transition_plugin = transition_plugin

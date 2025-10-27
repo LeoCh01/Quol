@@ -4,7 +4,12 @@
   "toggle_key": "`",
   "transition": "down",
   "_": {
-    "geometry": [10, 10, 180, 1],
+    "geometry": [
+      10,
+      10,
+      180,
+      1
+    ],
     "tools": [
       "anime",
       "chance",
