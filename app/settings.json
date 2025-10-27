@@ -5,9 +5,21 @@
   "startup": false,
   "toggle_key": "`",
   "style": "dark",
-  "transition": "rand",
+  "transition": "down",
   "is_default_pos": true,
-  "tools_dir": "./tools",
-  "tools": [],
+  "tools_dir": "./../../Quol Tools/src",
+  "tools": [
+    "anime",
+    "chance",
+    "chat",
+    "clipboard",
+    "color_picker",
+    "draw",
+    "keymap",
+    "macro",
+    "request",
+    "run_command",
+    "timer"
+  ],
   "show_updates": true
 }
