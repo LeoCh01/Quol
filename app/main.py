@@ -1,12 +1,14 @@
+import io
 import os
 import logging
+import shutil
+import zipfile
+
+import httpx
 import requests
 import sys
 
-from PySide6.QtWidgets import (
-    QApplication, QWidget, QPushButton, QVBoxLayout,
-    QLabel, QHBoxLayout, QFrame, QCheckBox
-)
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QFrame, QCheckBox
 from PySide6.QtGui import QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 
@@ -67,6 +69,61 @@ def on_dont_show_changed(state):
     settings = read_json(os.getcwd() + '/settings.json')
     settings['show_updates'] = (state != 2)
     write_json(os.getcwd() + '/settings.json', settings)
+
+
+async def download_item(item: str) -> bool:
+    raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/main/{item}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(raw_url)
+            response.raise_for_status()
+            zip_file = io.BytesIO(response.content)
+
+        with zipfile.ZipFile(zip_file, "r") as zip_ref:
+            zip_ref.extractall(os.getcwd())
+
+        print(f"Successfully extracted {item}")
+        return True
+
+    except httpx.RequestError as e:
+        print(f"Error downloading the file: {e}")
+        return False
+    except zipfile.BadZipFile as e:
+        print(f"Error: Invalid zip file: {e}")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return False
+
+
+async def update_patch() -> bool:
+
+    for d in ['res', 'lib', 'quol', 'transitions']:
+        item_path = os.path.join(os.getcwd(), d)
+
+        try:
+            is_downloaded = await download_item(d)
+
+            if os.path.exists(item_path + '/res/config.json'):
+                print(f"Item {item_path} requires app version {v} or higher.")
+                if os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+                else:
+                    os.remove(item_path)
+                return False
+
+            if os.path.exists(item_path):
+                if os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+                else:
+                    os.remove(item_path)
+
+            return is_downloaded
+
+        except Exception as e:
+            print(f"Error updating {item_path}: {e}")
+            return False
 
 
 class CustomTitleBar(QFrame):
