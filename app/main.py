@@ -1,3 +1,4 @@
+import asyncio
 import io
 import os
 import logging
@@ -71,8 +72,8 @@ def on_dont_show_changed(state):
     write_json(os.getcwd() + '/settings.json', settings)
 
 
-async def download_item(item: str) -> bool:
-    raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/main/{item}"
+async def download_patch(item: str) -> bool:
+    raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/modules/{item}"
 
     try:
         async with httpx.AsyncClient() as client:
@@ -83,7 +84,7 @@ async def download_item(item: str) -> bool:
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
             zip_ref.extractall(os.getcwd())
 
-        print(f"Successfully extracted {item}")
+        print(f"Successfully extracted {item} to {os.getcwd()}")
         return True
 
     except httpx.RequestError as e:
@@ -98,32 +99,36 @@ async def download_item(item: str) -> bool:
 
 
 async def update_patch() -> bool:
+    manifest = read_json(os.getcwd() + '/manifest.json')
 
-    for d in ['res', 'lib', 'quol', 'transitions']:
-        item_path = os.path.join(os.getcwd(), d)
+    try:
+        response = requests.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/manifest.json')
+        response.raise_for_status()
+        manifest_new = response.json()
+    except Exception as e:
+        print(f"Failed to fetch manifest: {e}")
+        return False
+
+    for k, v in manifest['versions'].items():
+        if manifest_new['versions'].get(k, v) == v:
+            continue
+
+        item_path = f'{os.getcwd()}/{k}'
 
         try:
-            is_downloaded = await download_item(d)
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+            else:
+                os.remove(item_path)
 
-            if os.path.exists(item_path + '/res/config.json'):
-                print(f"Item {item_path} requires app version {v} or higher.")
-                if os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
-                else:
-                    os.remove(item_path)
-                return False
-
-            if os.path.exists(item_path):
-                if os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
-                else:
-                    os.remove(item_path)
-
-            return is_downloaded
+            await download_patch(f'{k}-v{manifest_new["versions"][k]}.zip')
 
         except Exception as e:
             print(f"Error updating {item_path}: {e}")
             return False
+
+    write_json(os.getcwd() + '/manifest.json', manifest_new)
+    return True
 
 
 class CustomTitleBar(QFrame):
@@ -217,7 +222,7 @@ class AppLauncher(QWidget):
         content_layout.addWidget(self.label)
 
         self.update_btn = QPushButton('Update')
-        self.update_btn.clicked.connect(self.on_patch_update)
+        self.update_btn.clicked.connect(lambda: QTimer.singleShot(0, lambda: asyncio.run(self.on_patch_update())))
         content_layout.addWidget(self.update_btn)
 
         self.cont_btn = QPushButton('Continue without Updating')
@@ -235,8 +240,46 @@ class AppLauncher(QWidget):
         QDesktopServices.openUrl(QUrl("https://github.com/LeoCh01/Quol/releases/latest"))
         self.close()
 
-    def on_patch_update(self):  # TODO
-        self.close()
+    async def on_patch_update(self):
+        self.label.setText("Updating...")
+        self.update_btn.setEnabled(False)
+        self.cont_btn.setEnabled(False)
+        self.dont_show.setEnabled(False)
+        QApplication.processEvents()
+
+        success = await update_patch()
+
+        self.update_btn.hide()
+        self.cont_btn.hide()
+        self.dont_show.hide()
+
+        self.countdown_label = QLabel("")
+        self.countdown_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+        self.countdown_label.setContentsMargins(0, 0, 10, 10)
+        self.layout.addWidget(self.countdown_label)
+
+        if success:
+            self.label.setText("Update complete. Please reopen the app.")
+        else:
+            self.label.setText("Update failed. Please try again later.")
+
+        QApplication.processEvents()
+
+        # Countdown before closing
+        self.seconds_left = 10
+        self.countdown_label.setText(f"This window will close in {self.seconds_left}s")
+
+        def update_countdown():
+            self.seconds_left -= 1
+            if self.seconds_left > 0:
+                self.countdown_label.setText(f"This window will close in {self.seconds_left}s")
+            else:
+                self.close_timer.stop()
+                self.close()
+
+        self.close_timer = QTimer(self)
+        self.close_timer.timeout.connect(update_countdown)
+        self.close_timer.start(1000)
 
     def on_continue_clicked(self):
         self.hide()
