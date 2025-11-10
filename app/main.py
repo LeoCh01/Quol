@@ -17,7 +17,7 @@ from lib.app import App
 from lib.io_helpers import read_json, write_json
 from lib.loading_screen import LoadingScreen
 
-BRANCH = '3.3-lib-updater'
+BRANCH = 'main'
 
 
 def initialize_logging():

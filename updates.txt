@@ -1,9 +1,8 @@
 CURRENT
-- dynamic lib files
+- dynamic lib updates
 - more input manager options
 
 TODO
-- dynamic lib updates
 - python 3.14 multithreading
 - add tooltips
 

@@ -59,7 +59,7 @@ exe2 = EXE(
     [],
     exclude_binaries=True,
     name='Quol',
-    debug=True,
+    debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     console=False,
