@@ -7,19 +7,9 @@
   "style": "dark",
   "transition": "down",
   "is_default_pos": true,
-  "tools_dir": "./../../Quol Tools/src",
+  "tools_dir": "./tools",
   "tools": [
-    "anime",
-    "chance",
-    "chat",
-    "clipboard",
-    "color_picker",
-    "draw",
-    "keymap",
-    "macro",
-    "request",
-    "run_command",
-    "timer"
+
   ],
   "show_updates": true
 }

@@ -72,7 +72,7 @@ def on_dont_show_changed(state):
     write_json(os.getcwd() + '/settings.json', settings)
 
 
-async def download_patch(item: str) -> bool:
+async def download_patch(item: str, is_pkg=False) -> bool:
     raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/modules/{item}"
 
     try:
@@ -82,9 +82,9 @@ async def download_patch(item: str) -> bool:
             zip_file = io.BytesIO(response.content)
 
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            zip_ref.extractall(os.getcwd())
+            zip_ref.extractall(f'{os.getcwd()}/{"_internal" if is_pkg else ""}')
 
-        print(f"Successfully extracted {item} to {os.getcwd()}")
+        print(f'Successfully extracted {item} to {os.getcwd()}/{"_internal" if is_pkg else ""}')
         return True
 
     except httpx.RequestError as e:
@@ -109,11 +109,11 @@ async def update_patch() -> bool:
         print(f"Failed to fetch manifest: {e}")
         return False
 
-    for k, v in manifest['versions'].items():
-        if manifest_new['versions'].get(k, v) == v:
+    for k, v in manifest_new['versions'].items():
+        if manifest['versions'].get(k, v) == v:
             continue
 
-        item_path = f'{os.getcwd()}/{k}'
+        item_path = f'{os.getcwd()}/' + (f'_internal/{k[1:]}' if k[0] == '*' else k)
 
         try:
             if os.path.isdir(item_path):
@@ -121,7 +121,7 @@ async def update_patch() -> bool:
             else:
                 os.remove(item_path)
 
-            await download_patch(f'{k}-v{manifest_new["versions"][k]}.zip')
+            await download_patch(f'{k[1:] if k[0] == '*' else k}-v{manifest_new["versions"][k]}.zip', k[0] == '*')
 
         except Exception as e:
             print(f"Error updating {item_path}: {e}")
