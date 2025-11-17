@@ -1,6 +1,7 @@
 CURRENT
 - dynamic lib updates
 - more input manager options
+- overall bugfixes
 
 TODO
 - python 3.14 multithreading
