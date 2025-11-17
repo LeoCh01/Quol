@@ -290,6 +290,30 @@ class GlobalInputManager:
                 pass
         self.send_event = False
 
+    def send_press(self, combo: str):
+        keys = combo.lower().split('+')
+
+        self.send_event = True
+        for k in keys:
+            try:
+                k = STR_TO_PY.get(k, k)
+                self._key_controller.press(k)
+            except ValueError:
+                pass
+        self.send_event = False
+
+    def send_release(self, combo: str):
+        keys = combo.lower().split('+')
+
+        self.send_event = True
+        for k in keys:
+            try:
+                k = STR_TO_PY.get(k, k)
+                self._key_controller.release(k)
+            except ValueError:
+                pass
+        self.send_event = False
+
     def start(self):
         if self._running:
             return

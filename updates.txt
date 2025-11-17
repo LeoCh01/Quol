@@ -1,11 +1,10 @@
 CURRENT
-- global event hooks for key and mouse events
-- fix toggle key not working overtime
-- add version dependency check
-- remove tool from settings if tool does not exist
+- dynamic lib updates
+- more input manager options
+- manifest file for app updates
+- overall bugfixes
 
 TODO
 - python 3.14 multithreading
 - add tooltips
-- make process table update on click
-- fix fps on rec
+

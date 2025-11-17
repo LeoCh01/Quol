@@ -2,7 +2,7 @@
   "startup": false,
   "reset_pos": true,
   "toggle_key": "`",
-  "transition": "rand",
+  "transition": "down",
   "_": {
     "geometry": [
       10,
@@ -10,7 +10,19 @@
       180,
       1
     ],
-    "tools": [],
+    "tools": [
+      "anime",
+      "chance",
+      "chat",
+      "clipboard",
+      "color_picker",
+      "draw",
+      "keymap",
+      "macro",
+      "request",
+      "run_command",
+      "timer"
+    ],
     "name": "Quol"
   }
 }

@@ -6,12 +6,7 @@ Quol (Quick-Tool) is an overlay desktop application built using **PySide6**, des
 
 ## Features
 
-- **Chat:** Run AI prompts on your screen.
-- **Draw:** Draw and annotate on your screen.
-- **Key mapper:** Create key bindings to custom actions.
-- **Color Picker:** Select and copy HEX color values on your screen.
-
-This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences. More features can be found in the built-in store or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository.
+This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences. All Features can be found in the built-in store or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository.
 
 [//]: # '<img src="demo/snip.png" width="500">'
 
@@ -70,14 +65,6 @@ To run the application locally or build it as a standalone executable, follow th
 
    ```bash
    python app/main.py
-   ```
-
-5. **Building the Executable (Optional):**
-
-   - you can also build the exe yourself by installing `pyinstaller` and using the `quol.spec` file
-
-   ```bash
-     pyinstaller quol.spec
    ```
 
 ## Adding Custom Tools

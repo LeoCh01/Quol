@@ -4,7 +4,7 @@ a2 = Analysis(
     ['app/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('app/lib', 'lib')],
+    datas=[],
     hiddenimports=[
         'ollama',
         'markdown',

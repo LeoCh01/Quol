@@ -5,6 +5,7 @@ import importlib
 
 from PySide6.QtCore import Signal
 
+from lib.global_input_manager import GlobalInputManager
 from lib.io_helpers import read_json, write_json
 
 
@@ -69,4 +70,4 @@ class WindowContext:
         self.transition_plugin = transition_plugin
         self.settings = settings
         self.get_is_hidden = get_is_hidden
-        self.input_manager = input_manager
+        self.input_manager: GlobalInputManager = input_manager
