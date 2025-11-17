@@ -1,6 +1,7 @@
 CURRENT
 - dynamic lib updates
 - more input manager options
+- manifest file for app updates
 - overall bugfixes
 
 TODO
