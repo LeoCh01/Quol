@@ -2,7 +2,7 @@ import os
 import sys
 
 from PySide6.QtCore import QUrl, QSize
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
 
@@ -11,6 +11,7 @@ from lib.quol_window import QuolMainWindow, QuolSubWindow
 from lib.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
+from lib.notes import NotesWindow
 
 
 class MainWindow(QuolMainWindow):
@@ -23,8 +24,17 @@ class MainWindow(QuolMainWindow):
         self.app = app
         self.settings_to_config()
 
+        self.manager = QPushButton('Manage Tools')
+        self.manager.clicked.connect(self.show_manage_tools)
+
         self.ver = QPushButton(f'v{self.app.settings['version']}')
         self.ver.clicked.connect(self.open_url)
+
+        self.admin_notes = NotesWindow(self, window_context.settings.get('admin_key'))
+        self.admin_notes_icon = QIcon(self.window_info.path + '/res/img/notes.svg')
+        self.admin_notes_btn = QPushButton()
+        self.admin_notes_btn.clicked.connect(self.on_admin_notes)
+        self.admin_notes_btn.setIcon(self.admin_notes_icon)
 
         self.reload = QPushButton('Reload')
         self.reload.clicked.connect(self.app.reload)
@@ -33,12 +43,10 @@ class MainWindow(QuolMainWindow):
         self.q.setStyleSheet('background-color: #c44; color: white;')
         self.q.clicked.connect(self.app.exit_app)
 
-        self.manager = QPushButton('Manage Tools')
-        self.manager.clicked.connect(self.show_manage_tools)
-
         self.grid_layout = QGridLayout()
-        self.grid_layout.addWidget(self.ver, 0, 0, 1, 2)
-        self.grid_layout.addWidget(self.manager, 1, 0, 1, 2)
+        self.grid_layout.addWidget(self.manager, 0, 0, 1, 2)
+        self.grid_layout.addWidget(self.ver, 1, 0, 1, 1)
+        self.grid_layout.addWidget(self.admin_notes_btn, 1, 1, 1, 1)
         self.grid_layout.addWidget(self.reload, 2, 0)
         self.grid_layout.addWidget(self.q, 2, 1)
 
@@ -58,6 +66,11 @@ class MainWindow(QuolMainWindow):
         self.toggle_startup()
         self.config_to_settings()
         self.app.reload()
+
+    def on_admin_notes(self):
+        self.admin_notes.show()
+        self.admin_notes.raise_()
+        self.admin_notes.activateWindow()
 
     @staticmethod
     def open_url():

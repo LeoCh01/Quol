@@ -10,19 +10,7 @@
       180,
       1
     ],
-    "tools": [
-      "anime",
-      "chance",
-      "chat",
-      "clipboard",
-      "color_picker",
-      "draw",
-      "keymap",
-      "macro",
-      "request",
-      "run_command",
-      "timer"
-    ],
+    "tools": [],
     "name": "Quol"
   }
 }

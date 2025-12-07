@@ -1,6 +1,6 @@
 {
   "versions": {
-    "quol": 1,
+    "quol": 2,
     "*lib": 1,
     "res": 1,
     "transitions": 1
