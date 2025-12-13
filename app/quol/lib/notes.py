@@ -1,3 +1,4 @@
+import requests
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
@@ -7,6 +8,8 @@ from PySide6.QtWidgets import (
 
 from lib.quol_window import QuolSubWindow
 
+BASE_URL = 'https://leo-s-website-backend-695678049922.northamerica-northeast2.run.app/quol'
+
 
 class NotesWindow(QuolSubWindow):
     def __init__(self, main_window, admin_key=None):
@@ -14,6 +17,7 @@ class NotesWindow(QuolSubWindow):
 
         self.admin_key = admin_key
         self.edit_mode = False
+        self.is_diff = False
 
         screen = QGuiApplication.primaryScreen().geometry()
         self.setGeometry(QRect(screen.width() // 2 - 200, screen.height() // 2 - 200, 400, 400))
@@ -47,27 +51,42 @@ class NotesWindow(QuolSubWindow):
         self.layout.addWidget(self.container)
 
     @staticmethod
-    def fetch_notes_from_api():
-        return (
-            "### Admin Notes\n"
-            "- Hard-coded API response.\n"
-            "- Replace fetch_notes_from_api() with server request.\n"
-        )
+    def get_notes():
+        try:
+            response = requests.get(f'{BASE_URL}/notes')
+            response.raise_for_status()
+            text = response.text
+            return text
+        except requests.RequestException:
+            return "Error fetching notes from server."
+
+    def save_notes(self):
+        if not self.admin_key or not self.is_diff:
+            return False
+
+        try:
+            response = requests.post(f'{BASE_URL}/notes/{self.admin_key}', json={"notes": self.get_text()})
+            response.raise_for_status()
+            return True
+        except requests.RequestException:
+            return False
 
     def refresh_data(self):
-        new_text = self.fetch_notes_from_api()
+        new_text = self.get_notes()
         self.view_widget.setPlainText(new_text)
         self.edit_widget.setPlainText(new_text)
 
     def toggle_mode(self):
-        if not self.admin_key:
-            return
-
         self.edit_mode = not self.edit_mode
+        self.is_diff = self.view_widget.toPlainText() != self.edit_widget.toPlainText()
+
         if self.edit_mode:
             self.enable_edit_mode()
         else:
             self.enable_view_mode()
+
+            if not self.save_notes():
+                print("Error saving notes to server.")
 
     def enable_edit_mode(self):
         pos = self.view_widget.verticalScrollBar().value()
@@ -87,12 +106,6 @@ class NotesWindow(QuolSubWindow):
         QApplication.processEvents()
         self.view_widget.verticalScrollBar().setValue(pos)
         self.toggle_btn.setText("Edit")
-
-    def set_text(self, text):
-        if self.edit_mode:
-            self.edit_widget.setPlainText(text)
-        else:
-            self.view_widget.setPlainText(text)
 
     def get_text(self):
         return self.edit_widget.toPlainText() if self.edit_mode else self.view_widget.toPlainText()
