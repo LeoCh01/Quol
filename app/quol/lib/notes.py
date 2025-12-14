@@ -1,26 +1,38 @@
-import requests
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
-    QApplication, QTextBrowser, QTextEdit,
-    QPushButton, QWidget, QVBoxLayout, QHBoxLayout
+    QApplication,
+    QTextBrowser,
+    QTextEdit,
+    QPushButton,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
 )
 
 from lib.quol_window import QuolSubWindow
-
-BASE_URL = 'https://leo-s-website-backend-695678049922.northamerica-northeast2.run.app/quol'
+from worker import Worker
+from api import fetch_notes, post_notes
 
 
 class NotesWindow(QuolSubWindow):
     def __init__(self, main_window, admin_key=None):
-        super().__init__(main_window, 'Admin Notes')
+        super().__init__(main_window, "Admin Notes")
 
         self.admin_key = admin_key
         self.edit_mode = False
         self.is_diff = False
+        self.worker = None
 
         screen = QGuiApplication.primaryScreen().geometry()
-        self.setGeometry(QRect(screen.width() // 2 - 200, screen.height() // 2 - 200, 400, 400))
+        self.setGeometry(
+            QRect(
+                screen.width() // 2 - 200,
+                screen.height() // 2 - 200,
+                400,
+                400,
+            )
+        )
 
         self.view_widget = QTextBrowser()
         self.view_widget.setOpenExternalLinks(False)
@@ -38,6 +50,7 @@ class NotesWindow(QuolSubWindow):
         if not self.admin_key:
             self.toggle_btn.hide()
 
+        # Layouts
         button_bar = QHBoxLayout()
         button_bar.addWidget(self.refresh_btn)
         button_bar.addWidget(self.toggle_btn)
@@ -50,31 +63,48 @@ class NotesWindow(QuolSubWindow):
 
         self.layout.addWidget(self.container)
 
-    @staticmethod
-    def get_notes():
-        try:
-            response = requests.get(f'{BASE_URL}/notes')
-            response.raise_for_status()
-            text = response.text
-            return text
-        except requests.RequestException:
-            return "Error fetching notes from server."
+    def set_text(self, text=''):
+        self.view_widget.setPlainText(text)
+        self.edit_widget.setPlainText(text)
+
+    def refresh_data(self):
+        self.refresh_btn.setEnabled(False)
+        self.set_text("Loading notes from server...")
+
+        self.worker = Worker(fetch_notes)
+        self.worker.finished.connect(self.on_notes_loaded)
+        self.worker.error.connect(self.on_worker_error)
+        self.worker.start()
+
+    def on_notes_loaded(self, text):
+        self.refresh_btn.setEnabled(True)
+        self.view_widget.setPlainText(text)
+        self.edit_widget.setPlainText(text)
 
     def save_notes(self):
         if not self.admin_key or not self.is_diff:
-            return False
+            return
 
-        try:
-            response = requests.post(f'{BASE_URL}/notes/{self.admin_key}', json={"notes": self.get_text()})
-            response.raise_for_status()
-            return True
-        except requests.RequestException:
-            return False
+        self.toggle_btn.setEnabled(False)
+        text = self.get_text()
+        self.set_text("Saving notes to server...")
 
-    def refresh_data(self):
-        new_text = self.get_notes()
-        self.view_widget.setPlainText(new_text)
-        self.edit_widget.setPlainText(new_text)
+        self.worker = Worker(
+            post_notes,
+            self.admin_key,
+            text,
+        )
+
+        self.worker.finished.connect(lambda result: self.on_notes_saved(result, text))
+        self.worker.error.connect(self.on_worker_error)
+        self.worker.start()
+
+    def on_notes_saved(self, success, text=''):
+        self.toggle_btn.setEnabled(True)
+        self.set_text(text)
+
+        if not success:
+            print("Error saving notes to server.")
 
     def toggle_mode(self):
         self.edit_mode = not self.edit_mode
@@ -84,31 +114,43 @@ class NotesWindow(QuolSubWindow):
             self.enable_edit_mode()
         else:
             self.enable_view_mode()
-
-            if not self.save_notes():
-                print("Error saving notes to server.")
+            self.save_notes()
 
     def enable_edit_mode(self):
         pos = self.view_widget.verticalScrollBar().value()
         self.edit_widget.setPlainText(self.view_widget.toPlainText())
+
         self.view_widget.hide()
         self.edit_widget.show()
+
         QApplication.processEvents()
         self.edit_widget.verticalScrollBar().setValue(pos)
+
         self.toggle_btn.setText("View")
 
     def enable_view_mode(self):
         pos = self.edit_widget.verticalScrollBar().value()
         text = self.edit_widget.toPlainText()
+
         self.view_widget.setPlainText(text)
         self.edit_widget.hide()
         self.view_widget.show()
+
         QApplication.processEvents()
         self.view_widget.verticalScrollBar().setValue(pos)
+
         self.toggle_btn.setText("Edit")
 
     def get_text(self):
-        return self.edit_widget.toPlainText() if self.edit_mode else self.view_widget.toPlainText()
+        if self.edit_mode:
+            return self.edit_widget.toPlainText()
+        return self.view_widget.toPlainText()
+
+    def on_worker_error(self, error):
+        self.refresh_btn.setEnabled(True)
+        self.toggle_btn.setEnabled(True)
+        print("Worker error:", error)
+        self.view_widget.setPlainText("Error communicating with server.")
 
     def showEvent(self, event):
         self.refresh_data()

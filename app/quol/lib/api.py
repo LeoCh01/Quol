@@ -6,6 +6,8 @@ import os
 from typing import List, Dict, Optional
 from lib.io_helpers import read_json
 
+BASE_URL = 'https://leo-s-website-backend-695678049922.northamerica-northeast2.run.app/quol'
+
 
 async def get_store_items() -> Optional[List[Dict]]:
     url = "https://api.github.com/repos/LeoCh01/Quol-Tools/contents/tools?ref=main"
@@ -85,3 +87,20 @@ async def update_item(new_item_name: str, old_item_name: str, path: str) -> bool
     except Exception as e:
         print(f"Error updating {old_item_name} to {new_item_name}: {e}")
         return False
+
+
+async def fetch_notes():
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(f'{BASE_URL}/notes')
+        r.raise_for_status()
+        return r.text
+
+
+async def post_notes(admin_key, notes):
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.post(
+            f'{BASE_URL}/notes/{admin_key}',
+            json={"notes": notes}
+        )
+        r.raise_for_status()
+        return True
