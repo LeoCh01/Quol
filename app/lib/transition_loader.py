@@ -17,6 +17,14 @@ class TransitionLoader:
         self.module = None
         self.path = f'{os.getcwd()}\\transitions\\{self.name}'
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.cleanup()
+        # Do not suppress exceptions
+        return False
+
     def load(self):
         module_path = self.path + '\\transition.py'
         if not os.path.exists(module_path):
@@ -30,3 +38,21 @@ class TransitionLoader:
 
     def create_transition(self, window: QuolBaseWindow):
         return self.module.Transition(TransitionInfo(self.path), window)
+
+    def cleanup(self):
+        """Unload the transition module and perform optional teardown."""
+        if self.module is not None:
+            try:
+                if hasattr(self.module, 'teardown'):
+                    # Allow transition module to release resources if it defines a teardown hook
+                    self.module.teardown()
+            except Exception:
+                logging.exception('Error during transition module teardown')
+            finally:
+                # Remove the dynamically loaded module from sys.modules
+                if self.name in sys.modules:
+                    try:
+                        del sys.modules[self.name]
+                    except Exception:
+                        logging.exception('Failed to remove transition module from sys.modules')
+                self.module = None

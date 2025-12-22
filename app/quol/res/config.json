@@ -1,8 +1,8 @@
 {
   "startup": false,
-  "reset_pos": true,
+  "reset_pos": false,
   "toggle_key": "`",
-  "transition": "down",
+  "transition": "rand",
   "_": {
     "geometry": [
       10,

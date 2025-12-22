@@ -26,6 +26,7 @@ class App(QObject):
         self.tools_dir = self.settings.get('tools_dir', './tools')
         self.is_hidden: bool = False
         self.is_reset: bool = self.settings.get('is_default_pos', True)
+        self.tray_icon: Optional[QSystemTrayIcon] = None
 
         self.input_manager = GlobalInputManager()
         self.input_manager.start()
@@ -106,8 +107,12 @@ class App(QObject):
         self.save_settings()
 
     def setup_tray_icon(self):
-        tray_icon = QSystemTrayIcon(QIcon('res/icons/icon.ico'), parent=self)
-        tray_icon.setToolTip('Quol')
+        if self.tray_icon:
+            self.tray_icon.hide()
+            self.tray_icon.deleteLater()
+
+        self.tray_icon = QSystemTrayIcon(QIcon('res/icons/icon.ico'), parent=self)
+        self.tray_icon.setToolTip('Quol')
         tray_menu = QMenu()
 
         close_all_action = QAction('Close', self)
@@ -122,8 +127,8 @@ class App(QObject):
         quit_action.triggered.connect(self.exit_app)
         tray_menu.addAction(quit_action)
 
-        tray_icon.setContextMenu(tray_menu)
-        tray_icon.show()
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
 
     def exit_app(self):
         self.close_all()
@@ -131,7 +136,10 @@ class App(QObject):
 
     def close_all(self):
         for w in self.tools:
-            self.toggle.disconnect(w.toggle_windows)
+            try:
+                self.toggle.disconnect(w.toggle_windows)
+            except RuntimeError:
+                pass
             w.close()
 
         self.tools.clear()
