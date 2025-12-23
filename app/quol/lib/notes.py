@@ -17,7 +17,7 @@ from api import fetch_notes, post_notes
 
 class NotesWindow(QuolSubWindow):
     def __init__(self, main_window, admin_key=None):
-        super().__init__(main_window, "Admin Notes")
+        super().__init__(main_window, "Message Board")
 
         self.admin_key = admin_key
         self.edit_mode = False

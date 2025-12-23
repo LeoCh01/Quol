@@ -140,7 +140,17 @@ class App(QObject):
                 self.toggle.disconnect(w.toggle_windows)
             except RuntimeError:
                 pass
+            
+            if hasattr(w, 'config_window') and w.config_window:
+                w.config_window.close()
+                w.config_window.deleteLater()
+                w.config_window = None
+            
+            if hasattr(w, 'transition') and w.transition:
+                w.transition = None
+            
             w.close()
+            w.deleteLater()
 
         self.tools.clear()
         self.toggle_key_id = None

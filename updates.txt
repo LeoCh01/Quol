@@ -1,8 +1,6 @@
 CURRENT
-- dynamic lib updates
-- more input manager options
-- manifest file for app updates
-- overall bugfixes
+- add global message board
+- fix memory leak issues with reloading
 
 TODO
 - python 3.14 multithreading

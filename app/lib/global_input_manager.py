@@ -332,6 +332,7 @@ class GlobalInputManager:
             self._mouse_listener.stop()
         if self._listeners_thread:
             self._listeners_thread.join()
+            self._listeners_thread = None
 
         self.hotkey_callbacks.clear()
         self.key_press_callbacks.clear()

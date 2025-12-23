@@ -30,11 +30,11 @@ class MainWindow(QuolMainWindow):
         self.ver = QPushButton(f'v{self.app.settings['version']}')
         self.ver.clicked.connect(self.open_url)
 
-        self.admin_notes = NotesWindow(self, window_context.settings.get('admin_key'))
-        self.admin_notes_icon = QIcon(self.window_info.path + '/res/img/notes.svg')
-        self.admin_notes_btn = QPushButton()
-        self.admin_notes_btn.clicked.connect(self.on_admin_notes)
-        self.admin_notes_btn.setIcon(self.admin_notes_icon)
+        self.msg_board = NotesWindow(self, window_context.settings.get('admin_key'))
+        self.msg_board_icon = QIcon(self.window_info.path + '/res/img/notes.svg')
+        self.msg_board_btn = QPushButton()
+        self.msg_board_btn.clicked.connect(self.on_msg_board)
+        self.msg_board_btn.setIcon(self.msg_board_icon)
 
         self.reload = QPushButton('Reload')
         self.reload.clicked.connect(self.app.reload)
@@ -46,7 +46,7 @@ class MainWindow(QuolMainWindow):
         self.grid_layout = QGridLayout()
         self.grid_layout.addWidget(self.manager, 0, 0, 1, 2)
         self.grid_layout.addWidget(self.ver, 1, 0, 1, 1)
-        self.grid_layout.addWidget(self.admin_notes_btn, 1, 1, 1, 1)
+        self.grid_layout.addWidget(self.msg_board_btn, 1, 1, 1, 1)
         self.grid_layout.addWidget(self.reload, 2, 0)
         self.grid_layout.addWidget(self.q, 2, 1)
 
@@ -67,10 +67,10 @@ class MainWindow(QuolMainWindow):
         self.config_to_settings()
         self.app.reload()
 
-    def on_admin_notes(self):
-        self.admin_notes.show()
-        self.admin_notes.raise_()
-        self.admin_notes.activateWindow()
+    def on_msg_board(self):
+        self.msg_board.show()
+        self.msg_board.raise_()
+        self.msg_board.activateWindow()
 
     @staticmethod
     def open_url():
