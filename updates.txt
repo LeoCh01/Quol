@@ -1,8 +1,103 @@
-CURRENT
-- add global message board
-- fix memory leak issues with reloading
-
 TODO
 - python 3.14 multithreading
 - add tooltips
+
+3.3.1 (LATEST)
+- add global message board
+- fix memory leak issues with reloading
+
+3.3.0
+- dynamic lib updates
+- more input manager options
+- manifest file for app updates
+- overall bugfixes
+
+3.2.0
+- global event hooks for key and mouse events
+- fix toggle key not working overtime
+- add version dependency check
+- remove tool from settings if tool does not exist
+
+3.1.0
+- remove asyncSlot stuff (only using QThreads now)
+- windows dir param in settings
+- fix dynamic window height on load
+- fix set as startup app
+
+3.0.0
+- add version manager and updater for new versions
+- add window/plugin manager
+- move windows to Quol tools directory
+- set onedir as default build type
+
+### TOOLS UPDATES NOW MOVED TO QUOL TOOLS REPOSITORY ###
+
+2.8.0
+- add api requests tester
+- chat reformat
+- add ChatGPT web scrape (experimental)
+- fix async for ollama
+- add keymap groupings
+- fix clipboard save bug
+- fix clipboard copy repeat
+- fix dynamic script loading
+- add splash screen
+
+2.7.0
+- refactor code, less coupling
+- rework chat autofocus
+- add transition loader
+- add resizeable window class
+- clipboard note bugfixes
+
+2.6.0
+- add keymapper tool
+- fix QNetworkManager for some devices
+- show chat response counter
+- add eraser, stroke width, and straight lines to draw tool
+- optimize draw tool undo stack
+- fix run command delete
+- paintEvent bugfixes
+
+2.5.0
+- rename (formerly windows-helper)
+- better clipboard + sticky notes
+- disconnect signals on reload
+- more configs in info
+- fix styling in cmd runner
+- other small bugfixes overall
+
+2.4.0
+- better markdown, add code blocks, add quick commands
+- fix text encoding (for alphanumeric characters)
+- clean up some redundant code
+- add hide button to tray (close app but keep in tray)
+- try to reduce app size
+
+2.3.0
+- add dynamic json settings
+- add restart button in tray menu
+- fix clipboard window size change
+- restructure plugins
+- cleanup deprecated code
+
+2.2.0
+CURRENT
+- snap windows every 10px
+- color wheel
+- screen draw tool
+- fix groq history
+
+2.1.1
+- fix no image initially
+- fix issue in windows 10
+- fix cert
+
+2.1.0
+- fix async freezing issues with api requests
+- display errors in chat box
+- remove gemini text stream (wasn't actually streamed anyways)
+- organize resources
+- add chat history
+- add groq api
 
