@@ -12,12 +12,12 @@ This application Runs at the top layer and is toggleable through a hotkey. Layou
 
 <table>
   <tr>
-    <td><img src="demo/quol-chat.gif" width="250"></td>
-    <td><img src="demo/wh-draw.gif" width="250"></td>
+    <td><img src="demo/quol-t.gif" width="250"></td>
+    <td><img src="demo/quol-draw.gif" width="250"></td>
   </tr>
   <tr>
-    <td><img src="demo/wh-color.gif" width="250"></td>
-    <td><img src="demo/wh-cmd.gif" width="250"></td>
+    <td><img src="demo/quol-chat.gif" width="250"></td>
+    <td><img src="demo/quol-anime.gif" width="250"></td>
   </tr>
 </table>
 
