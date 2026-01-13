@@ -6,11 +6,11 @@ from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 
-from lib.global_input_manager import GlobalInputManager
-from lib.io_helpers import read_text, read_json, write_json
-from lib.quol_window import QuolMainWindow
-from lib.transition_loader import TransitionLoader
-from lib.window_loader import ToolLoader, WindowContext, SystemToolLoader
+from qlib.global_input_manager import GlobalInputManager
+from qlib.io_helpers import read_text, read_json, write_json
+from qlib.quol_window import QuolMainWindow
+from qlib.transition_loader import TransitionLoader
+from qlib.window_loader import ToolLoader, WindowContext, SystemToolLoader
 
 
 class App(QObject):

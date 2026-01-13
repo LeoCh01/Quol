@@ -1,0 +1,267 @@
+2026-01-12 19:00:50,107 - root - ERROR - Failed to initialize main app :: No module named 'lib.api'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 68, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 12, in <module>
+    from lib.api import get_store_items, download_item, update_item
+ModuleNotFoundError: No module named 'lib.api'
+2026-01-12 19:02:40,519 - root - ERROR - Failed to initialize main app :: No module named 'worker'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 68, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 14, in <module>
+    from libss.notes import NotesWindow
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\libss\notes.py", line 14, in <module>
+    from worker import Worker
+ModuleNotFoundError: No module named 'worker'
+2026-01-12 19:07:46,080 - root - ERROR - Failed to initialize main app :: No module named 'lib.api'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 68, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 12, in <module>
+    from lib.api import get_store_items, download_item, update_item
+ModuleNotFoundError: No module named 'lib.api'
+2026-01-12 19:13:00,360 - root - ERROR - Failed to initialize main app :: No module named 'lib.api'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 68, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 12, in <module>
+    from lib.api import get_store_items, download_item, update_item
+ModuleNotFoundError: No module named 'lib.api'
+2026-01-12 19:15:01,548 - root - ERROR - Failed to initialize main app :: No module named 'lib.api'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 64, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 12, in <module>
+    from lib.api import get_store_items, download_item, update_item
+ModuleNotFoundError: No module named 'lib.api'
+2026-01-12 20:41:26,727 - root - ERROR - Failed to initialize main app :: No module named 'lib.api'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\lib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 12, in <module>
+    from lib.api import get_store_items, download_item, update_item
+ModuleNotFoundError: No module named 'lib.api'
+2026-01-12 21:01:19,089 - root - ERROR - Failed to initialize main app :: No module named 'lib.quol_window'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 62, in load_tools
+    transition_plugin = self.load_transition()
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 55, in load_transition
+    t.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\transition_loader.py", line 37, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\transitions\rand\transition.py", line 1, in <module>
+    from qlib.quol_window import QuolBaseWindow
+ModuleNotFoundError: No module named 'lib.quol_window'
+2026-01-12 21:01:28,339 - root - ERROR - Failed to initialize main app :: No module named 'lib.quol_window'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 62, in load_tools
+    transition_plugin = self.load_transition()
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 55, in load_transition
+    t.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\transition_loader.py", line 37, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\transitions\rand\transition.py", line 3, in <module>
+    from qlib.move_transition import MoveTransition
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\move_transition.py", line 5, in <module>
+    from qlib.quol_window import QuolBaseWindow
+ModuleNotFoundError: No module named 'lib.quol_window'
+2026-01-12 21:01:40,440 - root - ERROR - Failed to initialize main app :: No module named 'lib.quol_window'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 62, in load_tools
+    transition_plugin = self.load_transition()
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 55, in load_transition
+    t.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\transition_loader.py", line 37, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\transitions\rand\transition.py", line 3, in <module>
+    from qlib.move_transition import MoveTransition
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\move_transition.py", line 6, in <module>
+    from qlib.quol_transition import QuolTransition
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\quol_transition.py", line 1, in <module>
+    from qlib.quol_window import QuolBaseWindow
+ModuleNotFoundError: No module named 'lib.quol_window'
+2026-01-12 21:01:48,564 - root - ERROR - Failed to initialize main app :: No module named 'lib.io_helpers'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 12, in <module>
+    from lib.api import get_store_items, download_item, update_item
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\lib\api.py", line 7, in <module>
+    from qlib.io_helpers import read_json
+ModuleNotFoundError: No module named 'lib.io_helpers'
+2026-01-12 21:01:54,583 - root - ERROR - Failed to initialize main app :: No module named 'lib.quol_window'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 66, in load_tools
+    plugin.load()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\window.py", line 14, in <module>
+    from lib.notes import NotesWindow
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\quol\lib\notes.py", line 13, in <module>
+    from qlib.quol_window import QuolSubWindow
+ModuleNotFoundError: No module named 'lib.quol_window'
+2026-01-12 21:02:02,084 - root - ERROR - Failed to initialize main app :: No module named 'lib.io_helpers'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 73, in load_tools
+    if not plugin.load():
+           ^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol Tools\src\keymap\window.py", line 11, in <module>
+    from qlib.io_helpers import read_json, write_json
+ModuleNotFoundError: No module named 'lib.io_helpers'
+2026-01-12 21:02:20,319 - root - ERROR - Failed to initialize main app :: No module named 'lib.quol_window'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 73, in load_tools
+    if not plugin.load():
+           ^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol Tools\src\keymap\window.py", line 14, in <module>
+    from lib.keymap_group import KeymapGroupDialog
+  File "C:\Users\leoch\Documents\- Python Code\Quol Tools\src\keymap\lib\keymap_group.py", line 2, in <module>
+    from qlib.quol_window import QuolMainWindow, QuolDialogWindow
+ModuleNotFoundError: No module named 'lib.quol_window'
+2026-01-12 21:35:22,304 - root - ERROR - Failed to initialize main app :: No module named 'lib.io_helpers'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 73, in load_tools
+    if not plugin.load():
+           ^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol Tools\src\macro\window.py", line 9, in <module>
+    from qlib.io_helpers import read_json, write_json
+ModuleNotFoundError: No module named 'lib.io_helpers'
+2026-01-12 21:35:29,897 - root - ERROR - Failed to initialize main app :: No module named 'lib.io_helpers'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\main.py", line 62, in initialize_main_app
+    app_instance = App()
+                   ^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 35, in __init__
+    self.load_tools()
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\app.py", line 73, in load_tools
+    if not plugin.load():
+           ^^^^^^^^^^^^^
+  File "C:\Users\leoch\Documents\- Python Code\Quol\app\qlib\window_loader.py", line 44, in load
+    spec.loader.exec_module(self.module)
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\leoch\Documents\- Python Code\Quol Tools\src\run_command\window.py", line 5, in <module>
+    from qlib.io_helpers import read_json, write_json
+ModuleNotFoundError: No module named 'lib.io_helpers'

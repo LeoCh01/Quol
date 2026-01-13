@@ -3,9 +3,9 @@ from PySide6.QtGui import QPainterPath, QRegion
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QPushButton, QGroupBox, QCheckBox, QLabel, \
     QLineEdit, QApplication
 
-from lib.io_helpers import read_json
-from lib.quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
-from lib.window_loader import WindowInfo, WindowContext
+from qlib.io_helpers import read_json
+from qlib.quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
+from qlib.window_loader import WindowInfo, WindowContext
 
 
 class QuolBaseWindow(QWidget):

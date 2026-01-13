@@ -216,8 +216,18 @@ class GlobalInputManager:
         elif msg == 257:  # WM_KEYUP
             if key:
                 self._pressed_keys.discard(key.lower())
+
+                # Check hotkeys to remove from active
+                for hid in list(self._active_hotkeys):
+                    combo, _, _ = self.hotkey_callbacks.get(hid, (None, None, None))
+                    if combo:
+                        hotkey_keys = set(combo.split('+'))
+                        if not hotkey_keys.issubset(self._pressed_keys):
+                            self._active_hotkeys.discard(hid)
+
             if not self._pressed_keys:
                 self._active_hotkeys.clear()
+
             run(self.key_release_callbacks)
 
         if self._filter_suppressed:

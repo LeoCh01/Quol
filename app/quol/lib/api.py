@@ -4,7 +4,7 @@ import zipfile
 import io
 import os
 from typing import List, Dict, Optional
-from lib.io_helpers import read_json
+from qlib.io_helpers import read_json
 
 BASE_URL = 'https://leo-s-website-backend-695678049922.northamerica-northeast2.run.app/quol'
 

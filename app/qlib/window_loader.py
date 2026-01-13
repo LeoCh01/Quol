@@ -5,8 +5,8 @@ import importlib
 
 from PySide6.QtCore import Signal
 
-from lib.global_input_manager import GlobalInputManager
-from lib.io_helpers import read_json, write_json
+from qlib.global_input_manager import GlobalInputManager
+from qlib.io_helpers import read_json, write_json
 
 
 class ToolLoader:

@@ -1,7 +1,7 @@
-from lib.quol_window import QuolBaseWindow
+from qlib.quol_window import QuolBaseWindow
 from transitions.shader_transition import ShaderTransition
-from lib.io_helpers import read_text
-from lib.transition_loader import TransitionInfo
+from qlib.io_helpers import read_text
+from qlib.transition_loader import TransitionInfo
 
 
 class Transition(ShaderTransition):

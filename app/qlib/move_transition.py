@@ -2,9 +2,9 @@ import random
 
 from PySide6.QtCore import QPoint, QByteArray, QEasingCurve, QPropertyAnimation
 
-from lib.quol_window import QuolBaseWindow
-from lib.quol_transition import QuolTransition
-from lib.transition_loader import TransitionInfo
+from qlib.quol_window import QuolBaseWindow
+from qlib.quol_transition import QuolTransition
+from qlib.transition_loader import TransitionInfo
 
 
 class MoveTransition(QuolTransition):

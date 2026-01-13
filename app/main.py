@@ -1,21 +1,44 @@
 import asyncio
 import io
-import os
 import logging
 import shutil
 import zipfile
 
 import httpx
 import requests
-import sys
 
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QFrame, QCheckBox
 from PySide6.QtGui import QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 
-from lib.app import App
-from lib.io_helpers import read_json, write_json
-from lib.loading_screen import LoadingScreen
+import importlib
+import pkgutil
+import sys
+import os
+
+
+# def load_all_modules(lib_folder_name="lib"):
+#     lib_path = os.path.join(os.getcwd(), lib_folder_name)
+#     if not os.path.isdir(lib_path):
+#         raise FileNotFoundError(f"{lib_folder_name} folder not found at {lib_path}")
+#
+#     parent_folder = os.path.abspath(os.path.join(lib_path, ".."))
+#     if parent_folder not in sys.path:
+#         sys.path.insert(0, parent_folder)
+#
+#     package = importlib.import_module(lib_folder_name)
+#
+#     for _, mod_name, is_pkg in pkgutil.iter_modules(package.__path__):
+#         full_name = f"{lib_folder_name}.{mod_name}"
+#         if full_name not in sys.modules:
+#             importlib.import_module(full_name)
+#
+#
+# load_all_modules()
+
+from qlib.app import App
+from qlib.io_helpers import read_json, write_json
+from qlib.loading_screen import LoadingScreen
 
 BRANCH = 'main'
 
@@ -98,7 +121,7 @@ async def download_patch(item: str, is_pkg=False) -> bool:
         return False
 
 
-async def update_patch() -> bool:
+async def update_patch(version) -> bool:
     manifest = read_json(os.getcwd() + '/manifest.json')
 
     try:
@@ -127,7 +150,16 @@ async def update_patch() -> bool:
             print(f"Error updating {item_path}: {e}")
             return False
 
-    write_json(os.getcwd() + '/manifest.json', manifest_new)
+    try:
+        write_json(os.getcwd() + '/manifest.json', manifest_new)
+
+        settings = read_json(os.getcwd() + '/settings.json')
+        settings['version'] = version
+        write_json(os.getcwd() + '/settings.json', settings)
+    except Exception as e:
+        print(f"Error updating manifest and settings: {e}")
+        return False
+
     return True
 
 
@@ -247,7 +279,7 @@ class AppLauncher(QWidget):
         self.dont_show.setEnabled(False)
         QApplication.processEvents()
 
-        success = await update_patch()
+        success = await update_patch(self.version)
 
         self.update_btn.hide()
         self.cont_btn.hide()

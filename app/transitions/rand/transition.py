@@ -1,6 +1,6 @@
-from lib.quol_window import QuolBaseWindow
-from lib.transition_loader import TransitionInfo
-from lib.move_transition import MoveTransition
+from qlib.quol_window import QuolBaseWindow
+from qlib.transition_loader import TransitionInfo
+from qlib.move_transition import MoveTransition
 
 
 class Transition(MoveTransition):

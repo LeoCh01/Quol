@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QLabel
 
-from lib.quol_window import QuolMainWindow
-from lib.window_loader import WindowInfo, WindowContext
+from qlib.quol_window import QuolMainWindow
+from qlib.window_loader import WindowInfo, WindowContext
 from lib.adder import add_to_str
 
 
