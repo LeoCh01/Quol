@@ -1,8 +1,0 @@
-{
-  "versions": {
-    "quol": 2,
-    "*lib": 3,
-    "res": 1,
-    "transitions": 1
-  }
-}

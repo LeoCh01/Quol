@@ -1,10 +1,12 @@
 import asyncio
+import os
 
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QFrame, QCheckBox
 from PySide6.QtGui import QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 
-from updater import on_dont_show_changed, update_patch
+from qlib.io_helpers import read_json, write_json
+from updater import update_minor
 
 
 class CustomTitleBar(QFrame):
@@ -86,7 +88,7 @@ class AppLauncher(QWidget):
         content_layout.addWidget(self.cont_btn)
 
         self.dont_show = QCheckBox("Don't show this again")
-        self.dont_show.stateChanged.connect(lambda state: on_dont_show_changed(state))
+        self.dont_show.stateChanged.connect(lambda state: self.on_dont_show_changed(state))
         self.dont_show.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         content_layout.addWidget(self.dont_show)
 
@@ -108,7 +110,7 @@ class AppLauncher(QWidget):
         content_layout.addWidget(self.cont_btn)
 
         self.dont_show = QCheckBox("Don't show this again")
-        self.dont_show.stateChanged.connect(lambda state: on_dont_show_changed(state))
+        self.dont_show.stateChanged.connect(lambda state: self.on_dont_show_changed(state))
         self.dont_show.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         content_layout.addWidget(self.dont_show)
 
@@ -125,7 +127,7 @@ class AppLauncher(QWidget):
         self.dont_show.setEnabled(False)
         QApplication.processEvents()
 
-        success = await update_patch(self.new_version)
+        success = await update_minor()
 
         self.update_btn.hide()
         self.cont_btn.hide()
@@ -143,7 +145,6 @@ class AppLauncher(QWidget):
 
         QApplication.processEvents()
 
-        # Countdown before closing
         self.seconds_left = 10
         self.countdown_label.setText(f"This window will close in {self.seconds_left}s")
 
@@ -158,6 +159,11 @@ class AppLauncher(QWidget):
         self.close_timer = QTimer(self)
         self.close_timer.timeout.connect(update_countdown)
         self.close_timer.start(1000)
+
+    def on_dont_show_changed(self, state):
+        settings = read_json(os.getcwd() + '/settings.json')
+        settings['show_updates'] = (state != 2)
+        write_json(os.getcwd() + '/settings.json', settings)
 
     def on_continue_clicked(self):
         self.hide()

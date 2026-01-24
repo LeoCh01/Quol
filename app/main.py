@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import sys
@@ -40,6 +39,7 @@ def initialize_main_app():
         logging.error(f"Failed to initialize main app :: {e}", exc_info=True)
         return None
 
+
 def main():
     print('Starting Quol...')
     print('Current working directory:', os.getcwd())
@@ -60,6 +60,7 @@ def main():
         initialize_main_app()
 
     app.exec()
+
 
 if __name__ == '__main__':
     main()

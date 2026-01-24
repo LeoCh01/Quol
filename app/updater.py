@@ -2,7 +2,6 @@ import io
 import shutil
 import zipfile
 import httpx
-import requests
 import os
 
 from qlib.io_helpers import read_json, write_json
@@ -10,7 +9,7 @@ from qlib.io_helpers import read_json, write_json
 BRANCH = 'main'
 
 
-def check_for_update() -> tuple:  # is_new_verion, new, old 
+def check_for_update() -> tuple:  # is_new_version, new, old
     try:
         settings = read_json(os.getcwd() + '/settings.json')
         if not settings.get('show_updates', True):
@@ -26,13 +25,8 @@ def check_for_update() -> tuple:  # is_new_verion, new, old
         print(f'Update check failed: {e}')
         return '', '', ''
 
-def on_dont_show_changed(state):
-    settings = read_json(os.getcwd() + '/settings.json')
-    settings['show_updates'] = (state != 2)
-    write_json(os.getcwd() + '/settings.json', settings)
 
-
-async def download_patch(item: str, is_pkg=False) -> bool:
+async def download_minor(item: str, is_pkg=False) -> bool:
     raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/modules/{item}"
 
     try:
@@ -58,22 +52,25 @@ async def download_patch(item: str, is_pkg=False) -> bool:
         return False
 
 
-async def update_patch(version) -> bool:
-    manifest = read_json(os.getcwd() + '/manifest.json')
+async def update_minor() -> bool:
+    settings = read_json(os.getcwd() + '/settings.json')
 
     try:
-        response = requests.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/manifest.json')
+        response = httpx.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
         response.raise_for_status()
-        manifest_new = response.json()
+        settings_new = response.json()
     except Exception as e:
-        print(f"Failed to fetch manifest: {e}")
+        print(f"Failed to fetch settings: {e}")
         return False
 
-    for k, v in manifest_new['versions'].items():
-        if manifest['versions'].get(k, v) == v:
+    for k, v in settings_new['packages']['versions'].items():
+        if settings['packages']['versions'].get(k, 0) == v:
             continue
 
-        item_path = f'{os.getcwd()}/' + (f'_internal/{k[1:]}' if k[0] == '*' else k)
+        if k == 'qlib':
+            item_path = f'{os.getcwd()}/_internal/{k}'
+        else:
+            item_path = f'{os.getcwd()}/{k}'
 
         try:
             if os.path.isdir(item_path):
@@ -81,20 +78,17 @@ async def update_patch(version) -> bool:
             else:
                 os.remove(item_path)
 
-            await download_patch(f'{k[1:] if k[0] == "*" else k}-v{manifest_new["versions"][k]}.zip', k[0] == '*')
+            await download_minor(f'{k}-v{settings_new["packages"]["versions"][k]}.zip', is_pkg=(k == 'qlib'))
 
         except Exception as e:
             print(f"Error updating {item_path}: {e}")
             return False
 
     try:
-        write_json(os.getcwd() + '/manifest.json', manifest_new)
-
-        settings = read_json(os.getcwd() + '/settings.json')
-        settings['version'] = version
+        settings['packages']['versions'] = settings_new['packages']['versions']
         write_json(os.getcwd() + '/settings.json', settings)
     except Exception as e:
-        print(f"Error updating manifest and settings: {e}")
+        print(f"Error updating settings: {e}")
         return False
 
     return True
