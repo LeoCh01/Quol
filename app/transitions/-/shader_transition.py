@@ -7,9 +7,9 @@
 # from PySide6.QtOpenGL import QOpenGLShaderProgram, QOpenGLShader, QOpenGLTexture
 # from OpenGL import GL
 #
-# from qlib.quol_window import QuolBaseWindow
+# from qlib.windows.quol_window import QuolBaseWindow
 # from lib.quol_transition import QuolTransition
-# from qlib.transition_loader import TransitionInfo
+# from qlib.transitions.transition_loader import TransitionInfo
 #
 #
 # class ShaderTransition(QuolTransition, QWidget):

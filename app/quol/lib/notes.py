@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 
-from qlib.quol_window import QuolSubWindow
+from qlib.windows.quol_window import QuolSubWindow
 from worker import Worker
 from api import fetch_notes, post_notes
 

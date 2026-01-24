@@ -7,8 +7,8 @@ from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout
     QCheckBox, QTabWidget, QVBoxLayout
 
 from qlib.io_helpers import write_json
-from qlib.quol_window import QuolMainWindow, QuolSubWindow
-from qlib.window_loader import WindowInfo, WindowContext
+from qlib.windows.quol_window import QuolMainWindow, QuolSubWindow
+from qlib.windows.window_loader import WindowInfo, WindowContext
 from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
 from lib.notes import NotesWindow

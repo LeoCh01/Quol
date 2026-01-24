@@ -1,5 +1,5 @@
-from qlib.quol_window import QuolBaseWindow
-from qlib.transition_loader import TransitionInfo
+from qlib.windows.quol_window import QuolBaseWindow
+from qlib.transitions.transition_loader import TransitionInfo
 
 
 class QuolTransition:

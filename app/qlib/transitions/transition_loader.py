@@ -3,7 +3,7 @@ import os
 import sys
 import importlib
 
-from qlib.quol_window import QuolBaseWindow
+from qlib.windows.quol_window import QuolBaseWindow
 
 
 class TransitionInfo:

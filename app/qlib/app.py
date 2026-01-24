@@ -8,9 +8,9 @@ from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 
 from qlib.global_input_manager import GlobalInputManager
 from qlib.io_helpers import read_text, read_json, write_json
-from qlib.quol_window import QuolMainWindow
-from qlib.transition_loader import TransitionLoader
-from qlib.window_loader import ToolLoader, WindowContext, SystemToolLoader
+from qlib.windows.quol_window import QuolMainWindow
+from qlib.transitions.transition_loader import TransitionLoader
+from qlib.windows.window_loader import ToolLoader, WindowContext, SystemToolLoader
 
 
 class App(QObject):
