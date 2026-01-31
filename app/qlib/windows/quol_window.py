@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QP
 
 from qlib.io_helpers import read_json
 from qlib.windows.quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
-from qlib.windows.window_loader import ToolSpec
+from qlib.windows.tool_loader import ToolSpec
 
 
 class QuolBaseWindow(QWidget):

@@ -6,9 +6,8 @@ from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
 
-from qlib.io_helpers import write_json
 from qlib.windows.quol_window import QuolMainWindow, QuolSubWindow
-from qlib.windows.window_loader import ToolSpec
+from qlib.windows.tool_loader import ToolSpec
 from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
 from lib.notes import NotesWindow
@@ -31,12 +30,19 @@ class MainWindow(QuolMainWindow):
         self.ver.clicked.connect(self.open_url)
 
         self.msg_board = NotesWindow(self, tool_spec.settings.get('admin_key'))
-        self.msg_board_icon = QIcon(tool_spec.path + '/res/img/notes.svg')
+        self.msg_board_icon = QIcon(tool_spec.path + '/res/img/news.svg')
         self.msg_board_btn = QPushButton()
         self.msg_board_btn.clicked.connect(self.on_msg_board)
         self.msg_board_btn.setIcon(self.msg_board_icon)
 
-        self.reload = QPushButton('Reload')
+        self.folder_location_icon = QIcon(tool_spec.path + '/res/img/folder.svg')
+        self.folder_location_btn = QPushButton()
+        self.folder_location_btn.setIcon(self.folder_location_icon)
+        self.folder_location_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(os.getcwd())))
+
+        self.reload_icon = QIcon(tool_spec.path + '/res/img/reload.svg')
+        self.reload = QPushButton()
+        self.reload.setIcon(self.reload_icon)
         self.reload.clicked.connect(self.app.reload)
 
         self.q = QPushButton('Quit')
@@ -44,11 +50,12 @@ class MainWindow(QuolMainWindow):
         self.q.clicked.connect(self.app.exit_app)
 
         self.grid_layout = QGridLayout()
-        self.grid_layout.addWidget(self.manager, 0, 0, 1, 2)
+        self.grid_layout.addWidget(self.manager, 0, 0, 1, 3)
         self.grid_layout.addWidget(self.ver, 1, 0, 1, 1)
         self.grid_layout.addWidget(self.msg_board_btn, 1, 1, 1, 1)
+        self.grid_layout.addWidget(self.folder_location_btn, 1, 2, 1, 1)
         self.grid_layout.addWidget(self.reload, 2, 0)
-        self.grid_layout.addWidget(self.q, 2, 1)
+        self.grid_layout.addWidget(self.q, 2, 1, 1, 2)
 
         self.layout.addLayout(self.grid_layout)
 

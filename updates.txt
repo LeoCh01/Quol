@@ -3,14 +3,14 @@ TODO
 - dropdown setting or search filter in config
 - hide on toggle optimization
 - opencv support
-- merge WindowContext and WindowInfo, and rename to something else
-- add open file location
 
 
 4.0.0 (CURRENT)
 - hotkey bugfixes
 - Pyside6 6.8.3 migration
 - fix updater not updating version indicator
+- add open file location
+- merge WindowContext and WindowInfo
 
 
 3.3.1

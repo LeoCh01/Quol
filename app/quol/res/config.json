@@ -11,7 +11,17 @@
       1
     ],
     "tools": [
-      "example"
+      "anime",
+      "chance",
+      "chat",
+      "clipboard",
+      "color_picker",
+      "draw",
+      "keymap",
+      "macro",
+      "request",
+      "run_command",
+      "timer"
     ],
     "name": "Quol"
   }

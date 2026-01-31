@@ -10,7 +10,7 @@ from qlib.global_input_manager import GlobalInputManager
 from qlib.io_helpers import read_text, read_json, write_json
 from qlib.windows.quol_window import QuolMainWindow
 from qlib.transitions.transition_loader import TransitionLoader
-from qlib.windows.window_loader import ToolLoader, SystemToolLoader
+from qlib.windows.tool_loader import ToolLoader, SystemToolLoader
 from types import SimpleNamespace
 
 
