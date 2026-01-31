@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QP
 
 from qlib.io_helpers import read_json
 from qlib.windows.quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
-from qlib.windows.window_loader import WindowInfo, WindowContext
+from qlib.windows.window_loader import ToolSpec
 
 
 class QuolBaseWindow(QWidget):
@@ -85,19 +85,18 @@ class QuolBaseWindow(QWidget):
 class QuolMainWindow(QuolBaseWindow):
     config_signal = Signal()
 
-    def __init__(self, title, window_info: WindowInfo, window_context: WindowContext, default_geometry: tuple[int, int, int, int], show_config=True):
+    def __init__(self, title, tool_spec: ToolSpec, default_geometry: tuple[int, int, int, int], show_config=True):
         super().__init__()
 
-        self.window_info = window_info
-        self.config = self.window_info.load_config()
-        self.window_context = window_context
+        self.tool_spec = tool_spec
+        self.config = self.tool_spec.load_config()
 
-        default_pos = self.window_context.settings.get('is_default_pos')
+        default_pos = self.tool_spec.settings.get('is_default_pos')
         self.config.setdefault('_', {})
         self.setGeometry(QRect(*default_geometry))
         if default_pos or not self.config['_'].get('geometry'):
             self.config['_']['geometry'] = [*default_geometry]
-            self.window_info.save_config(self.config)
+            self.tool_spec.save_config(self.config)
         else:
             self.config['_']['geometry'][3] = 1
             self.setGeometry(QRect(*self.config['_']['geometry']))
@@ -111,7 +110,7 @@ class QuolMainWindow(QuolBaseWindow):
         self._title_bar = QuolMainTitleBar(self, title, self.config_window)
         self._l1.insertWidget(0, self._title_bar)
 
-        self.transition = self.window_context.transition_plugin.create_transition(self)
+        self.transition = self.tool_spec.transition_plugin.create_transition(self)
         self.update()
 
     def on_update_config(self):
@@ -134,7 +133,7 @@ class QuolSubWindow(QuolBaseWindow):
         self._title_bar = QuolSubTitleBar(self, title)
         self._l1.insertWidget(0, self._title_bar)
 
-        self.transition = self.main_window.window_context.transition_plugin.create_transition(self)
+        self.transition = self.main_window.tool_spec.transition_plugin.create_transition(self)
 
 
 class QuolResizableSubWindow(QuolSubWindow):
@@ -292,7 +291,7 @@ class QuolConfigWindow(QuolSubWindow):
         self.config_layout = QVBoxLayout()
         self.layout.addLayout(self.config_layout)
 
-        self.settings = read_json(self.main_window.window_info.config_path)
+        self.settings = read_json(self.main_window.tool_spec.config_path)
         self.generate_settings()
 
         self.button_layout = QHBoxLayout()
@@ -370,6 +369,6 @@ class QuolConfigWindow(QuolSubWindow):
         config = extract_from_layout(self.config_layout)
         config['_'] = self.main_window.config.get('_', {})
         self.main_window.config = config
-        self.main_window.window_info.save_config(config)
+        self.main_window.tool_spec.save_config(config)
         self.main_window.config_signal.emit()
         self.hide()

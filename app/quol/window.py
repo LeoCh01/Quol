@@ -8,17 +8,17 @@ from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout
 
 from qlib.io_helpers import write_json
 from qlib.windows.quol_window import QuolMainWindow, QuolSubWindow
-from qlib.windows.window_loader import WindowInfo, WindowContext
+from qlib.windows.window_loader import ToolSpec
 from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
 from lib.notes import NotesWindow
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, app, window_info: WindowInfo, window_context: WindowContext):
-        super().__init__('Quol', window_info, window_context, default_geometry=(10, 10, 180, 1))
+    def __init__(self, app, tool_spec: ToolSpec):
+        super().__init__('Quol', tool_spec, default_geometry=(10, 10, 180, 1))
 
-        self.tools_dir = os.path.abspath(os.getcwd() + window_context.settings.get('tools_dir', './tools'))
+        self.tools_dir = os.path.abspath(os.getcwd() + tool_spec.settings.get('tools_dir', './tools'))
         print(self.tools_dir)
 
         self.app = app
@@ -30,8 +30,8 @@ class MainWindow(QuolMainWindow):
         self.ver = QPushButton(f'v{self.app.settings['version']}')
         self.ver.clicked.connect(self.open_url)
 
-        self.msg_board = NotesWindow(self, window_context.settings.get('admin_key'))
-        self.msg_board_icon = QIcon(self.window_info.path + '/res/img/notes.svg')
+        self.msg_board = NotesWindow(self, tool_spec.settings.get('admin_key'))
+        self.msg_board_icon = QIcon(tool_spec.path + '/res/img/notes.svg')
         self.msg_board_btn = QPushButton()
         self.msg_board_btn.clicked.connect(self.on_msg_board)
         self.msg_board_btn.setIcon(self.msg_board_icon)
@@ -96,7 +96,7 @@ class MainWindow(QuolMainWindow):
         self.config['_']['name'] = self.app.settings['name']
         self.config['_']['tools'] = self.app.settings['tools']
 
-        write_json(self.window_info.config_path, self.config)
+        self.tool_spec.save_config(self.config)
 
     def toggle_startup(self):
         if self.config['startup'] == self.app.settings['startup']:

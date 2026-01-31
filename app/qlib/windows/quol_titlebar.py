@@ -55,7 +55,7 @@ class QuolMainTitleBar(QuolBaseTitleBar):
 
         self.quol_window.setGeometry(geometry)
         self.quol_window.config['_']['geometry'] = [geometry.x(), geometry.y(), geometry.width(), geometry.height()]
-        self.quol_window.window_info.save_config(self.quol_window.config)
+        self.quol_window.tool_spec.save_config(self.quol_window.config)
 
 
 class QuolSubTitleBar(QuolBaseTitleBar):

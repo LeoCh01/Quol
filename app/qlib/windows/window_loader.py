@@ -3,8 +3,6 @@ import os
 import sys
 import importlib
 
-from PySide6.QtCore import Signal
-
 from qlib.global_input_manager import GlobalInputManager
 from qlib.io_helpers import read_json, write_json
 
@@ -49,7 +47,7 @@ class ToolLoader:
         return True
 
     def create_window(self, context, app=None):
-        return self.module.MainWindow(WindowInfo(self.path), context)
+        return self.module.MainWindow(ToolSpec(self.path, context))
 
     def cleanup(self):
         """Unload the tool module, call optional teardown, and restore sys.path."""
@@ -89,27 +87,24 @@ class SystemToolLoader(ToolLoader):
         self.path = f'{os.getcwd()}\\quol'
 
     def create_window(self, context, app=None):
-        return self.module.MainWindow(app, WindowInfo(self.path), context)
+        return self.module.MainWindow(app, ToolSpec(self.path, context))
 
 
-class WindowInfo:
-    def __init__(self, path):
+class ToolSpec:
+    def __init__(self, path, context=None):
         self.path = path
         self.config_path = path + '\\res\\config.json'
+
+        self.toggle = getattr(context, 'toggle', None)
+        self.toggle_windows = getattr(context, 'toggle_tools', None)
+        self.toggle_windows_instant = getattr(context, 'toggle_tools_instant', None)
+        self.transition_plugin = getattr(context, 'transition_plugin', None)
+        self.settings = getattr(context, 'settings', None)
+        self.get_is_hidden = getattr(context, 'get_is_hidden', None)
+        self.input_manager: GlobalInputManager = getattr(context, 'input_manager', None)
 
     def save_config(self, config):
         write_json(self.config_path, config)
 
     def load_config(self):
         return read_json(self.config_path)
-
-
-class WindowContext:
-    def __init__(self, toggle: Signal(bool, bool), toggle_tools, toggle_tools_instant, settings, transition_plugin, get_is_hidden, input_manager):
-        self.toggle = toggle
-        self.toggle_windows = toggle_tools
-        self.toggle_windows_instant = toggle_tools_instant
-        self.transition_plugin = transition_plugin
-        self.settings = settings
-        self.get_is_hidden = get_is_hidden
-        self.input_manager: GlobalInputManager = input_manager

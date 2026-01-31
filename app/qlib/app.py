@@ -10,7 +10,8 @@ from qlib.global_input_manager import GlobalInputManager
 from qlib.io_helpers import read_text, read_json, write_json
 from qlib.windows.quol_window import QuolMainWindow
 from qlib.transitions.transition_loader import TransitionLoader
-from qlib.windows.window_loader import ToolLoader, WindowContext, SystemToolLoader
+from qlib.windows.window_loader import ToolLoader, SystemToolLoader
+from types import SimpleNamespace
 
 
 class App(QObject):
@@ -60,7 +61,15 @@ class App(QObject):
 
     def load_tools(self):
         transition_plugin = self.load_transition()
-        context = WindowContext(self.toggle, self.toggle_tools, self.toggle_tools_instant, self.settings, transition_plugin, self.get_is_hidden, self.input_manager)
+
+        context = SimpleNamespace()
+        context.toggle = self.toggle
+        context.toggle_tools = self.toggle_tools
+        context.toggle_tools_instant = self.toggle_tools_instant
+        context.transition_plugin = transition_plugin
+        context.settings = self.settings
+        context.get_is_hidden = self.get_is_hidden
+        context.input_manager = self.input_manager
 
         plugin = SystemToolLoader()
         plugin.load()

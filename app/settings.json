@@ -8,7 +8,9 @@
   "transition": "down",
   "is_default_pos": false,
   "tools_dir": "./tools",
-  "tools": ["example"],
+  "tools": [
+    "example"
+  ],
   "show_updates": true,
   "admin_key": "",
   "packages": {

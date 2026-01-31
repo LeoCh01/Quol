@@ -26,7 +26,7 @@ def check_for_update() -> tuple:  # is_new_version, new, old
         return '', '', ''
 
 
-async def download_minor(item: str, is_pkg=False) -> bool:
+async def download_minor(item: str) -> bool:
     raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/modules/{item}"
 
     try:
@@ -36,9 +36,9 @@ async def download_minor(item: str, is_pkg=False) -> bool:
             zip_file = io.BytesIO(response.content)
 
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            zip_ref.extractall(f'{os.getcwd()}/{"_internal" if is_pkg else ""}')
+            zip_ref.extractall(os.getcwd())
 
-        print(f'Successfully extracted {item} to {os.getcwd()}/{"_internal" if is_pkg else ""}')
+        print(f'Successfully extracted {item} to {os.getcwd()}')
         return True
 
     except httpx.RequestError as e:
@@ -67,10 +67,7 @@ async def update_minor() -> bool:
         if settings['packages']['versions'].get(k, 0) == v:
             continue
 
-        if k == 'qlib':
-            item_path = f'{os.getcwd()}/_internal/{k}'
-        else:
-            item_path = f'{os.getcwd()}/{k}'
+        item_path = f'{os.getcwd()}/{k}'
 
         try:
             if os.path.isdir(item_path):
@@ -78,7 +75,7 @@ async def update_minor() -> bool:
             else:
                 os.remove(item_path)
 
-            await download_minor(f'{k}-v{settings_new["packages"]["versions"][k]}.zip', is_pkg=(k == 'qlib'))
+            await download_minor(f'{k}-v{settings_new["packages"]["versions"][k]}.zip')
 
         except Exception as e:
             print(f"Error updating {item_path}: {e}")
