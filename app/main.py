@@ -4,24 +4,15 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
+from launcher import AppLauncher
+from updater import check_for_update
+from qlogging import initialize_logging
+
 from qlib_loader import load_all_modules
 load_all_modules()
 
 from qlib.app import App
 from qlib.windows.loading_screen import LoadingScreen
-
-from launcher import AppLauncher
-from updater import check_for_update
-
-
-def initialize_logging():
-    logging.basicConfig(
-        filename='error.log',
-        filemode='a',
-        level=logging.ERROR,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    )
-    logging.getLogger().addHandler(logging.StreamHandler())
 
 
 def initialize_main_app():
@@ -47,8 +38,6 @@ def main():
     os.chdir(base_dir)
     print('Switched working directory:', os.getcwd())
 
-    initialize_logging()
-
     app = QApplication([])
 
     is_new, new, old = check_for_update()
@@ -63,4 +52,5 @@ def main():
 
 
 if __name__ == '__main__':
+    initialize_logging()
     main()

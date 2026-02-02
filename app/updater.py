@@ -6,7 +6,8 @@ import os
 
 from qlib.io_helpers import read_json, write_json
 
-BRANCH = 'main'
+BRANCH = '4.0-refactor'
+# BRANCH = 'main'
 
 
 def check_for_update() -> tuple:  # is_new_version, new, old
@@ -19,7 +20,7 @@ def check_for_update() -> tuple:  # is_new_version, new, old
         response.raise_for_status()
         data = response.json()
 
-        return settings['version'] == data['version'], data['version'], settings['version']
+        return settings['version'] != data['version'], data['version'], settings['version']
 
     except Exception as e:
         print(f'Update check failed: {e}')
