@@ -7,6 +7,7 @@ import os
 from typing import List, Dict, Optional
 from qlib.io_helpers import read_json
 
+logger = logging.getLogger(__name__)
 BASE_URL = 'https://leo-s-website-backend-695678049922.northamerica-northeast2.run.app/quol'
 BRANCH = 'main'
 
@@ -19,7 +20,7 @@ async def get_store_items() -> Optional[List[Dict]]:
             response.raise_for_status()
             return response.json()
     except Exception as e:
-        logging.error(f"Async fetch failed: {e}")
+        logger.error(f"Async fetch failed: {e}")
         return None
 
 
@@ -35,17 +36,17 @@ async def download_item(item_name: str, path: str) -> bool:
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
             zip_ref.extractall(path)
 
-        print(f"Successfully extracted {item_name} to {path}")
+        logger.info('Successfully extracted %s to %s', item_name, path)
         return True
 
     except httpx.RequestError as e:
-        logging.error(f"Error downloading the file: {e}")
+        logger.error(f"Error downloading the file: {e}")
         return False
     except zipfile.BadZipFile as e:
-        logging.error(f"Error: Invalid zip file: {e}")
+        logger.error(f"Error: Invalid zip file: {e}")
         return False
     except Exception as e:
-        logging.error(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}")
         return False
 
 
@@ -83,7 +84,7 @@ async def update_item(item_name: str, item_ver: int, path: str) -> bool:
             config = read_json(item_path + '/res/config.json')
             v = config['_'].get('dependency', 'x')
             if not is_compatible(v):
-                logging.error(f"Item {item_name} requires app version {v} or higher.")
+                logger.error(f"Item {item_name} requires app version {v} or higher.")
                 if os.path.isdir(item_path):
                     shutil.rmtree(item_path)
                 else:

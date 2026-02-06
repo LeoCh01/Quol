@@ -6,11 +6,13 @@ TODO
 
 
 4.0.0 (CURRENT)
-- hotkey bugfixes
+- global hotkey bugfixes
 - Pyside6 6.8.3 migration
 - fix updater not updating version indicator
+- fix dynamic library loading
 - add open file location
-- merge WindowContext and WindowInfo
+- a lot of renaming and restructuring
+- proper logging
 
 
 3.3.1

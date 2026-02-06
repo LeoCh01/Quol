@@ -3,6 +3,9 @@ import shutil
 import zipfile
 import httpx
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 from qlib.io_helpers import read_json, write_json
 
@@ -23,7 +26,7 @@ def check_for_update() -> tuple:  # is_new_version, new, old
         return settings['version'] != data['version'], data['version'], settings['version']
 
     except Exception as e:
-        print(f'Update check failed: {e}')
+        logger.exception('Update check failed: %s', e)
         return '', '', ''
 
 
@@ -39,17 +42,17 @@ async def download_minor(item: str) -> bool:
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
             zip_ref.extractall(os.getcwd())
 
-        print(f'Successfully extracted {item} to {os.getcwd()}')
+        logger.info('Successfully extracted %s to %s', item, os.getcwd())
         return True
 
     except httpx.RequestError as e:
-        print(f"Error downloading the file: {e}")
+        logger.exception('Error downloading the file: %s', e)
         return False
     except zipfile.BadZipFile as e:
-        print(f"Error: Invalid zip file: {e}")
+        logger.exception('Error: Invalid zip file: %s', e)
         return False
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logger.exception('An unexpected error occurred: %s', e)
         return False
 
 
@@ -61,7 +64,7 @@ async def update_minor() -> bool:
         response.raise_for_status()
         settings_new = response.json()
     except Exception as e:
-        print(f"Failed to fetch settings: {e}")
+        logger.exception('Failed to fetch settings: %s', e)
         return False
 
     for k, v in settings_new['packages']['versions'].items():
@@ -79,14 +82,14 @@ async def update_minor() -> bool:
             await download_minor(f'{k}-v{settings_new["packages"]["versions"][k]}.zip')
 
         except Exception as e:
-            print(f"Error updating {item_path}: {e}")
+            logger.exception('Error updating %s: %s', item_path, e)
             return False
 
     try:
         settings['packages']['versions'] = settings_new['packages']['versions']
         write_json(os.getcwd() + '/settings.json', settings)
     except Exception as e:
-        print(f"Error updating settings: {e}")
+        logger.exception('Error updating settings: %s', e)
         return False
 
     return True

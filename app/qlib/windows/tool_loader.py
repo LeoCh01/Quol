@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import importlib
+from types import SimpleNamespace
 
 from qlib.global_input_manager import GlobalInputManager
 from qlib.io_helpers import read_json, write_json
@@ -91,7 +92,7 @@ class SystemToolLoader(ToolLoader):
 
 
 class ToolSpec:
-    def __init__(self, path, context=None):
+    def __init__(self, path, context: SimpleNamespace=None):
         self.path = path
         self.config_path = path + '\\res\\config.json'
 

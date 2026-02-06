@@ -32,11 +32,11 @@ def initialize_main_app():
 
 
 def main():
-    print('Starting Quol...')
-    print('Current working directory:', os.getcwd())
+    logging.info('Starting Quol...')
+    logging.info('Current working directory: %s', os.getcwd())
     base_dir = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
     os.chdir(base_dir)
-    print('Switched working directory:', os.getcwd())
+    logging.info('Switched working directory: %s', os.getcwd())
 
     app = QApplication([])
 

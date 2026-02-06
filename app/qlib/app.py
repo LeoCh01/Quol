@@ -13,6 +13,10 @@ from qlib.transitions.transition_loader import TransitionLoader
 from qlib.windows.tool_loader import ToolLoader, SystemToolLoader
 from types import SimpleNamespace
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class App(QObject):
     toggle = Signal(bool, bool)
@@ -77,10 +81,10 @@ class App(QObject):
         working_tools = []
 
         for name in self.settings.get('tools'):
-            print('loading ' + name)
+            logger.info('loading %s', name)
             plugin = ToolLoader(name, self.tools_dir)
             if not plugin.load():
-                print(f'Failed to load window {name}. Skipping...')
+                logger.warning('Failed to load window %s. Skipping...', name)
                 continue
             working_tools.append(name)
             self.tools.append(plugin.create_window(context))
@@ -106,7 +110,7 @@ class App(QObject):
 
     def set_toggle_key(self, key):
         key = str(key)
-        print(f'Changing toggle key from {self.toggle_key} to {key}')
+        logger.info('Changing toggle key from %s to %s', self.toggle_key, key)
         if self.toggle_key == key:
             return
 
@@ -124,17 +128,17 @@ class App(QObject):
         self.tray_icon.setToolTip('Quol')
         tray_menu = QMenu()
 
-        close_all_action = QAction('Close', self)
-        close_all_action.triggered.connect(self.close_all)
-        tray_menu.addAction(close_all_action)
+        self.toggle_close_action = QAction('Toggle OFF', self)
+        self.toggle_close_action.triggered.connect(self.toggle_close)
+        tray_menu.addAction(self.toggle_close_action)
 
-        reload_action = QAction('Reload', self)
-        reload_action.triggered.connect(self.reload)
-        tray_menu.addAction(reload_action)
+        self.reload_action = QAction('Reload', self)
+        self.reload_action.triggered.connect(self.reload)
+        tray_menu.addAction(self.reload_action)
 
-        quit_action = QAction('Quit', self)
-        quit_action.triggered.connect(self.exit_app)
-        tray_menu.addAction(quit_action)
+        self.quit_action = QAction('Quit', self)
+        self.quit_action.triggered.connect(self.exit_app)
+        tray_menu.addAction(self.quit_action)
 
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
@@ -165,6 +169,13 @@ class App(QObject):
         self.toggle_key_id = None
         self.input_manager.stop()
 
+    def toggle_close(self):
+        if self.toggle_close_action.text() == 'Toggle OFF':
+            self.toggle_close_action.setText('Toggle ON')
+            self.close_all()
+        else:
+            self.reload()
+
     def reload(self):
         self.close_all()
 
@@ -175,6 +186,7 @@ class App(QObject):
         self.reset_hotkey(str(self.settings.get('toggle_key', '`')))
         self.is_reset = self.settings.get('is_default_pos', True)
         self.is_hidden = False
+        self.toggle_close_action.setText('Toggle OFF')
 
         self.load_tools()
 
@@ -191,7 +203,7 @@ class App(QObject):
             winreg.CloseKey(key)
             return True
         except Exception as e:
-            print(f"Failed to add to startup: {e}")
+            logger.exception("Failed to add to startup: %s", e)
             return False
 
     @staticmethod
@@ -209,7 +221,7 @@ class App(QObject):
         except FileNotFoundError:
             return True
         except Exception as e:
-            print(f"Failed to remove from startup: {e}")
+            logger.exception("Failed to remove from startup: %s", e)
             return False
 
     @staticmethod
@@ -227,5 +239,5 @@ class App(QObject):
         except FileNotFoundError:
             return False
         except Exception as e:
-            print(f"Error checking startup: {e}")
+            logger.exception("Error checking startup: %s", e)
             return False
