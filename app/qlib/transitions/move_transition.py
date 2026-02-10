@@ -11,14 +11,25 @@ class MoveTransition(QuolTransition):
     def __init__(self, transition_info: TransitionInfo, window: QuolBaseWindow, direction: str):
         super().__init__(transition_info, window)
         self.direction = direction
-        self.animation = QPropertyAnimation(self.window, QByteArray(b'pos'))
 
-    def generate_pos(self):
+        self.animation = QPropertyAnimation(self.window, QByteArray(b'pos'))
+        self.animation.setDuration(200)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self.animation.finished.connect(self._on_animation_finished)
+
+        self._hide_on_finish = False
+
+    def _on_animation_finished(self):
+        if self._hide_on_finish:
+            self.window.hide()
+            self._hide_on_finish = False
+
+    def generate_pos(self) -> QPoint:
         screen_geometry = self.window.screen().geometry()
 
         if self.direction == 'up':
             x = (screen_geometry.width() - self.window.width()) // 2
-            y = -self.window.geometry().height()
+            y = -self.window.height()
         elif self.direction == 'down':
             x = (screen_geometry.width() - self.window.width()) // 2
             y = screen_geometry.height()
@@ -44,10 +55,10 @@ class MoveTransition(QuolTransition):
         if self.animation.state() == QPropertyAnimation.State.Running:
             self.animation.stop()
 
+        self._hide_on_finish = True
+
         self.animation.setStartValue(self.old_pos)
         self.animation.setEndValue(end_pos)
-        self.animation.setDuration(200)
-        self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
         self.animation.start()
 
     def enter(self):
@@ -55,8 +66,9 @@ class MoveTransition(QuolTransition):
         if self.animation.state() == QPropertyAnimation.State.Running:
             self.animation.stop()
 
+        self.window.show()
+        self._hide_on_finish = False
+
         self.animation.setStartValue(start_pos)
         self.animation.setEndValue(self.old_pos)
-        self.animation.setDuration(200)
-        self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
         self.animation.start()

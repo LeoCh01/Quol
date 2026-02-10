@@ -71,7 +71,7 @@ async def update_item(item_name: str, item_ver: int, path: str) -> bool:
             os.rename(item_path, backup_path)
 
         # Download new item
-        is_downloaded = await download_item(f'{item_name}-v{item_ver}', path)
+        is_downloaded = await download_item(f'{item_name}--v{item_ver}', path)
 
         if not is_downloaded:
             # Restore backup if download failed

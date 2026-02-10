@@ -79,7 +79,7 @@ async def update_minor() -> bool:
             else:
                 os.remove(item_path)
 
-            await download_minor(f'{k}-v{settings_new["packages"]["versions"][k]}.zip')
+            await download_minor(f'{k}--v{settings_new["packages"]["versions"][k]}.zip')
 
         except Exception as e:
             logger.exception('Error updating %s: %s', item_path, e)

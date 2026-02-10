@@ -1,8 +1,8 @@
 {
   "startup": false,
-  "reset_pos": false,
+  "reset_pos": true,
   "toggle_key": "`",
-  "transition": "down",
+  "transition": "fade",
   "_": {
     "geometry": [
       10,
@@ -10,7 +10,18 @@
       180,
       1
     ],
-    "tools": [],
+    "tools": [
+      "chance",
+      "chat",
+      "clipboard",
+      "color_picker",
+      "draw",
+      "keymap",
+      "macro",
+      "request",
+      "run_command",
+      "timer"
+    ],
     "name": "Quol"
   }
 }

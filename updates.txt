@@ -10,6 +10,7 @@ TODO
 - Pyside6 6.8.3 migration
 - fix updater not updating version indicator
 - fix dynamic library loading
+- fix color picker crash
 - add open file location
 - a lot of renaming and restructuring
 - proper logging

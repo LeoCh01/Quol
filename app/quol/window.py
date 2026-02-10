@@ -229,8 +229,8 @@ class ManageWindow(QuolSubWindow):
 
                 tool_and_ver = raw_name[:-4]  # Remove '.zip'
 
-                if '-v' in tool_and_ver:
-                    tool_name, version = tool_and_ver.rsplit('-v', 1)
+                if '--v' in tool_and_ver:
+                    tool_name, version = tool_and_ver.rsplit('--v', 1)
                     version = int(version)
                 else:
                     tool_name = tool_and_ver
