@@ -92,7 +92,7 @@ class SystemToolLoader(ToolLoader):
 
 
 class ToolSpec:
-    def __init__(self, path, context: SimpleNamespace=None):
+    def __init__(self, path, context: SimpleNamespace = None):
         self.path = path
         self.config_path = path + '\\res\\config.json'
 

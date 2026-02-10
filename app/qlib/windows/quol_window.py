@@ -29,9 +29,9 @@ class QuolBaseWindow(QWidget):
 
         self.layout = QVBoxLayout(self._body)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.transition = None
 
-        self.is_hidden = True
+        self._transition = None
+        self._is_hidden = True
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -45,7 +45,7 @@ class QuolBaseWindow(QWidget):
         return QRegion(path.toFillPolygon().toPolygon())
 
     def toggle_windows(self, is_hidden, is_instant=False):
-        if self.is_hidden:
+        if self._is_hidden:
             return
 
         if is_instant:
@@ -56,30 +56,30 @@ class QuolBaseWindow(QWidget):
             return
 
         if is_hidden:
-            self.transition.enter()
+            self._transition.enter()
         else:
-            self.transition.exit()
+            self._transition.exit()
 
     def setGeometry(self, *args):
         if len(args) == 1 and isinstance(args[0], QRect):
             super().setGeometry(args[0])
-            if self.transition:
-                self.transition.old_pos = self.pos()
+            if self._transition:
+                self._transition.old_pos = self.pos()
         elif len(args) == 4:
             super().setGeometry(QRect(*args))
-            if self.transition:
-                self.transition.old_pos = self.pos()
+            if self._transition:
+                self._transition.old_pos = self.pos()
         else:
             raise TypeError("setGeometry() accepts either a QRect or (x, y, width, height)")
         self.update()
 
     def show(self):
         super().show()
-        self.is_hidden = False
+        self._is_hidden = False
 
     def close(self):
         super().close()
-        self.is_hidden = True
+        self._is_hidden = True
 
 
 class QuolMainWindow(QuolBaseWindow):
@@ -110,7 +110,7 @@ class QuolMainWindow(QuolBaseWindow):
         self._title_bar = QuolMainTitleBar(self, title, self.config_window)
         self._l1.insertWidget(0, self._title_bar)
 
-        self.transition = self.tool_spec.transition_plugin.create_transition(self)
+        self._transition = self.tool_spec.transition_plugin.create_transition(self)
         self.update()
 
     def on_update_config(self):
@@ -133,7 +133,7 @@ class QuolSubWindow(QuolBaseWindow):
         self._title_bar = QuolSubTitleBar(self, title)
         self._l1.insertWidget(0, self._title_bar)
 
-        self.transition = self.main_window.tool_spec.transition_plugin.create_transition(self)
+        self._transition = self.main_window.tool_spec.transition_plugin.create_transition(self)
 
 
 class QuolResizableSubWindow(QuolSubWindow):

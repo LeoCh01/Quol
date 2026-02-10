@@ -4,15 +4,14 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from launcher import AppLauncher
-from updater import check_for_update
 from qlogging import initialize_logging
-
 from qlib_loader import load_all_modules
 load_all_modules()
 
 from qlib.app import App
+from qlib.launcher import AppLauncher
 from qlib.windows.loading_screen import LoadingScreen
+from qlib.updater import check_for_update
 
 
 def initialize_main_app():

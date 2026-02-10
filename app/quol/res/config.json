@@ -1,8 +1,8 @@
 {
   "startup": false,
-  "reset_pos": true,
+  "reset_pos": false,
   "toggle_key": "`",
-  "transition": "fade",
+  "transition": "cursor",
   "_": {
     "geometry": [
       10,
@@ -20,6 +20,7 @@
       "macro",
       "request",
       "run_command",
+      "testing",
       "timer"
     ],
     "name": "Quol"

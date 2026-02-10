@@ -5,9 +5,9 @@ import httpx
 import os
 import logging
 
-logger = logging.getLogger(__name__)
-
 from qlib.io_helpers import read_json, write_json
+
+logger = logging.getLogger(__name__)
 
 BRANCH = '4.0-refactor'
 # BRANCH = 'main'

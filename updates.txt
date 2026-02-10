@@ -12,6 +12,7 @@ TODO
 - fix dynamic library loading
 - fix color picker crash
 - add open file location
+- add more transitions
 - a lot of renaming and restructuring
 - proper logging
 

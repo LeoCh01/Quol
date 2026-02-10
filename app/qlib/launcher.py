@@ -6,7 +6,7 @@ from PySide6.QtGui import QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 
 from qlib.io_helpers import read_json, write_json
-from updater import update_minor
+from qlib.updater import update_minor
 
 
 class CustomTitleBar(QFrame):
