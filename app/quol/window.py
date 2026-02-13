@@ -7,6 +7,7 @@ from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
 
+from globals import BASE_DIR
 from qlib.io_helpers import read_json
 from qlib.windows.quol_window import QuolMainWindow, QuolSubWindow
 from qlib.windows.tool_loader import ToolSpec
@@ -19,7 +20,7 @@ class MainWindow(QuolMainWindow):
     def __init__(self, app, tool_spec: ToolSpec):
         super().__init__('Quol', tool_spec, default_geometry=(10, 10, 180, 1))
 
-        self.tools_dir = os.path.abspath(os.getcwd() + tool_spec.settings.get('tools_dir', './tools'))
+        self.tools_dir = os.path.abspath(BASE_DIR + tool_spec.settings.get('tools_dir', './tools'))
         logging.info('tools dir :: ' + self.tools_dir)
 
         self.app = app
@@ -42,7 +43,7 @@ class MainWindow(QuolMainWindow):
         self.folder_location_icon = QIcon(tool_spec.path + '/res/img/folder.svg')
         self.folder_location_btn = QPushButton()
         self.folder_location_btn.setIcon(self.folder_location_icon)
-        self.folder_location_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(os.getcwd())))
+        self.folder_location_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(BASE_DIR)))
 
         self.reload_icon = QIcon(tool_spec.path + '/res/img/reload.svg')
         self.reload = QPushButton()

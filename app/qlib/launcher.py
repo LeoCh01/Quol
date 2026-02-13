@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, Q
 from PySide6.QtGui import QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 
+from globals import BASE_DIR
 from qlib.io_helpers import read_json, write_json
 from qlib.updater import update_minor
 
@@ -161,9 +162,9 @@ class AppLauncher(QWidget):
         self.close_timer.start(1000)
 
     def on_dont_show_changed(self, state):
-        settings = read_json(os.getcwd() + '/settings.json')
+        settings = read_json(BASE_DIR + '/settings.json')
         settings['show_updates'] = (state != 2)
-        write_json(os.getcwd() + '/settings.json', settings)
+        write_json(BASE_DIR + '/settings.json', settings)
 
     def on_continue_clicked(self):
         self.hide()

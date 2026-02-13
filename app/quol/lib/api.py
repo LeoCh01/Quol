@@ -5,6 +5,8 @@ import zipfile
 import io
 import os
 from typing import List, Dict, Optional
+
+from globals import BASE_DIR
 from qlib.io_helpers import read_json
 
 logger = logging.getLogger(__name__)
@@ -58,7 +60,7 @@ def is_compatible(version: str) -> bool:
             parts.append('0')
         return int(parts[0]) * 1000000 + int(parts[1]) * 1000 + int(parts[2])
 
-    settings = read_json(os.getcwd() + '/settings.json')
+    settings = read_json(BASE_DIR + '/settings.json')
     return version == "x" or v_to_int(version) <= v_to_int(settings['version'])
 
 

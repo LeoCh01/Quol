@@ -13,8 +13,9 @@ TODO
 - fix color picker crash
 - add open file location
 - add more transitions
-- a lot of renaming and restructuring
+- clean up path configs
 - proper logging
+- a lot of renaming and restructuring
 
 
 3.3.1

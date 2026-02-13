@@ -1,17 +1,17 @@
-import os
 import winreg
+from types import SimpleNamespace
 from typing import List, Optional
 
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 
-from qlib.global_input_manager import GlobalInputManager
+from qlib.input_manager import GlobalInputManager
 from qlib.io_helpers import read_text, read_json, write_json
 from qlib.windows.quol_window import QuolMainWindow
 from qlib.transitions.transition_loader import TransitionLoader
 from qlib.windows.tool_loader import ToolLoader, SystemToolLoader
-from types import SimpleNamespace
+from globals import BASE_DIR
 
 import logging
 
@@ -45,13 +45,13 @@ class App(QObject):
         self.reset_hotkey(self.toggle_key)
 
     def save_settings(self):
-        write_json('settings.json', self.settings)
+        write_json(BASE_DIR + '/settings.json', self.settings)
 
     def load_settings(self):
-        self.settings = read_json(os.getcwd() + '/settings.json')
+        self.settings = read_json(BASE_DIR + '/settings.json')
 
     def load_style_sheet(self):
-        stylesheet = read_text(f'res/styles/{self.settings.get("style")}/styles.qss')
+        stylesheet = read_text(BASE_DIR + f'/res/styles/{self.settings.get("style")}/styles.qss')
         QApplication.instance().setStyleSheet(stylesheet)
 
     def load_transition(self):
@@ -193,14 +193,13 @@ class App(QObject):
     @staticmethod
     def add_to_startup(app_name: str, app_path: str) -> bool:
         try:
-            key = winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER,
-                r"Software\Microsoft\Windows\CurrentVersion\Run",
-                0,
-                winreg.KEY_SET_VALUE
-            )
-            winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, app_path)
-            winreg.CloseKey(key)
+            with winreg.OpenKey(
+                    winreg.HKEY_CURRENT_USER,
+                    r"Software\Microsoft\Windows\CurrentVersion\Run",
+                    0,
+                    winreg.KEY_SET_VALUE
+            ) as key:
+                winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, f'"{app_path}"')
             return True
         except Exception as e:
             logger.exception("Failed to add to startup: %s", e)
@@ -209,14 +208,14 @@ class App(QObject):
     @staticmethod
     def remove_from_startup(app_name: str) -> bool:
         try:
-            key = winreg.OpenKey(
+            with winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
                 r"Software\Microsoft\Windows\CurrentVersion\Run",
                 0,
                 winreg.KEY_ALL_ACCESS
-            )
-            winreg.DeleteValue(key, app_name)
-            winreg.CloseKey(key)
+            ) as key:
+                winreg.DeleteValue(key, app_name)
+                winreg.CloseKey(key)
             return True
         except FileNotFoundError:
             return True
@@ -227,14 +226,14 @@ class App(QObject):
     @staticmethod
     def is_in_startup(app_name: str) -> bool:
         try:
-            key = winreg.OpenKey(
+            with winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
                 r"Software\Microsoft\Windows\CurrentVersion\Run",
                 0,
                 winreg.KEY_READ
-            )
-            value, regtype = winreg.QueryValueEx(key, app_name)
-            winreg.CloseKey(key)
+            ) as key:
+                value, regtype = winreg.QueryValueEx(key, app_name)
+                winreg.CloseKey(key)
             return True
         except FileNotFoundError:
             return False

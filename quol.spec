@@ -11,6 +11,7 @@ a2 = Analysis(
         'pygments',
         'httpx',
         'pynput',
+        'bs4',
     ],
     hookspath=[],
     hooksconfig={},

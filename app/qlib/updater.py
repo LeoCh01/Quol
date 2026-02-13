@@ -5,6 +5,7 @@ import httpx
 import os
 import logging
 
+from globals import BASE_DIR
 from qlib.io_helpers import read_json, write_json
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ BRANCH = '4.0-refactor'
 
 def check_for_update() -> tuple:  # is_new_version, new, old
     try:
-        settings = read_json(os.getcwd() + '/settings.json')
+        settings = read_json(BASE_DIR + '/settings.json')
         if not settings.get('show_updates', True):
             return '', ''
 
@@ -40,9 +41,9 @@ async def download_minor(item: str) -> bool:
             zip_file = io.BytesIO(response.content)
 
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            zip_ref.extractall(os.getcwd())
+            zip_ref.extractall(BASE_DIR)
 
-        logger.info('Successfully extracted %s to %s', item, os.getcwd())
+        logger.info('Successfully extracted %s to %s', item, BASE_DIR)
         return True
 
     except httpx.RequestError as e:
@@ -57,7 +58,7 @@ async def download_minor(item: str) -> bool:
 
 
 async def update_minor() -> bool:
-    settings = read_json(os.getcwd() + '/settings.json')
+    settings = read_json(BASE_DIR + '/settings.json')
 
     try:
         response = httpx.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
@@ -71,7 +72,7 @@ async def update_minor() -> bool:
         if settings['packages']['versions'].get(k, 0) == v:
             continue
 
-        item_path = f'{os.getcwd()}/{k}'
+        item_path = f'{BASE_DIR}/{k}'
 
         try:
             if os.path.isdir(item_path):
@@ -87,7 +88,7 @@ async def update_minor() -> bool:
 
     try:
         settings['packages']['versions'] = settings_new['packages']['versions']
-        write_json(os.getcwd() + '/settings.json', settings)
+        write_json(BASE_DIR + '/settings.json', settings)
     except Exception as e:
         logger.exception('Error updating settings: %s', e)
         return False

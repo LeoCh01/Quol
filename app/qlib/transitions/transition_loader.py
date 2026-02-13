@@ -3,6 +3,7 @@ import os
 import sys
 import importlib
 
+from globals import BASE_DIR
 from qlib.windows.quol_window import QuolBaseWindow
 
 
@@ -15,7 +16,7 @@ class TransitionLoader:
     def __init__(self, name):
         self.name = name
         self.module = None
-        self.path = f'{os.getcwd()}\\transitions\\{self.name}'
+        self.path = f'{BASE_DIR}\\transitions\\{self.name}'
 
     def __enter__(self):
         return self
@@ -29,7 +30,7 @@ class TransitionLoader:
         module_path = self.path + '\\transition.py'
         if not os.path.exists(module_path):
             logging.error(f'Script {self.name} does not exist at {module_path}.')
-            module_path = f'{os.getcwd()}\\transitions\\rand\\transition.py'
+            module_path = f'{BASE_DIR}\\transitions\\rand\\transition.py'
 
         spec = importlib.util.spec_from_file_location(self.name, module_path)
         self.module = importlib.util.module_from_spec(spec)

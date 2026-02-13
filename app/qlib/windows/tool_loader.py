@@ -4,7 +4,8 @@ import sys
 import importlib
 from types import SimpleNamespace
 
-from qlib.global_input_manager import GlobalInputManager
+from globals import BASE_DIR
+from qlib.input_manager import GlobalInputManager
 from qlib.io_helpers import read_json, write_json
 
 
@@ -12,7 +13,7 @@ class ToolLoader:
     def __init__(self, name, tools_dir):
         self.name = name
         self.module = None
-        self.path = os.path.abspath(os.getcwd() + f'\\{tools_dir}\\{name}')
+        self.path = os.path.abspath(BASE_DIR + f'\\{tools_dir}\\{name}')
         self._added_sys_paths = []
 
     def __enter__(self):
@@ -85,7 +86,7 @@ class ToolLoader:
 class SystemToolLoader(ToolLoader):
     def __init__(self):
         super().__init__('quol', '')
-        self.path = f'{os.getcwd()}\\quol'
+        self.path = f'{BASE_DIR}\\quol'
 
     def create_window(self, context, app=None):
         return self.module.MainWindow(app, ToolSpec(self.path, context))
