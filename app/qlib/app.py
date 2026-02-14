@@ -1,9 +1,8 @@
-import winreg
 from types import SimpleNamespace
 from typing import List, Optional
 
 from PySide6.QtGui import QIcon, QAction
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, QObject, QSettings
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 
 from qlib.input_manager import GlobalInputManager
@@ -16,6 +15,7 @@ from globals import BASE_DIR
 import logging
 
 logger = logging.getLogger(__name__)
+RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 
 
 class App(QObject):
@@ -192,51 +192,17 @@ class App(QObject):
 
     @staticmethod
     def add_to_startup(app_name: str, app_path: str) -> bool:
-        try:
-            with winreg.OpenKey(
-                    winreg.HKEY_CURRENT_USER,
-                    r"Software\Microsoft\Windows\CurrentVersion\Run",
-                    0,
-                    winreg.KEY_SET_VALUE
-            ) as key:
-                winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, f'"{app_path}"')
-            return True
-        except Exception as e:
-            logger.exception("Failed to add to startup: %s", e)
-            return False
+        q_settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
+        q_settings.setValue(app_name, f'"{app_path}"')
+        return True
 
     @staticmethod
     def remove_from_startup(app_name: str) -> bool:
-        try:
-            with winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER,
-                r"Software\Microsoft\Windows\CurrentVersion\Run",
-                0,
-                winreg.KEY_ALL_ACCESS
-            ) as key:
-                winreg.DeleteValue(key, app_name)
-                winreg.CloseKey(key)
-            return True
-        except FileNotFoundError:
-            return True
-        except Exception as e:
-            logger.exception("Failed to remove from startup: %s", e)
-            return False
+        q_settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
+        q_settings.remove(app_name)
+        return True
 
     @staticmethod
     def is_in_startup(app_name: str) -> bool:
-        try:
-            with winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER,
-                r"Software\Microsoft\Windows\CurrentVersion\Run",
-                0,
-                winreg.KEY_READ
-            ) as key:
-                value, regtype = winreg.QueryValueEx(key, app_name)
-                winreg.CloseKey(key)
-            return True
-        except FileNotFoundError:
-            return False
-        except Exception as e:
-            logger.exception("Error checking startup: %s", e)
-            return False
+        q_settings = QSettings(RUN_PATH, QSettings.Format.NativeFormat)
+        return q_settings.contains(app_name)

@@ -69,7 +69,7 @@ coll = COLLECT(
     a2.binaries,
     a2.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='Quol',
 )
