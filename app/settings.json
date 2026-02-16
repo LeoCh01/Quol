@@ -8,7 +8,9 @@
   "transition": "cursor",
   "is_default_pos": false,
   "tools_dir": "./../../Quol Tools/src",
-  "tools": [],
+  "tools": [
+    "keymap"
+  ],
   "show_updates": true,
   "admin_key": "",
   "packages": {

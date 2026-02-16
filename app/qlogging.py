@@ -18,7 +18,7 @@ class ColorFormatter(logging.Formatter):
         return f"{color}{message}{self.RESET}"
 
 
-def initialize_logging():
+def initialize_logging(base_dir: str):
     logging.root.setLevel(logging.INFO)
 
     stream_formatter = ColorFormatter(
@@ -33,7 +33,7 @@ def initialize_logging():
     stream_handler.setLevel(logging.INFO)
     stream_handler.setFormatter(stream_formatter)
 
-    file_handler = logging.FileHandler('error.log', mode='a')
+    file_handler = logging.FileHandler(base_dir + '/error.log', mode='a')
     file_handler.setLevel(logging.ERROR)
     file_handler.setFormatter(file_formatter)
 

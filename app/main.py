@@ -39,8 +39,7 @@ def initialize_main_app(App, LoadingScreen):
 
 
 def setup_runtime_environment():
-    logging.info('Starting Quol...')
-    logging.info('Current working directory: %s', os.getcwd())
+    print('Starting Quol...')
 
     global BASE_DIR
     if getattr(sys, "frozen", False):
@@ -49,11 +48,11 @@ def setup_runtime_environment():
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
     set_dir(BASE_DIR)
-    logging.info('Switched working directory: %s', BASE_DIR)
 
 
-def main():
+if __name__ == '__main__':
     setup_runtime_environment()
+    initialize_logging(BASE_DIR)
 
     App, AppLauncher, LoadingScreen, check_for_update = bootstrap_dependencies()
 
@@ -68,8 +67,3 @@ def main():
         initialize_main_app(App, LoadingScreen)
 
     quol_app.exec()
-
-
-if __name__ == '__main__':
-    initialize_logging()
-    main()

@@ -21,7 +21,6 @@ class MainWindow(QuolMainWindow):
         super().__init__('Quol', tool_spec, default_geometry=(10, 10, 180, 1))
 
         self.tools_dir = os.path.abspath(BASE_DIR + tool_spec.settings.get('tools_dir', './tools'))
-        logging.info('tools dir :: ' + self.tools_dir)
 
         self.app = app
         self.settings_to_config()

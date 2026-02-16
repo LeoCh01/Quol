@@ -184,12 +184,6 @@ class GlobalInputManager:
         self.send_event = False
 
     def _win32_event_filter(self, msg, data):
-        def run(callbacks_dict):
-            for callback, suppressed in list(callbacks_dict.values()):
-                callback(key)
-                if key in suppressed:
-                    self._filter_suppressed = True
-
         if self.send_event:
             return
 
@@ -200,35 +194,29 @@ class GlobalInputManager:
             if key:
                 self._pressed_keys.add(key.lower())
 
-            # Check hotkeys
-            for hid, (combo, cb, supp) in self.hotkey_callbacks.items():
-                hotkey_keys = set(combo.split('+'))
-                if hotkey_keys.issubset(self._pressed_keys):
-                    if hid not in self._active_hotkeys:
-                        self._active_hotkeys.add(hid)
+                # Check hotkeys
+                for hid, (combo, cb, supp) in self.hotkey_callbacks.items():
+                    hotkey_keys = set(combo.split('+'))
+                    if hotkey_keys.issubset(self._pressed_keys):
                         cb()
                         if supp:
                             self._filter_suppressed = True
-                else:
-                    self._active_hotkeys.discard(hid)
-            run(self.key_press_callbacks)
+
+            # Run key press listeners
+            for callback, suppressed in list(self.key_press_callbacks.values()):
+                callback(key)
+                if key in suppressed:
+                    self._filter_suppressed = True
 
         elif msg == 257:  # WM_KEYUP
             if key:
                 self._pressed_keys.discard(key.lower())
 
-                # Check hotkeys to remove from active
-                for hid in list(self._active_hotkeys):
-                    combo, _, _ = self.hotkey_callbacks.get(hid, (None, None, None))
-                    if combo:
-                        hotkey_keys = set(combo.split('+'))
-                        if not hotkey_keys.issubset(self._pressed_keys):
-                            self._active_hotkeys.discard(hid)
-
-            if not self._pressed_keys:
-                self._active_hotkeys.clear()
-
-            run(self.key_release_callbacks)
+            # Run key release listeners
+            for callback, suppressed in list(self.key_release_callbacks.values()):
+                callback(key)
+                if key in suppressed:
+                    self._filter_suppressed = True
 
         if self._filter_suppressed:
             self._keyboard_listener.suppress_event()

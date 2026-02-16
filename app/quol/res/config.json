@@ -10,7 +10,9 @@
       180,
       1
     ],
-    "tools": [],
+    "tools": [
+      "keymap"
+    ],
     "name": "Quol"
   }
 }
