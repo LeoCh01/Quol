@@ -107,7 +107,6 @@ class App(QObject):
 
     def toggle_hidden(self, is_hidden):
         self.is_hidden = not is_hidden
-        print('Toggling hidden to', is_hidden)
 
     def set_toggle_key(self, key):
         key = str(key)

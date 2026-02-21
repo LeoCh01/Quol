@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Signal, QRect, QPoint
 from PySide6.QtGui import QPainterPath, QRegion
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QHBoxLayout, QPushButton, QGroupBox, QCheckBox, QLabel, \
-    QLineEdit, QApplication
+    QLineEdit, QApplication, QComboBox
 
 from qlib.io_helpers import read_json
 from qlib.windows.quol_titlebar import QuolSubTitleBar, QuolMainTitleBar
@@ -326,6 +326,18 @@ class QuolConfigWindow(QuolSubWindow):
                 for k, v in value.items():
                     add_to_layout(group_layout, create_item(k, v))
                 return group_box
+            elif isinstance(value, list) and len(value) == 2 and isinstance(value[0], list) and isinstance(value[1], int):
+                combo = QComboBox()
+                for item in value[0]:
+                    combo.addItem(str(item))
+                idx = value[1]
+                if 0 <= idx < combo.count():
+                    combo.setCurrentIndex(idx)
+                layout = QHBoxLayout()
+                label = QLabel(key)
+                layout.addWidget(label)
+                layout.addWidget(combo, 1)
+                return layout
             else:
                 input_field = QLineEdit()
                 input_field.setText(str(value))
@@ -365,6 +377,9 @@ class QuolConfigWindow(QuolSubWindow):
                             result[k] = float(text)
                         else:
                             result[k] = text
+                    elif isinstance(value, QComboBox):
+                        options = [value.itemText(j) for j in range(value.count())]
+                        result[k] = [options, value.currentIndex()]
 
             return result
 

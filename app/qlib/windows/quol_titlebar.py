@@ -42,7 +42,7 @@ class QuolMainTitleBar(QuolBaseTitleBar):
 
         if config_window:
             self.config_btn = QPushButton(self)
-            self.config_btn.setIcon(QIcon(BASE_DIR + '/res/icons/config.png'))
+            self.config_btn.setIcon(QIcon(BASE_DIR + '/res/icons/config.svg'))
             self.config_btn.clicked.connect(config_window.show)
             self._l1.addWidget(self.config_btn, stretch=1)
 
