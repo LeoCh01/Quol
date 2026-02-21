@@ -35,7 +35,6 @@ class AppLauncher(QWidget):
         super().__init__()
         self.new_version = new
         self.old_version = old
-        major = new.split('.')[0:2] != old.split('.')[0:2]
         self.on_continue = on_continue_callback
         self.drag_pos = QPoint()
 
@@ -68,10 +67,11 @@ class AppLauncher(QWidget):
         self.layout.addWidget(self.title_bar)
         self.title_bar.close_btn.clicked.connect(self.close)
 
+        major = new.split('.')[0] != old.split('.')[0]
         if major:
             self.init_major_update_ui()
         else:
-            self.init_patch_update_ui()
+            self.init_minor_update_ui()
 
     def init_major_update_ui(self):
         self.main_content = QFrame()
@@ -81,7 +81,7 @@ class AppLauncher(QWidget):
         content_layout.addWidget(self.label)
 
         self.update_btn = QPushButton('Go to Releases')
-        self.update_btn.clicked.connect(self.on_update_clicked)
+        self.update_btn.clicked.connect(self.on_major_update_clicked)
         content_layout.addWidget(self.update_btn)
 
         self.cont_btn = QPushButton('Continue without Updating')
@@ -95,15 +95,15 @@ class AppLauncher(QWidget):
 
         self.layout.addWidget(self.main_content)
 
-    def init_patch_update_ui(self):
+    def init_minor_update_ui(self):
         self.main_content = QFrame()
         content_layout = QVBoxLayout(self.main_content)
 
-        self.label = QLabel(f'Patch update available! (v{self.new_version})')
+        self.label = QLabel(f'Minor update available! (v{self.new_version})')
         content_layout.addWidget(self.label)
 
         self.update_btn = QPushButton('Update')
-        self.update_btn.clicked.connect(lambda: QTimer.singleShot(0, lambda: asyncio.run(self.on_patch_update())))
+        self.update_btn.clicked.connect(lambda: QTimer.singleShot(0, lambda: asyncio.run(self.on_minor_update())))
         content_layout.addWidget(self.update_btn)
 
         self.cont_btn = QPushButton('Continue without Updating')
@@ -117,11 +117,11 @@ class AppLauncher(QWidget):
 
         self.layout.addWidget(self.main_content)
 
-    def on_update_clicked(self):
+    def on_major_update_clicked(self):
         QDesktopServices.openUrl(QUrl("https://github.com/LeoCh01/Quol/releases/latest"))
         self.close()
 
-    async def on_patch_update(self):
+    async def on_minor_update(self):
         self.label.setText("Updating...")
         self.update_btn.setEnabled(False)
         self.cont_btn.setEnabled(False)

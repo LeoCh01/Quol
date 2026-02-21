@@ -12,5 +12,10 @@
   "show_updates": true,
   "admin_key": "",
   "package_version": 1,
-  "packages": ["qlib", "quol", "res", "transitions"]
+  "packages": [
+    "qlib",
+    "quol",
+    "res",
+    "transitions"
+  ]
 }

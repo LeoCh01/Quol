@@ -70,6 +70,7 @@ async def update_minor() -> bool:
 
     if settings.get('package_version') == settings_new.get('package_version'):
         logger.info('Package version is already up to date')
+        settings['version'] = settings_new['version']
         return True
 
     # Rename packages to temp names for error handling
@@ -124,8 +125,11 @@ async def update_minor() -> bool:
         return False
 
     try:
+        print('Update successful. Cleaning up and updating settings...')
         settings['package_version'] = settings_new['package_version']
         settings['packages'] = settings_new['packages']
+        settings['version'] = settings_new['version']
+        print('New version:', settings_new['version'])
         write_json(BASE_DIR + '/settings.json', settings)
     except Exception as e:
         logger.error('Error updating settings: %s', e)

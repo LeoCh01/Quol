@@ -15,9 +15,9 @@ def bootstrap_dependencies():
     load_all_modules()
 
     from qlib.app import App
-    from qlib.launcher import AppLauncher
     from qlib.windows.loading_screen import LoadingScreen
-    from qlib.updater import check_for_update
+    from launcher import AppLauncher
+    from updater import check_for_update
 
     return App, AppLauncher, LoadingScreen, check_for_update
 
