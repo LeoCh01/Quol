@@ -20,9 +20,8 @@ class MainWindow(QuolMainWindow):
     def __init__(self, app, tool_spec: ToolSpec):
         super().__init__('Quol', tool_spec, default_geometry=(10, 10, 180, 1))
 
-        self.tools_dir = os.path.abspath(BASE_DIR + tool_spec.settings.get('tools_dir', './tools'))
-
         self.app = app
+        self.tools_dir = app.tools_dir
         self.settings_to_config()
 
         self.manager = QPushButton('Manage Tools')

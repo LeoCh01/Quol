@@ -161,7 +161,8 @@ class AppLauncher(QWidget):
         self.close_timer.timeout.connect(update_countdown)
         self.close_timer.start(1000)
 
-    def on_dont_show_changed(self, state):
+    @staticmethod
+    def on_dont_show_changed(state):
         settings = read_json(BASE_DIR + '/settings.json')
         settings['show_updates'] = (state != 2)
         write_json(BASE_DIR + '/settings.json', settings)

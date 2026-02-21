@@ -13,7 +13,7 @@ class ToolLoader:
     def __init__(self, name, tools_dir):
         self.name = name
         self.module = None
-        self.path = os.path.abspath(BASE_DIR + f'\\{tools_dir}\\{name}')
+        self.path = f'{tools_dir}\\{name}'
         self._added_sys_paths = []
 
     def __enter__(self):

@@ -28,7 +28,7 @@ class App(QObject):
         self.settings: Optional[dict] = None
         self.load_settings()
 
-        self.tools_dir = self.settings.get('tools_dir', './tools')
+        self.tools_dir = f'{BASE_DIR}/{self.settings.get("tools_dir", "tools")}'
         self.is_hidden: bool = False
         self.is_reset: bool = self.settings.get('is_default_pos', True)
         self.tray_icon: Optional[QSystemTrayIcon] = None
@@ -75,19 +75,19 @@ class App(QObject):
         context.get_is_hidden = self.get_is_hidden
         context.input_manager = self.input_manager
 
-        plugin = SystemToolLoader()
-        plugin.load()
-        self.tools.append(plugin.create_window(context, self))
+        main_tool = SystemToolLoader()
+        main_tool.load()
+        self.tools.append(main_tool.create_window(context, self))
         working_tools = []
 
         for name in self.settings.get('tools'):
             logger.info('loading %s', name)
-            plugin = ToolLoader(name, self.tools_dir)
-            if not plugin.load():
+            tool = ToolLoader(name, self.tools_dir)
+            if not tool.load():
                 logger.warning('Failed to load window %s. Skipping...', name)
                 continue
             working_tools.append(name)
-            self.tools.append(plugin.create_window(context))
+            self.tools.append(tool.create_window(context))
 
         self.settings['tools'] = working_tools
         self.save_settings()
@@ -124,7 +124,7 @@ class App(QObject):
             self.tray_icon.hide()
             self.tray_icon.deleteLater()
 
-        self.tray_icon = QSystemTrayIcon(QIcon('res/icons/icon.ico'), parent=self)
+        self.tray_icon = QSystemTrayIcon(QIcon(BASE_DIR + '/res/icons/icon.ico'), parent=self)
         self.tray_icon.setToolTip('Quol')
         tray_menu = QMenu()
 

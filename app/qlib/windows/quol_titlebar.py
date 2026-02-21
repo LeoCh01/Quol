@@ -2,6 +2,8 @@ from PySide6.QtCore import Qt, QRect, QPoint
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QFrame
 
+from globals import BASE_DIR
+
 
 class QuolBaseTitleBar(QFrame):
     def __init__(self, quol_window: "QuolBaseWindow", title='Custom Title Bar'):
@@ -40,7 +42,7 @@ class QuolMainTitleBar(QuolBaseTitleBar):
 
         if config_window:
             self.config_btn = QPushButton(self)
-            self.config_btn.setIcon(QIcon('res/icons/config.png'))
+            self.config_btn.setIcon(QIcon(BASE_DIR + '/res/icons/config.png'))
             self.config_btn.clicked.connect(config_window.show)
             self._l1.addWidget(self.config_btn, stretch=1)
 

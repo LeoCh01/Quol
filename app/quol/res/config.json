@@ -2,7 +2,7 @@
   "startup": false,
   "reset_pos": false,
   "toggle_key": "`",
-  "transition": "cursor",
+  "transition": "rand",
   "_": {
     "geometry": [
       10,
@@ -10,9 +10,7 @@
       180,
       1
     ],
-    "tools": [
-      "keymap"
-    ],
+    "tools": [],
     "name": "Quol"
   }
 }

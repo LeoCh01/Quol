@@ -5,12 +5,10 @@
   "startup": false,
   "toggle_key": "`",
   "style": "dark",
-  "transition": "cursor",
+  "transition": "rand",
   "is_default_pos": false,
-  "tools_dir": "./../../Quol Tools/src",
-  "tools": [
-    "keymap"
-  ],
+  "tools_dir": "../../Quol Tools/src",
+  "tools": [],
   "show_updates": true,
   "admin_key": "",
   "packages": {
