@@ -43,22 +43,24 @@ class QuolBaseWindow(QWidget):
         radius = 6
         path.addRoundedRect(rect, radius, radius)
         return QRegion(path.toFillPolygon().toPolygon())
-
-    def toggle_windows(self, is_hidden, is_instant=False):
+    
+    def toggle_tool(self, is_hidden):
         if self._is_hidden:
-            return
-
-        if is_instant:
-            if is_hidden:
-                self.hide()
-            else:
-                self.show()
             return
 
         if is_hidden:
             self._transition.enter()
         else:
             self._transition.exit()
+    
+    def toggle_tool_instant(self, is_hidden):
+        if self._is_hidden:
+            return
+        
+        if is_hidden:
+            self.show()
+        else:
+            self.hide()
 
     def setGeometry(self, *args):
         if len(args) == 1 and isinstance(args[0], QRect):

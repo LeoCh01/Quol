@@ -19,7 +19,8 @@ RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
 
 
 class App(QObject):
-    toggle = Signal(bool, bool)
+    toggle = Signal(bool)
+    toggle_instant = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -67,9 +68,8 @@ class App(QObject):
         transition_plugin = self.load_transition()
 
         context = SimpleNamespace()
-        context.toggle = self.toggle
-        context.toggle_tools = self.toggle_tools
-        context.toggle_tools_instant = self.toggle_tools_instant
+        context.toggle_signal = self.toggle
+        context.toggle_instant_signal = self.toggle_instant
         context.transition_plugin = transition_plugin
         context.settings = self.settings
         context.get_is_hidden = self.get_is_hidden
@@ -92,21 +92,22 @@ class App(QObject):
         self.settings['tools'] = working_tools
         self.save_settings()
 
+        self.toggle.connect(self.toggle_hidden)
+        self.toggle_instant.connect(self.toggle_hidden)
+
         for window in self.tools:
-            self.toggle.connect(window.toggle_windows)
+            self.toggle.connect(window.toggle_tool)
+            self.toggle_instant.connect(window.toggle_tool_instant)
             window.show()
 
     def reset_hotkey(self, new_key: str):
         self.input_manager.remove_hotkey(self.toggle_key_id)
         self.toggle_key = new_key
-        self.toggle_key_id = self.input_manager.add_hotkey(new_key, self.toggle_tools, suppressed=True)
+        self.toggle_key_id = self.input_manager.add_hotkey(new_key, lambda: self.toggle.emit(self.is_hidden), suppressed=True)
 
-    def toggle_tools(self):
-        self.toggle.emit(self.is_hidden, False)
-        self.is_hidden = not self.is_hidden
-
-    def toggle_tools_instant(self, show):
-        self.toggle.emit(show, True)
+    def toggle_hidden(self, is_hidden):
+        self.is_hidden = not is_hidden
+        print('Toggling hidden to', is_hidden)
 
     def set_toggle_key(self, key):
         key = str(key)
@@ -150,7 +151,8 @@ class App(QObject):
     def close_all(self):
         for w in self.tools:
             try:
-                self.toggle.disconnect(w.toggle_windows)
+                self.toggle.disconnect(w.toggle_tool)
+                self.toggle_instant.disconnect(w.toggle_tool_instant)
             except RuntimeError:
                 pass
             
@@ -164,6 +166,12 @@ class App(QObject):
             
             w.close()
             w.deleteLater()
+
+        try:
+            self.toggle.disconnect(self.toggle_hidden)
+            self.toggle_instant.disconnect(self.toggle_hidden)
+        except RuntimeError:
+            pass
 
         self.tools.clear()
         self.toggle_key_id = None

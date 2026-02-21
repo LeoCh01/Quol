@@ -97,9 +97,8 @@ class ToolSpec:
         self.path = path
         self.config_path = path + '\\res\\config.json'
 
-        self.toggle = getattr(context, 'toggle', None)
-        self.toggle_windows = getattr(context, 'toggle_tools', None)
-        self.toggle_windows_instant = getattr(context, 'toggle_tools_instant', None)
+        self.toggle_signal = getattr(context, 'toggle_signal', None)
+        self.toggle_instant_signal = getattr(context, 'toggle_instant_signal', None)
         self.transition_plugin = getattr(context, 'transition_plugin', None)
         self.settings = getattr(context, 'settings', None)
         self.get_is_hidden = getattr(context, 'get_is_hidden', None)
