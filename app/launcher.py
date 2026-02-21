@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, QPoint, QTimer, QUrl
 
 from globals import BASE_DIR
 from qlib.io_helpers import read_json, write_json
-from qlib.updater import update_minor
+from updater import update_minor
 
 
 class CustomTitleBar(QFrame):

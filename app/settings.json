@@ -11,12 +11,6 @@
   "tools": [],
   "show_updates": true,
   "admin_key": "",
-  "packages": {
-    "versions": {
-      "quol": 1,
-      "qlib": 1,
-      "res": 1,
-      "transitions": 1
-    }
-  }
+  "package_version": 1,
+  "packages": ["qlib", "quol", "res", "transitions"]
 }
