@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -6,37 +7,45 @@ from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QGridLayout, QListWidget, QPushButton, QHBoxLayout, QListWidgetItem, QWidget, QLabel, \
     QCheckBox, QTabWidget, QVBoxLayout
 
-from lib.io_helpers import write_json
-from lib.quol_window import QuolMainWindow, QuolSubWindow
-from lib.window_loader import WindowInfo, WindowContext
+from globals import BASE_DIR
+from qlib.io_helpers import read_json
+from qlib.windows.quol_window import QuolMainWindow, QuolSubWindow
+from qlib.windows.tool_loader import ToolSpec
 from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
 from lib.notes import NotesWindow
 
 
 class MainWindow(QuolMainWindow):
-    def __init__(self, app, window_info: WindowInfo, window_context: WindowContext):
-        super().__init__('Quol', window_info, window_context, default_geometry=(10, 10, 180, 1))
-
-        self.tools_dir = os.path.abspath(os.getcwd() + window_context.settings.get('tools_dir', './tools'))
-        print(self.tools_dir)
+    def __init__(self, app, tool_spec: ToolSpec):
+        super().__init__('Quol', tool_spec, default_geometry=(10, 10, 180, 1))
 
         self.app = app
+        self.tools_dir = app.tools_dir
         self.settings_to_config()
 
         self.manager = QPushButton('Manage Tools')
         self.manager.clicked.connect(self.show_manage_tools)
 
-        self.ver = QPushButton(f'v{self.app.settings['version']}')
+        self.ver_icon = QIcon(tool_spec.path + '/res/img/code.svg')
+        self.ver = QPushButton()
+        self.ver.setIcon(self.ver_icon)
         self.ver.clicked.connect(self.open_url)
 
-        self.msg_board = NotesWindow(self, window_context.settings.get('admin_key'))
-        self.msg_board_icon = QIcon(self.window_info.path + '/res/img/notes.svg')
+        self.msg_board = NotesWindow(self, tool_spec.settings.get('admin_key'))
+        self.msg_board_icon = QIcon(tool_spec.path + '/res/img/news.svg')
         self.msg_board_btn = QPushButton()
         self.msg_board_btn.clicked.connect(self.on_msg_board)
         self.msg_board_btn.setIcon(self.msg_board_icon)
 
-        self.reload = QPushButton('Reload')
+        self.folder_location_icon = QIcon(tool_spec.path + '/res/img/folder.svg')
+        self.folder_location_btn = QPushButton()
+        self.folder_location_btn.setIcon(self.folder_location_icon)
+        self.folder_location_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(BASE_DIR)))
+
+        self.reload_icon = QIcon(tool_spec.path + '/res/img/reload.svg')
+        self.reload = QPushButton()
+        self.reload.setIcon(self.reload_icon)
         self.reload.clicked.connect(self.app.reload)
 
         self.q = QPushButton('Quit')
@@ -44,11 +53,12 @@ class MainWindow(QuolMainWindow):
         self.q.clicked.connect(self.app.exit_app)
 
         self.grid_layout = QGridLayout()
-        self.grid_layout.addWidget(self.manager, 0, 0, 1, 2)
+        self.grid_layout.addWidget(self.manager, 0, 0, 1, 3)
         self.grid_layout.addWidget(self.ver, 1, 0, 1, 1)
         self.grid_layout.addWidget(self.msg_board_btn, 1, 1, 1, 1)
+        self.grid_layout.addWidget(self.folder_location_btn, 1, 2, 1, 1)
         self.grid_layout.addWidget(self.reload, 2, 0)
-        self.grid_layout.addWidget(self.q, 2, 1)
+        self.grid_layout.addWidget(self.q, 2, 1, 1, 2)
 
         self.layout.addLayout(self.grid_layout)
 
@@ -96,7 +106,7 @@ class MainWindow(QuolMainWindow):
         self.config['_']['name'] = self.app.settings['name']
         self.config['_']['tools'] = self.app.settings['tools']
 
-        write_json(self.window_info.config_path, self.config)
+        self.tool_spec.save_config(self.config)
 
     def toggle_startup(self):
         if self.config['startup'] == self.app.settings['startup']:
@@ -104,10 +114,10 @@ class MainWindow(QuolMainWindow):
 
         if self.config['startup']:
             self.app.add_to_startup(self.app_name, self.app_path)
-            print(f'Added {self.app_name} to startup with path: {self.app_path}')
+            logging.info(f'Added {self.app_name} to startup with path: {self.app_path}')
         else:
             self.app.remove_from_startup(self.app_name)
-            print(f'Removed {self.app_name} from startup')
+            logging.info(f'Removed {self.app_name} from startup')
 
     def closeEvent(self, event):
         super().closeEvent(event)
@@ -155,34 +165,27 @@ class ManageWindow(QuolSubWindow):
         if not os.path.exists(self.tools_dir):
             os.makedirs(self.tools_dir)
 
-        installed = [name for name in os.listdir(self.tools_dir)
-                     if os.path.isdir(os.path.join(self.tools_dir, name))
-                     and not name.startswith('__') and name != 'quol']
+        installed = [name for name in os.listdir(self.tools_dir) if os.path.isdir(os.path.join(self.tools_dir, name))]
         active = self.main_window.config['_']['tools']
 
         self.list_widget.clear()
 
         self.checkbox_list = []
 
-        for window in sorted(installed):
-            if '-v' in window:
-                name_part, version = window.rsplit('-v', 1)
-                version = 'v' + version
-            else:
-                name_part = window
-                version = 'v0'
-
-            display_name = f"{name_part} ({version})"
+        for tool in sorted(installed):
+            config = read_json(os.path.join(self.tools_dir, tool, 'res/config.json'))
+            version = config['_'].get('version', 0)
+            display_name = f"{tool} (v{version})"
 
             item_widget = QWidget()
             layout = QHBoxLayout(item_widget)
             layout.setContentsMargins(5, 2, 5, 2)
 
             name_label = QLabel(display_name)
-            status_label = QLabel("Active" if window in active else "Inactive")
+            status_label = QLabel("Active" if tool in active else "Inactive")
             checkbox = QCheckBox()
-            checkbox.setChecked(window in active)
-            checkbox.stateChanged.connect(lambda s, w=window, sl=status_label: self.on_update_checkbox(s, w, sl))
+            checkbox.setChecked(tool in active)
+            checkbox.stateChanged.connect(lambda s, t=tool, sl=status_label: self.on_update_checkbox(s, t, sl))
             self.checkbox_list.append(checkbox)
 
             layout.addWidget(name_label)
@@ -195,13 +198,13 @@ class ManageWindow(QuolSubWindow):
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, item_widget)
 
-    def on_update_checkbox(self, checked, w, status_label):
+    def on_update_checkbox(self, checked, t, status_label):
         status_label.setText("Active" if checked else "Inactive")
 
-        if checked and w not in self.main_window.config['_']['tools']:
-            self.main_window.config['_']['tools'].append(w)
-        elif not checked and w in self.main_window.config['_']['tools']:
-            self.main_window.config['_']['tools'].remove(w)
+        if checked and t not in self.main_window.config['_']['tools']:
+            self.main_window.config['_']['tools'].append(t)
+        elif not checked and t in self.main_window.config['_']['tools']:
+            self.main_window.config['_']['tools'].remove(t)
 
         self.main_window.config_to_settings()
 
@@ -223,43 +226,45 @@ class ManageWindow(QuolSubWindow):
                 if not raw_name.endswith('.zip'):
                     continue
 
-                full_tool_name = raw_name[:-4]  # Remove '.zip'
+                tool_and_ver = raw_name[:-4]  # Remove '.zip'
 
-                if '-v' in full_tool_name:
-                    name_part, version = full_tool_name.rsplit('-v', 1)
-                    version = 'v' + version
+                if '--v' in tool_and_ver:
+                    tool_name, version = tool_and_ver.rsplit('--v', 1)
+                    version = int(version)
                 else:
-                    name_part = full_tool_name
-                    version = 'v0'
+                    tool_name = tool_and_ver
+                    version = 0
 
-                matching_installed = [x for x in installed if x.startswith(name_part + '-v')]
-                current_version_installed = name_part + '-' + version in matching_installed
+                is_installed = bool(tool_name in installed)
+                is_matching_installed = False
+
+                if is_installed:
+                    config = read_json(os.path.join(self.tools_dir, str(tool_name), 'res/config.json'))
+                    is_matching_installed = bool(version == config['_'].get('version', -1))
 
                 item_widget = QWidget()
                 layout = QHBoxLayout(item_widget)
                 layout.setContentsMargins(5, 2, 5, 2)
 
-                name_label = QLabel(f"{name_part} ({version})")
+                name_label = QLabel(f"{tool_name} (v{version})")
 
-                if current_version_installed:
+                if is_matching_installed:
                     status_label = QLabel("Installed")
                     status_label.setStyleSheet("color: #4CAF50;")
                     layout.addWidget(name_label)
                     layout.addStretch()
                     layout.addWidget(status_label)
-                elif matching_installed:
+                elif is_installed:
                     update_button = QPushButton("Update")
                     update_button.setStyleSheet("padding: 5px; color: yellow;")
-                    update_button.clicked.connect(lambda _, new_name=full_tool_name, old_name=matching_installed[0],
-                                                         b=update_button: self.on_update(new_name, old_name, b))
+                    update_button.clicked.connect(lambda _, name=tool_name, ver=version, b=update_button: self.on_update(name, ver, b))
                     layout.addWidget(name_label)
                     layout.addStretch()
                     layout.addWidget(update_button)
                 else:
                     install_button = QPushButton("Install")
                     install_button.setStyleSheet("padding: 5px;")
-                    install_button.clicked.connect(
-                        lambda _, name=full_tool_name, b=install_button: self.on_install(name, b))
+                    install_button.clicked.connect(lambda _, name=tool_and_ver, b=install_button: self.on_install(name, b))
 
                     layout.addWidget(name_label)
                     layout.addStretch()
@@ -271,7 +276,7 @@ class ManageWindow(QuolSubWindow):
                 self.store_list_widget.setItemWidget(item, item_widget)
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: print(f"Error fetching store items: {e}"))
+        worker.error.connect(lambda e: logging.error(f"Error fetching store items: {e}"))
         worker.start()
 
     def on_install(self, name, button):
@@ -286,19 +291,15 @@ class ManageWindow(QuolSubWindow):
             self.refresh_store_list()
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: print(f"Error installing {name}: {e}"))
+        worker.error.connect(lambda e: logging.error(f"Error installing {name}: {e}"))
         worker.start()
 
-    def on_update(self, new_name, old_name, button):
+    def on_update(self, name, ver, button):
 
         button.setDisabled(True)
         button.setText("Updating...")
 
-        if old_name in self.main_window.config['_']['tools']:
-            self.main_window.config['_']['tools'].remove(old_name)
-            self.main_window.config['_']['tools'].append(new_name)
-
-        worker = Worker(update_item, new_name, old_name, self.tools_dir)
+        worker = Worker(update_item, name, ver, self.tools_dir)
         self.workers.append(worker)
 
         def on_finished(result):
@@ -307,5 +308,5 @@ class ManageWindow(QuolSubWindow):
             self.workers.remove(worker)
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: print(f"Error updating {old_name} to {new_name}: {e}"))
+        worker.error.connect(lambda e: logging.error(f"Error updating {name}: {e}"))
         worker.start()

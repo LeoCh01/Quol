@@ -1,8 +1,24 @@
 TODO
-- python 3.14 multithreading
 - add tooltips
+- dropdown setting or search filter in config
+- hide on toggle optimization
+- opencv support
 
-3.3.1 (LATEST)
+
+4.0.0 (CURRENT)
+- global hotkey bugfixes
+- Pyside6 6.8.3 migration
+- fix updater not updating version indicator
+- fix dynamic library loading
+- fix color picker crash
+- add open file location
+- add more transitions
+- clean up path configs
+- proper logging
+- a lot of renaming and restructuring
+
+
+3.3.1
 - add global message board
 - fix memory leak issues with reloading
 
@@ -82,7 +98,6 @@ TODO
 - cleanup deprecated code
 
 2.2.0
-CURRENT
 - snap windows every 10px
 - color wheel
 - screen draw tool
@@ -101,3 +116,4 @@ CURRENT
 - add chat history
 - add groq api
 
+### MODULARIZED ###

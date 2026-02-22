@@ -1,3 +1,5 @@
+import logging
+
 from PySide6.QtCore import QRect
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
@@ -10,9 +12,11 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 
-from lib.quol_window import QuolSubWindow
+from qlib.windows.quol_window import QuolSubWindow
 from worker import Worker
 from api import fetch_notes, post_notes
+
+logger = logging.getLogger(__name__)
 
 
 class NotesWindow(QuolSubWindow):
@@ -104,7 +108,7 @@ class NotesWindow(QuolSubWindow):
         self.set_text(text)
 
         if not success:
-            print("Error saving notes to server.")
+            logger.error("Error saving notes to server.")
 
     def toggle_mode(self):
         self.edit_mode = not self.edit_mode
@@ -149,7 +153,7 @@ class NotesWindow(QuolSubWindow):
     def on_worker_error(self, error):
         self.refresh_btn.setEnabled(True)
         self.toggle_btn.setEnabled(True)
-        print("Worker error:", error)
+        logger.error('Worker error: %s', error)
         self.view_widget.setPlainText("Error communicating with server.")
 
     def showEvent(self, event):
