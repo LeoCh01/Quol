@@ -10,8 +10,7 @@ from qlib.io_helpers import read_json, write_json
 
 logger = logging.getLogger(__name__)
 
-BRANCH = '4.0-refactor'
-# BRANCH = 'main'
+BRANCH = 'main'
 
 
 def check_for_update() -> tuple:  # is_new_version, new, old

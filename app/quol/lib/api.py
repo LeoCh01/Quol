@@ -11,8 +11,7 @@ from qlib.io_helpers import read_json
 
 logger = logging.getLogger(__name__)
 BASE_URL = 'https://leo-s-website-backend-695678049922.northamerica-northeast2.run.app/quol'
-# BRANCH = 'main'
-BRANCH = '4.x-migration'
+BRANCH = 'main'
 
 
 async def get_store_items() -> Optional[List[Dict]]:
