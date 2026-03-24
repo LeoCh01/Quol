@@ -6,7 +6,7 @@ Quol (Quick-Tool) is an overlay desktop application built using **PySide6**, des
 
 ## Features
 
-This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences. All Features can be found in the built-in store or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository.
+This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences. All Features can be found in the built-in tool manager or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository.
 
 [//]: # '<img src="demo/snip.png" width="500">'
 
@@ -28,7 +28,6 @@ This application Runs at the top layer and is toggleable through a hotkey. Layou
 Click [here](https://github.com/LeoCh01/Quol/releases) for the latest release of Quol.
 
 1. **Download and Extract the ZIP file:**
-
    - Download the latest `Quol.zip` file from the releases page.
    - Extract the contents to your desired location on your computer.
 
@@ -60,7 +59,6 @@ To run the application locally or build it as a standalone executable, follow th
    ```
 
 4. **Run the application locally:**
-
    - Once the environment is set up, you can run the app by executing:
 
    ```bash
