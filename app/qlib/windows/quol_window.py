@@ -100,6 +100,7 @@ class QuolMainWindow(QuolBaseWindow):
             self.config['_']['geometry'] = [*default_geometry]
             self.tool_spec.save_config(self.config)
         else:
+            self.config['_']['geometry'][2] = default_geometry[2]
             self.config['_']['geometry'][3] = 1
             self.setGeometry(QRect(*self.config['_']['geometry']))
 

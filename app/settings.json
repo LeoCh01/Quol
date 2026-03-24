@@ -1,6 +1,6 @@
 {
   "name": "Quol",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Versatile toolbox for windows.",
   "startup": false,
   "toggle_key": "`",
@@ -11,7 +11,7 @@
   "tools": [],
   "show_updates": true,
   "admin_key": "",
-  "package_version": 1,
+  "package_version": 2,
   "packages": [
     "qlib",
     "quol",

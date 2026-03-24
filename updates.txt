@@ -1,11 +1,18 @@
 TODO
-- add tooltips
-- dropdown setting or search filter in config
+- add better tooltips
 - hide on toggle optimization
-- opencv support
+- opencv maybe
+- C# migration
 
 
-4.0.0 (CURRENT)
+4.1.0 (CURRENT)
+- fix custom geometry on reload (occurs on multi monitor setups)
+- add tool toggle transition dropdown
+- logging standardization
+- async fixes
+- some tooltips
+
+4.0.0
 - global hotkey bugfixes
 - Pyside6 6.8.3 migration
 - fix updater not updating version indicator
@@ -14,9 +21,9 @@ TODO
 - add open file location
 - add more transitions
 - clean up path configs
+- new dropdown config option
 - proper logging
 - a lot of renaming and restructuring
-
 
 3.3.1
 - add global message board

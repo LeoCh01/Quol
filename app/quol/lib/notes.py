@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 from qlib.windows.quol_window import QuolSubWindow
-from worker import Worker
+from qlib.worker import Worker
 from api import fetch_notes, post_notes
 
 logger = logging.getLogger(__name__)

@@ -2,7 +2,19 @@
   "startup": false,
   "reset_pos": false,
   "toggle_key": "`",
-  "transition": "rand",
+  "transition": [
+    [
+      "rand",
+      "fade",
+      "cursor",
+      "up",
+      "left",
+      "down",
+      "right",
+      "none"
+    ],
+    0
+  ],
   "_": {
     "geometry": [
       10,

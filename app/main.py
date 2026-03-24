@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import sys
@@ -58,7 +59,7 @@ if __name__ == '__main__':
 
     quol_app = QApplication([])
 
-    is_new, new, old = check_for_update()
+    is_new, new, old = asyncio.run(check_for_update())
 
     if is_new:
         launcher = AppLauncher(new, old, lambda: initialize_main_app(App, LoadingScreen))

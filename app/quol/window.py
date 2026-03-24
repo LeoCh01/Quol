@@ -11,9 +11,11 @@ from globals import BASE_DIR
 from qlib.io_helpers import read_json
 from qlib.windows.quol_window import QuolMainWindow, QuolSubWindow
 from qlib.windows.tool_loader import ToolSpec
+from qlib.worker import Worker
 from lib.api import get_store_items, download_item, update_item
-from lib.worker import Worker
 from lib.notes import NotesWindow
+
+logger = logging.getLogger(__name__)
 
 
 class MainWindow(QuolMainWindow):
@@ -25,27 +27,32 @@ class MainWindow(QuolMainWindow):
         self.settings_to_config()
 
         self.manager = QPushButton('Manage Tools')
+        self.manager.setToolTip('Open tool management window')
         self.manager.clicked.connect(self.show_manage_tools)
 
         self.ver_icon = QIcon(tool_spec.path + '/res/img/code.svg')
         self.ver = QPushButton()
         self.ver.setIcon(self.ver_icon)
+        self.ver.setToolTip('Check version on GitHub')
         self.ver.clicked.connect(self.open_url)
 
         self.msg_board = NotesWindow(self, tool_spec.settings.get('admin_key'))
         self.msg_board_icon = QIcon(tool_spec.path + '/res/img/news.svg')
         self.msg_board_btn = QPushButton()
+        self.msg_board_btn.setToolTip('View message board')
         self.msg_board_btn.clicked.connect(self.on_msg_board)
         self.msg_board_btn.setIcon(self.msg_board_icon)
 
         self.folder_location_icon = QIcon(tool_spec.path + '/res/img/folder.svg')
         self.folder_location_btn = QPushButton()
         self.folder_location_btn.setIcon(self.folder_location_icon)
+        self.folder_location_btn.setToolTip('Open tools folder')
         self.folder_location_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(BASE_DIR)))
 
         self.reload_icon = QIcon(tool_spec.path + '/res/img/reload.svg')
         self.reload = QPushButton()
         self.reload.setIcon(self.reload_icon)
+        self.reload.setToolTip('Reload application')
         self.reload.clicked.connect(self.app.reload)
 
         self.q = QPushButton('Quit')
@@ -93,7 +100,7 @@ class MainWindow(QuolMainWindow):
     def config_to_settings(self):
         self.app.settings['is_default_pos'] = self.config['reset_pos']
         self.app.settings['toggle_key'] = self.config['toggle_key']
-        self.app.settings['transition'] = self.config['transition']
+        self.app.settings['transition'] = self.config['transition'][0][self.config['transition'][1]]
         self.app.settings['startup'] = self.config['startup']
         self.app.settings['tools'] = self.config['_']['tools']
         self.app.save_settings()
@@ -101,7 +108,6 @@ class MainWindow(QuolMainWindow):
     def settings_to_config(self):
         self.config['reset_pos'] = self.app.settings['is_default_pos']
         self.config['toggle_key'] = self.app.settings['toggle_key']
-        self.config['transition'] = self.app.settings['transition']
         self.config['startup'] = self.app.settings['startup']
         self.config['_']['name'] = self.app.settings['name']
         self.config['_']['tools'] = self.app.settings['tools']
@@ -114,10 +120,10 @@ class MainWindow(QuolMainWindow):
 
         if self.config['startup']:
             self.app.add_to_startup(self.app_name, self.app_path)
-            logging.info(f'Added {self.app_name} to startup with path: {self.app_path}')
+            logger.info(f'Added {self.app_name} to startup with path: {self.app_path}')
         else:
             self.app.remove_from_startup(self.app_name)
-            logging.info(f'Removed {self.app_name} from startup')
+            logger.info(f'Removed {self.app_name} from startup')
 
     def closeEvent(self, event):
         super().closeEvent(event)
@@ -147,9 +153,21 @@ class ManageWindow(QuolSubWindow):
     def setup_installed_tab(self):
         self.installed_layout = QVBoxLayout()
         self.list_widget = QListWidget()
+        
+        top_row = QHBoxLayout()
         select_all_checkbox = QCheckBox(" Select All")
         select_all_checkbox.stateChanged.connect(self.on_update_checkbox_all)
-        self.installed_layout.addWidget(select_all_checkbox)
+        
+        reload_button = QPushButton("Apply")
+        reload_button.setToolTip('Reload tool list and apply changes')
+        reload_button.setStyleSheet("padding: 5px;")
+        reload_button.clicked.connect(self.main_window.on_update_config)
+        
+        top_row.addWidget(select_all_checkbox)
+        top_row.addStretch()
+        top_row.addWidget(reload_button)
+        
+        self.installed_layout.addLayout(top_row)
         self.installed_layout.addWidget(self.list_widget)
         self.installed_tab.setLayout(self.installed_layout)
         self.refresh_list()
@@ -276,7 +294,7 @@ class ManageWindow(QuolSubWindow):
                 self.store_list_widget.setItemWidget(item, item_widget)
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: logging.error(f"Error fetching store items: {e}"))
+        worker.error.connect(lambda e: logger.error(f"Error fetching store items: {e}"))
         worker.start()
 
     def on_install(self, name, button):
@@ -291,7 +309,7 @@ class ManageWindow(QuolSubWindow):
             self.refresh_store_list()
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: logging.error(f"Error installing {name}: {e}"))
+        worker.error.connect(lambda e: logger.error(f"Error installing {name}: {e}"))
         worker.start()
 
     def on_update(self, name, ver, button):
@@ -308,5 +326,5 @@ class ManageWindow(QuolSubWindow):
             self.workers.remove(worker)
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: logging.error(f"Error updating {name}: {e}"))
+        worker.error.connect(lambda e: logger.error(f"Error updating {name}: {e}"))
         worker.start()

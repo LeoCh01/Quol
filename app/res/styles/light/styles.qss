@@ -140,3 +140,30 @@ QTextEdit {
     color: black;
     border: 1px solid #BBB;
 }
+
+/* Quol Window Styles */
+#content QListWidget {
+    background-color: #EEE;
+    border: 1px solid #BBB;
+}
+
+#content QListWidget::item {
+    padding: 2px;
+}
+
+#content QListWidget::item:hover {
+    background-color: #DDD;
+}
+
+#content QListWidget::item:selected {
+    background-color: #BBB;
+}
+
+/* Tooltip Styling */
+QToolTip {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #BBB;
+    border-radius: 3px;
+    padding: 2px;
+}

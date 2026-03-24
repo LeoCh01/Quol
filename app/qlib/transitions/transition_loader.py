@@ -6,6 +6,8 @@ import importlib
 from globals import BASE_DIR
 from qlib.windows.quol_window import QuolBaseWindow
 
+logger = logging.getLogger(__name__)
+
 
 class TransitionInfo:
     def __init__(self, path):
@@ -29,7 +31,7 @@ class TransitionLoader:
     def load(self):
         module_path = self.path + '\\transition.py'
         if not os.path.exists(module_path):
-            logging.error(f'Script {self.name} does not exist at {module_path}.')
+            logger.error(f'Script {self.name} does not exist at {module_path}.')
             module_path = f'{BASE_DIR}\\transitions\\rand\\transition.py'
 
         spec = importlib.util.spec_from_file_location(self.name, module_path)
@@ -48,12 +50,12 @@ class TransitionLoader:
                     # Allow transition module to release resources if it defines a teardown hook
                     self.module.teardown()
             except Exception:
-                logging.exception('Error during transition module teardown')
+                logger.exception('Error during transition module teardown')
             finally:
                 # Remove the dynamically loaded module from sys.modules
                 if self.name in sys.modules:
                     try:
                         del sys.modules[self.name]
                     except Exception:
-                        logging.exception('Failed to remove transition module from sys.modules')
+                        logger.exception('Failed to remove transition module from sys.modules')
                 self.module = None
