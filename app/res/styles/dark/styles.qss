@@ -173,3 +173,30 @@ QTextEdit {
 #content QTabBar {
     background-color: #444;
 }
+
+/* Quol Window Styles */
+#content QListWidget {
+    background-color: #333;
+    border: 1px solid #555;
+}
+
+#content QListWidget::item {
+    padding: 2px;
+}
+
+#content QListWidget::item:hover {
+    background-color: #3d3d3d;
+}
+
+#content QListWidget::item:selected {
+    background-color: #555;
+}
+
+/* Tooltip Styling */
+QToolTip {
+    background-color: #333;
+    color: #ddd;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 2px;
+}

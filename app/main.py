@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication
 
 from qlogging import initialize_logging
 from globals import set_dir
+from qlib.worker import Worker
 
 BASE_DIR: str = None
 
@@ -58,12 +59,22 @@ if __name__ == '__main__':
 
     quol_app = QApplication([])
 
-    is_new, new, old = check_for_update()
+    # Run check_for_update asynchronously to avoid blocking UI
+    def on_update_check_complete(result):
+        is_new, new, old = result
+        if is_new:
+            launcher = AppLauncher(new, old, lambda: initialize_main_app(App, LoadingScreen))
+            launcher.show()
+        else:
+            initialize_main_app(App, LoadingScreen)
 
-    if is_new:
-        launcher = AppLauncher(new, old, lambda: initialize_main_app(App, LoadingScreen))
-        launcher.show()
-    else:
+    def on_update_check_error(error):
+        logging.error(f'Update check error: {error}')
         initialize_main_app(App, LoadingScreen)
+
+    worker = Worker(check_for_update)
+    worker.finished.connect(on_update_check_complete)
+    worker.error.connect(on_update_check_error)
+    worker.start()
 
     quol_app.exec()

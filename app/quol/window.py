@@ -11,8 +11,8 @@ from globals import BASE_DIR
 from qlib.io_helpers import read_json
 from qlib.windows.quol_window import QuolMainWindow, QuolSubWindow
 from qlib.windows.tool_loader import ToolSpec
+from qlib.worker import Worker
 from lib.api import get_store_items, download_item, update_item
-from lib.worker import Worker
 from lib.notes import NotesWindow
 
 logger = logging.getLogger(__name__)
@@ -27,27 +27,32 @@ class MainWindow(QuolMainWindow):
         self.settings_to_config()
 
         self.manager = QPushButton('Manage Tools')
+        self.manager.setToolTip('Open tool management window')
         self.manager.clicked.connect(self.show_manage_tools)
 
         self.ver_icon = QIcon(tool_spec.path + '/res/img/code.svg')
         self.ver = QPushButton()
         self.ver.setIcon(self.ver_icon)
+        self.ver.setToolTip('Check version on GitHub')
         self.ver.clicked.connect(self.open_url)
 
         self.msg_board = NotesWindow(self, tool_spec.settings.get('admin_key'))
         self.msg_board_icon = QIcon(tool_spec.path + '/res/img/news.svg')
         self.msg_board_btn = QPushButton()
+        self.msg_board_btn.setToolTip('View message board')
         self.msg_board_btn.clicked.connect(self.on_msg_board)
         self.msg_board_btn.setIcon(self.msg_board_icon)
 
         self.folder_location_icon = QIcon(tool_spec.path + '/res/img/folder.svg')
         self.folder_location_btn = QPushButton()
         self.folder_location_btn.setIcon(self.folder_location_icon)
+        self.folder_location_btn.setToolTip('Open tools folder')
         self.folder_location_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(BASE_DIR)))
 
         self.reload_icon = QIcon(tool_spec.path + '/res/img/reload.svg')
         self.reload = QPushButton()
         self.reload.setIcon(self.reload_icon)
+        self.reload.setToolTip('Reload application')
         self.reload.clicked.connect(self.app.reload)
 
         self.q = QPushButton('Quit')
@@ -148,9 +153,21 @@ class ManageWindow(QuolSubWindow):
     def setup_installed_tab(self):
         self.installed_layout = QVBoxLayout()
         self.list_widget = QListWidget()
+        
+        top_row = QHBoxLayout()
         select_all_checkbox = QCheckBox(" Select All")
         select_all_checkbox.stateChanged.connect(self.on_update_checkbox_all)
-        self.installed_layout.addWidget(select_all_checkbox)
+        
+        reload_button = QPushButton("Apply")
+        reload_button.setToolTip('Reload tool list and apply changes')
+        reload_button.setStyleSheet("padding: 5px;")
+        reload_button.clicked.connect(self.main_window.on_update_config)
+        
+        top_row.addWidget(select_all_checkbox)
+        top_row.addStretch()
+        top_row.addWidget(reload_button)
+        
+        self.installed_layout.addLayout(top_row)
         self.installed_layout.addWidget(self.list_widget)
         self.installed_tab.setLayout(self.installed_layout)
         self.refresh_list()

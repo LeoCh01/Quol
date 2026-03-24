@@ -8,10 +8,7 @@
   "transition": "rand",
   "is_default_pos": false,
   "tools_dir": "../../Quol tools/src",
-  "tools": [
-    "color_picker",
-    "timer"
-  ],
+  "tools": [],
   "show_updates": true,
   "admin_key": "",
   "package_version": 1,

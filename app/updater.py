@@ -13,15 +13,16 @@ logger = logging.getLogger(__name__)
 BRANCH = 'main'
 
 
-def check_for_update() -> tuple:  # is_new_version, new, old
+async def check_for_update() -> tuple:  # is_new_version, new, old
     try:
         settings = read_json(BASE_DIR + '/settings.json')
         if not settings.get('show_updates', True):
             return '', ''
 
-        response = httpx.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
-        response.raise_for_status()
-        data = response.json()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
+            response.raise_for_status()
+            data = response.json()
 
         return settings['version'] != data['version'], data['version'], settings['version']
 
@@ -60,9 +61,10 @@ async def update_minor() -> bool:
     settings = read_json(BASE_DIR + '/settings.json')
 
     try:
-        response = httpx.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
-        response.raise_for_status()
-        settings_new = response.json()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
+            response.raise_for_status()
+            settings_new = response.json()
     except Exception as e:
         logger.error('Failed to fetch settings: %s', e)
         return False
