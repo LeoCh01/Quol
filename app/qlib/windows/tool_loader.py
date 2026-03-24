@@ -8,6 +8,8 @@ from globals import BASE_DIR
 from qlib.input_manager import GlobalInputManager
 from qlib.io_helpers import read_json, write_json
 
+logger = logging.getLogger(__name__)
+
 
 class ToolLoader:
     def __init__(self, name, tools_dir):
@@ -43,7 +45,7 @@ class ToolLoader:
             sys.modules[self.name] = self.module
             spec.loader.exec_module(self.module)
         else:
-            logging.error(f'Script {self.name} does not exist at {module_path}.')
+            logger.error(f'Script {self.name} does not exist at {module_path}.')
             return False
 
         return True
@@ -58,14 +60,14 @@ class ToolLoader:
             try:
                 if hasattr(self.module, 'teardown'):
                     self.module.teardown()
-            except Exception:
-                logging.exception('Error during tool module teardown')
+            except Exception as e:
+                logger.exception(f'Error during tool module teardown: {e}')
             finally:
                 if self.name in sys.modules:
                     try:
                         del sys.modules[self.name]
-                    except Exception:
-                        logging.exception('Failed to remove tool module from sys.modules')
+                    except Exception as e:
+                        logger.exception(f'Failed to remove tool module from sys.modules: {e}')
                 self.module = None
 
         # Remove any paths we added to sys.path

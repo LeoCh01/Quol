@@ -5,7 +5,12 @@ TODO
 - opencv support
 
 
-4.0.0 (CURRENT)
+4.1.0 (CURRENT)
+- fix custom geometry on reload (occurs on multi monitor setups)
+- add tool toggle transition dropdown
+- logging standardization
+
+4.0.0
 - global hotkey bugfixes
 - Pyside6 6.8.3 migration
 - fix updater not updating version indicator
@@ -14,9 +19,9 @@ TODO
 - add open file location
 - add more transitions
 - clean up path configs
+- new dropdown config option
 - proper logging
 - a lot of renaming and restructuring
-
 
 3.3.1
 - add global message board

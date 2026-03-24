@@ -15,6 +15,8 @@ from lib.api import get_store_items, download_item, update_item
 from lib.worker import Worker
 from lib.notes import NotesWindow
 
+logger = logging.getLogger(__name__)
+
 
 class MainWindow(QuolMainWindow):
     def __init__(self, app, tool_spec: ToolSpec):
@@ -93,7 +95,7 @@ class MainWindow(QuolMainWindow):
     def config_to_settings(self):
         self.app.settings['is_default_pos'] = self.config['reset_pos']
         self.app.settings['toggle_key'] = self.config['toggle_key']
-        self.app.settings['transition'] = self.config['transition']
+        self.app.settings['transition'] = self.config['transition'][0][self.config['transition'][1]]
         self.app.settings['startup'] = self.config['startup']
         self.app.settings['tools'] = self.config['_']['tools']
         self.app.save_settings()
@@ -101,7 +103,6 @@ class MainWindow(QuolMainWindow):
     def settings_to_config(self):
         self.config['reset_pos'] = self.app.settings['is_default_pos']
         self.config['toggle_key'] = self.app.settings['toggle_key']
-        self.config['transition'] = self.app.settings['transition']
         self.config['startup'] = self.app.settings['startup']
         self.config['_']['name'] = self.app.settings['name']
         self.config['_']['tools'] = self.app.settings['tools']
@@ -114,10 +115,10 @@ class MainWindow(QuolMainWindow):
 
         if self.config['startup']:
             self.app.add_to_startup(self.app_name, self.app_path)
-            logging.info(f'Added {self.app_name} to startup with path: {self.app_path}')
+            logger.info(f'Added {self.app_name} to startup with path: {self.app_path}')
         else:
             self.app.remove_from_startup(self.app_name)
-            logging.info(f'Removed {self.app_name} from startup')
+            logger.info(f'Removed {self.app_name} from startup')
 
     def closeEvent(self, event):
         super().closeEvent(event)
@@ -276,7 +277,7 @@ class ManageWindow(QuolSubWindow):
                 self.store_list_widget.setItemWidget(item, item_widget)
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: logging.error(f"Error fetching store items: {e}"))
+        worker.error.connect(lambda e: logger.error(f"Error fetching store items: {e}"))
         worker.start()
 
     def on_install(self, name, button):
@@ -291,7 +292,7 @@ class ManageWindow(QuolSubWindow):
             self.refresh_store_list()
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: logging.error(f"Error installing {name}: {e}"))
+        worker.error.connect(lambda e: logger.error(f"Error installing {name}: {e}"))
         worker.start()
 
     def on_update(self, name, ver, button):
@@ -308,5 +309,5 @@ class ManageWindow(QuolSubWindow):
             self.workers.remove(worker)
 
         worker.finished.connect(on_finished)
-        worker.error.connect(lambda e: logging.error(f"Error updating {name}: {e}"))
+        worker.error.connect(lambda e: logger.error(f"Error updating {name}: {e}"))
         worker.start()

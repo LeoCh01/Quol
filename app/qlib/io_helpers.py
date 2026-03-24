@@ -2,6 +2,8 @@ import json
 import logging
 from typing import Any
 
+logger = logging.getLogger(__name__)
+
 
 def read_text(path: str) -> str:
     try:
@@ -9,7 +11,7 @@ def read_text(path: str) -> str:
             data = f.read()
         return data
     except Exception as e:
-        logging.error(f'Failed to read text file {path} :: {e}', exc_info=True)
+        logger.error(f'Failed to read text file {path} :: {e}', exc_info=True)
         return ''
 
 
@@ -19,7 +21,7 @@ def read_json(path: str) -> Any:
             data = json.load(f)
         return data
     except Exception as e:
-        logging.error(f'Failed to read JSON file {path} :: {e}', exc_info=True)
+        logger.error(f'Failed to read JSON file {path} :: {e}', exc_info=True)
         return {}
 
 
