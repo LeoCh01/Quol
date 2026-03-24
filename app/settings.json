@@ -7,7 +7,7 @@
   "style": "dark",
   "transition": "rand",
   "is_default_pos": false,
-  "tools_dir": "../../Quol tools/src",
+  "tools_dir": "tools",
   "tools": [],
   "show_updates": true,
   "admin_key": "",
