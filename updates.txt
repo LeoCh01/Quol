@@ -3,9 +3,14 @@ TODO
 - hide on toggle optimization
 - opencv maybe
 - C# migration
+- chat quick snip prompt
 
 
-4.1.0 (CURRENT)
+4.2.0 (CURRENT)
+- code consistency cleanup
+- qlib lazy load
+
+4.1.0
 - fix custom geometry on reload (occurs on multi monitor setups)
 - add tool toggle transition dropdown
 - logging standardization

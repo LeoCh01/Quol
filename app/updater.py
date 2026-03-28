@@ -15,9 +15,9 @@ BRANCH = 'main'
 
 async def check_for_update() -> tuple:  # is_new_version, new, old
     try:
-        settings = read_json(BASE_DIR + '/settings.json')
+        settings = read_json(os.path.join(BASE_DIR, 'settings.json'))
         if not settings.get('show_updates', True):
-            return '', ''
+            return '', '', ''
 
         async with httpx.AsyncClient() as client:
             response = await client.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
@@ -58,7 +58,7 @@ async def download_minor(item: str) -> bool:
 
 
 async def update_minor() -> bool:
-    settings = read_json(BASE_DIR + '/settings.json')
+    settings = read_json(os.path.join(BASE_DIR, 'settings.json'))
 
     try:
         async with httpx.AsyncClient() as client:
@@ -80,10 +80,10 @@ async def update_minor() -> bool:
     
     try:
         for package in packages:
-            package_path = f'{BASE_DIR}/{package}'
+            package_path = os.path.join(BASE_DIR, package)
             
             if os.path.exists(package_path):
-                temp_path = f'{package_path}__temp'
+                temp_path = package_path + '__temp'
                 shutil.move(package_path, temp_path)
                 temp_renames[package] = temp_path
 
@@ -106,7 +106,7 @@ async def update_minor() -> bool:
             # Restore from temp files
             for package, temp_path in temp_renames.items():
                 try:
-                    package_path = f'{BASE_DIR}/{package}'
+                    package_path = os.path.join(BASE_DIR, package)
                     if os.path.exists(temp_path):
                         shutil.move(temp_path, package_path)
                 except Exception as restore_err:
@@ -118,7 +118,7 @@ async def update_minor() -> bool:
         # Restore from temp files
         for package, temp_path in temp_renames.items():
             try:
-                package_path = f'{BASE_DIR}/{package}'
+                package_path = os.path.join(BASE_DIR, package)
                 if os.path.exists(temp_path):
                     shutil.move(temp_path, package_path)
             except Exception as restore_err:
@@ -131,7 +131,7 @@ async def update_minor() -> bool:
         settings['packages'] = settings_new['packages']
         settings['version'] = settings_new['version']
         print('New version:', settings_new['version'])
-        write_json(BASE_DIR + '/settings.json', settings)
+        write_json(os.path.join(BASE_DIR, 'settings.json'), settings)
     except Exception as e:
         logger.error('Error updating settings: %s', e)
         return False
