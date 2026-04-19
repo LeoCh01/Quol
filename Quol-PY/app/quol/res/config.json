@@ -22,7 +22,9 @@
       180,
       1
     ],
-    "tools": [],
+    "tools": [
+      "chat"
+    ],
     "name": "Quol"
   }
 }

@@ -1,0 +1,10 @@
+{
+  "-": {
+    "id": "PluginOne",
+    "version": "0.1.0",
+    "description": "Plugin 1",
+    "default_geometry": [80, 80, 250, 250],
+    "geometry": [80, 80, 250, 250]
+  },
+  "+": {}
+}

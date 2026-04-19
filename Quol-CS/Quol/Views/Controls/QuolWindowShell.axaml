@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Quol.Views.Controls.QuolWindowShell"
+             x:Name="Root">
+
+  <Border Background="{StaticResource QuolContentBrush}"
+          CornerRadius="6"
+          ClipToBounds="True">
+    <Grid RowDefinitions="Auto,*">
+      <Border x:Name="TitleBarHost"
+              Grid.Row="0"
+              Background="{StaticResource QuolTitleBarBrush}"
+              BorderThickness="0,0,0,1"
+              PointerPressed="OnTitleBarPointerPressed">
+        <Grid ColumnDefinitions="*,Auto,Auto" Margin="12,0">
+          <TextBlock Text="{Binding PluginName, ElementName=Root}"
+                     IsHitTestVisible="False"
+                     Margin="0,12"
+                     HorizontalAlignment="Left"
+                     TextAlignment="Left"
+                     VerticalAlignment="Center"
+                     FontSize="12"
+                     FontWeight="Bold" />
+
+          <Button Grid.Column="1"
+                  IsVisible="{Binding ShowConfigButton, ElementName=Root}"
+                  Classes="icon titlebar-icon"
+                  Margin="6,6,0,6"
+                  VerticalAlignment="Center"
+                  ToolTip.Tip="Open config"
+                  Click="OnConfigClicked">
+            <PathIcon Data="{StaticResource ConfigIconGeometry}" />
+          </Button>
+
+          <Button Grid.Column="2"
+                  IsVisible="{Binding ShowCloseButton, ElementName=Root}"
+                  Classes="icon titlebar-icon"
+                  Margin="6,6,0,6"
+                  VerticalAlignment="Center"
+                  ToolTip.Tip="Close"
+                  Click="OnCloseClicked"
+                  Content="✕" />
+        </Grid>
+      </Border>
+
+      <Border Grid.Row="1"
+              Background="{StaticResource QuolContentBrush}">
+        <ContentPresenter Content="{Binding InnerContent, ElementName=Root}" />
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PluginTwo.PluginView">
+
+  <Grid Margin="10">
+    <TextBlock Text="2"
+               FontSize="72"
+               FontWeight="Bold"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+  </Grid>
+
+</UserControl>

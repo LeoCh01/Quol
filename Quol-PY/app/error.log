@@ -1,0 +1,32 @@
+2026-03-28 14:55:48,183 - qlib.windows.tool_loader - (tool_loader.py:48) - ERROR
+Script chat does not exist at C:\Users\leoch\Documents\- Python Code\Quol\app/tools\chat\window.py.
+2026-04-18 15:34:44,066 - qlib.windows.tool_loader - (tool_loader.py:48) - ERROR
+Script chat does not exist at C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app/../../Quol Tools/src\chat\window.py.
+2026-04-18 15:35:27,327 - qlib.io_helpers - (io_helpers.py:24) - ERROR
+Failed to read JSON file C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app/tools\music\res\config.json :: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app\qlib\io_helpers.py", line 20, in read_json
+    with open(path, 'r') as f:
+         ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'
+2026-04-18 15:35:45,316 - qlib.io_helpers - (io_helpers.py:24) - ERROR
+Failed to read JSON file C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app/tools\music\res\config.json :: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app\qlib\io_helpers.py", line 20, in read_json
+    with open(path, 'r') as f:
+         ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'
+2026-04-18 15:36:12,324 - qlib.io_helpers - (io_helpers.py:24) - ERROR
+Failed to read JSON file C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app/tools\music\res\config.json :: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app\qlib\io_helpers.py", line 20, in read_json
+    with open(path, 'r') as f:
+         ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'
+2026-04-18 15:36:33,665 - qlib.io_helpers - (io_helpers.py:24) - ERROR
+Failed to read JSON file C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app/tools\music\res\config.json :: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'
+Traceback (most recent call last):
+  File "C:\Users\leoch\Documents\- Python Code\Quol\Quol-PY\app\qlib\io_helpers.py", line 20, in read_json
+    with open(path, 'r') as f:
+         ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\leoch\\Documents\\- Python Code\\Quol\\Quol-PY\\app/tools\\music\\res\\config.json'

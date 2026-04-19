@@ -1,4 +1,5 @@
 import importlib
+import importlib.util
 import os
 import pkgutil
 import sys
@@ -19,5 +20,12 @@ def load_all_modules(lib_folder_name: str = "qlib") -> None:
 
     for _, mod_name, _ in pkgutil.iter_modules(package.__path__):
         full_name = f"{lib_folder_name}.{mod_name}"
-        if full_name not in sys.modules:
-            importlib.import_module(full_name)
+        if full_name in sys.modules:
+            continue
+        spec = importlib.util.find_spec(full_name)
+        if spec is None or spec.loader is None:
+            continue
+        spec.loader = importlib.util.LazyLoader(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[full_name] = module
+        spec.loader.exec_module(module)

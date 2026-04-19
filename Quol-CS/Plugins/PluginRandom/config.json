@@ -1,0 +1,10 @@
+{
+  "-": {
+    "id": "PluginRandom",
+    "version": "0.1.0",
+    "description": "Random Number",
+    "default_geometry": [160, 160, 260, 180],
+    "geometry": [160, 160, 260, 180]
+  },
+  "+": {}
+}

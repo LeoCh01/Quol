@@ -1,7 +1,28 @@
+# IDE
 .idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
 .venv/
 **/__pycache__/
-build/
+*.pyc
+*.pyo
+*.egg-info/
 dist/
+build/
+
+# C# / Avalonia
+bin/
+obj/
+Quol-CS/artifacts/
+.vs/
+*.user
+*.suo
+*.sln.iml
+packages/
+
+# Misc
 stuff.txt
 reset.py

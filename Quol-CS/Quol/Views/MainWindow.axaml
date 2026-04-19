@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Quol.ViewModels"
+        xmlns:controls="using:Quol.Views.Controls"
+        x:Class="Quol.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        CanResize="False"
+        WindowDecorations="None"
+        Topmost="True">
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel />
+  </Design.DataContext>
+
+  <controls:QuolWindowShell PluginName="{ReflectionBinding PluginName}"
+                            ShowConfigButton="{ReflectionBinding ShowConfigButton}"
+                            ShowCloseButton="False">
+    <controls:QuolWindowShell.InnerContent>
+      <Grid Margin="5"
+            RowDefinitions="Auto,Auto,Auto"
+            ColumnDefinitions="*,*,*"
+            RowSpacing="5"
+            ColumnSpacing="5">
+        <Button Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                Content="Manage Plugins"
+                ToolTip.Tip="Open plugin management"
+                Command="{ReflectionBinding ManagePluginsCommand}" />
+
+        <Button Grid.Row="1"
+                Grid.Column="0"
+                Classes="icon"
+                ToolTip.Tip="{ReflectionBinding VersionTooltip}"
+                Command="{ReflectionBinding OpenReleasesCommand}">
+          <PathIcon Data="{StaticResource CodeIconGeometry}"/>
+        </Button>
+
+        <Button Grid.Row="1"
+                Grid.Column="1"
+                Classes="icon"
+                ToolTip.Tip="Open project folder"
+                Command="{ReflectionBinding OpenProjectFolderCommand}">
+          <PathIcon Data="{StaticResource FolderIconGeometry}"/>
+        </Button>
+
+        <Button Grid.Row="1"
+                Grid.Column="2"
+                Classes="icon"
+                ToolTip.Tip="Reload application"
+                Command="{ReflectionBinding ReloadCommand}">
+          <PathIcon Data="{StaticResource ReloadIconGeometry}"/>
+        </Button>
+
+        <Button Grid.Row="2"
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                Classes="danger"
+                Content="Quit"
+                Command="{ReflectionBinding QuitCommand}" />
+      </Grid>
+    </controls:QuolWindowShell.InnerContent>
+  </controls:QuolWindowShell>
+
+</Window>
