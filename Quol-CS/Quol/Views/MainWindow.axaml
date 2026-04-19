@@ -16,11 +16,9 @@
                             ShowConfigButton="{ReflectionBinding ShowConfigButton}"
                             ShowCloseButton="False">
     <controls:QuolWindowShell.InnerContent>
-      <Grid Margin="5"
-            RowDefinitions="Auto,Auto,Auto"
-            ColumnDefinitions="*,*,*"
-            RowSpacing="5"
-            ColumnSpacing="5">
+      <Grid RowDefinitions="Auto,Auto,Auto"
+            ColumnDefinitions="*,*,*">
+
         <Button Grid.Row="0"
                 Grid.Column="0"
                 Grid.ColumnSpan="3"

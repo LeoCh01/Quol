@@ -1,9 +1,10 @@
 # build-plugins.ps1
 # Builds all plugins and copies output to the main Quol bin/Plugins/<PluginId>/ folder.
-# Usage: .\build-plugins.ps1 [-Configuration Debug|Release]
+# Usage: .\build-plugins.ps1 [-Configuration Debug|Release] [-PluginName <FolderName>]
 
 param(
-    [string]$Configuration = "Debug"
+    [string]$Configuration = "Debug",
+    [string]$PluginName = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,6 +17,7 @@ $TargetBase = Join-Path $QuolBin "Plugins"
 Write-Host ""
 Write-Host "=== Quol Plugin Builder ===" -ForegroundColor Cyan
 Write-Host "Configuration : $Configuration"
+Write-Host "Plugin filter  : $(if ([string]::IsNullOrWhiteSpace($PluginName)) { "<all>" } else { $PluginName })"
 Write-Host "Artifacts dir  : $ArtifactsDir"
 Write-Host "Target bin    : $QuolBin"
 Write-Host ""
@@ -29,9 +31,20 @@ Write-Host "   Host built OK" -ForegroundColor Green
 # ── 2. Discover all plugin projects in Plugins\ ──────────────────────────────
 $pluginProjects = Get-ChildItem -Path $PluginsDir -Recurse -Filter "*.csproj"
 
+if (-not [string]::IsNullOrWhiteSpace($PluginName)) {
+    $pluginProjects = $pluginProjects | Where-Object {
+        $_.BaseName -ieq $PluginName -or (Split-Path $_.DirectoryName -Leaf) -ieq $PluginName
+    }
+}
+
 if ($pluginProjects.Count -eq 0) {
-    Write-Host "No plugin projects found in $PluginsDir" -ForegroundColor DarkYellow
-    exit 0
+    if ([string]::IsNullOrWhiteSpace($PluginName)) {
+        Write-Host "No plugin projects found in $PluginsDir" -ForegroundColor DarkYellow
+        exit 0
+    }
+
+    Write-Error "Plugin '$PluginName' was not found under $PluginsDir"
+    exit 1
 }
 
 foreach ($proj in $pluginProjects) {

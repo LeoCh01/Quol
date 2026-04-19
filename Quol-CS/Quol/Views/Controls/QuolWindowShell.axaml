@@ -6,7 +6,7 @@
   <Border Background="{StaticResource QuolContentBrush}"
           CornerRadius="6"
           ClipToBounds="True">
-    <Grid RowDefinitions="Auto,*">
+    <Grid Margin="0" RowSpacing="0" ColumnSpacing="0" RowDefinitions="Auto,*">
       <Border x:Name="TitleBarHost"
               Grid.Row="0"
               Background="{StaticResource QuolTitleBarBrush}"

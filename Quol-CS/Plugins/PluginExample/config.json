@@ -1,0 +1,10 @@
+{
+  "-": {
+    "id": "PluginExample",
+    "version": "0.1.0",
+    "description": "Example plugin",
+    "default_geometry": [500, 500, 220, 0],
+    "geometry": [500, 500, 220, 0]
+  },
+  "+": {}
+}

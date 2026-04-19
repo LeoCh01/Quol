@@ -88,6 +88,9 @@
   <!-- Grid / StackPanel / layout defaults -->
   <Style Selector="Grid">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Margin" Value="5" />
+    <Setter Property="RowSpacing" Value="5" />
+    <Setter Property="ColumnSpacing" Value="5" />
   </Style>
 
   <Style Selector="StackPanel">

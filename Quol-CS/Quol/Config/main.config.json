@@ -11,6 +11,6 @@
     "transition": "rand",
     "is_default_pos": false,
     "tools_dir": "tools",
-    "active_plugins": ["PluginOne", "PluginRandom", "PluginTwo"]
+    "active_plugins": ["PluginOne", "PluginRandom", "PluginTwo", "PluginExample"]
   }
 }

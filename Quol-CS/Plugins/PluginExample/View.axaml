@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PluginExample.PluginView">
+
+  <StackPanel Margin="10" Spacing="8">
+
+    <TextBlock x:Name="KeyLabel" Text="Last Key: None" />
+    <TextBlock x:Name="MessageLabel" />
+
+  </StackPanel>
+
+</UserControl>

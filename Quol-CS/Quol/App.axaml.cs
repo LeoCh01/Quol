@@ -12,6 +12,7 @@ public partial class App : Application
 {
     private readonly PluginLoaderService _pluginLoader = new();
     private readonly PluginConfigService _pluginConfigService = new();
+    public static readonly GlobalInputService InputService = new();
 
     public override void Initialize()
     {
@@ -25,9 +26,14 @@ public partial class App : Application
             desktop.MainWindow = new MainWindow();
             desktop.MainWindow.Show();
 
+            App.InputService.Start();
             LoadAndShowAllPlugins();
 
-            desktop.Exit += (_, _) => _pluginLoader.UnloadAll();
+            desktop.Exit += (_, _) =>
+            {
+                _pluginLoader.UnloadAll();
+                App.InputService.Stop();
+            };
         }
 
         base.OnFrameworkInitializationCompleted();
