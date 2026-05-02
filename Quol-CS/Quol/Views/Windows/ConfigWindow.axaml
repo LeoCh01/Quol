@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Quol.Views.Controls"
+        x:Class="Quol.Views.Windows.ConfigWindow"
+        Title="Config"
+        Width="480"
+        SizeToContent="Height"
+        CanResize="True"
+        WindowDecorations="None"
+        Background="Transparent"
+        Foreground="White">
+
+  <controls:QuolClosableWindowShell x:Name="Shell" />
+</Window>

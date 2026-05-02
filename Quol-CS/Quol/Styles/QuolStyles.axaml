@@ -104,8 +104,9 @@
     <Setter Property="BorderBrush" Value="#555555" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="4" />
-    <Setter Property="Padding" Value="6,3" />
     <Setter Property="FontSize" Value="11" />
+    <Setter Property="Padding" Value="0 0" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
   </Style>
 
@@ -114,13 +115,19 @@
   </Style>
 
   <Style Selector="ComboBox">
-    <Setter Property="Background" Value="{StaticResource QuolButtonBrush}" />
+    <Setter Property="Background" Value="#3D3D3D" />
     <Setter Property="Foreground" Value="{StaticResource QuolForegroundBrush}" />
     <Setter Property="BorderBrush" Value="#555555" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Padding" Value="6,2" />
     <Setter Property="FontSize" Value="11" />
+    <Setter Property="Padding" Value="6,0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+
+  <Style Selector="ComboBox /template/ Border">
+    <Setter Property="MinHeight" Value="0" />
   </Style>
 
   <!-- ListBox -->
@@ -134,7 +141,7 @@
   </Style>
 
   <Style Selector="ListBoxItem">
-    <Setter Property="Padding" Value="6,3" />
+    <Setter Property="Padding" Value="5,5" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Foreground" Value="{StaticResource QuolForegroundBrush}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />

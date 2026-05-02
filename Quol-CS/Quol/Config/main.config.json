@@ -7,7 +7,7 @@
   },
   "+": {
     "startup": false,
-    "toggle_key": "`",
+    "toggle_key": "tilde",
     "transition": "rand",
     "is_default_pos": false,
     "tools_dir": "tools",

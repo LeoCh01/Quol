@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:quol="clr-namespace:Quol.Views.Controls;assembly=Quol"
+             x:Class="PluginExample.TestWindowView"
+             Background="Transparent">
+
+  <quol:QuolClosableWindowShell x:Name="Shell" WindowTitle="Test Window">
+    <StackPanel Margin="10" Spacing="8">
+      <TextBlock Text="Closable shell test window" FontWeight="SemiBold" />
+      <TextBlock Text="If this opens with Quol-style titlebar + close button, it works." />
+      <TextBlock x:Name="MathResultLabel" />
+    </StackPanel>
+  </quol:QuolClosableWindowShell>
+
+</UserControl>

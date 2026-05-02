@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Quol.Views.Controls"
+             x:Class="Quol.Views.Controls.ExampleClosableWindow"
+             Background="Transparent">
+
+  <controls:QuolClosableWindowShell x:Name="WindowShell" WindowTitle="Example Window">
+    <controls:QuolClosableWindowShell.InnerContent>
+      <StackPanel Margin="10" Spacing="5">
+        <TextBlock Text="This is a closable window with AXAML" FontSize="14" FontWeight="Bold" />
+        <TextBlock Text="You can put any content here" />
+        <TextBlock Text="This window has its own AXAML file" Foreground="#CCCCCC" />
+        <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+          <Button Content="Action 1" Padding="8,3" />
+          <Button Content="Action 2" Padding="8,3" />
+        </StackPanel>
+      </StackPanel>
+    </controls:QuolClosableWindowShell.InnerContent>
+  </controls:QuolClosableWindowShell>
+
+</UserControl>

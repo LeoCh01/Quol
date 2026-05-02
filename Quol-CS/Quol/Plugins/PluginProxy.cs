@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using Avalonia.Controls;
 using Quol.Services;
 
@@ -13,6 +15,7 @@ public class PluginProxy : QuolPluginBase
     private readonly string _name;
     private readonly string _version;
     private readonly Type _viewType;
+    private Control? _viewInstance;
 
     public PluginProxy(string pluginId, string name, string version, Type viewType)
     {
@@ -28,9 +31,50 @@ public class PluginProxy : QuolPluginBase
 
     protected override Control CreateContent()
     {
-        return (Control?)Activator.CreateInstance(_viewType)
+        var view =
+            (Control?)Activator.CreateInstance(_viewType)
             ?? throw new InvalidOperationException(
                 $"Could not instantiate view type {_viewType.FullName}."
             );
+
+        _viewInstance = view;
+        DispatchConfigToView();
+
+        return view;
+    }
+
+    protected override void OnUpdateConfig()
+    {
+        DispatchConfigToView();
+    }
+
+    private void DispatchConfigToView()
+    {
+        if (_viewInstance is null)
+            return;
+
+        // Preferred: public void OnUpdateConfig(Dictionary<string, JsonElement> config)
+        var withConfig = _viewType.GetMethod(
+            "OnUpdateConfig",
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+            null,
+            [typeof(Dictionary<string, JsonElement>)],
+            null
+        );
+        if (withConfig is not null)
+        {
+            withConfig.Invoke(_viewInstance, [Config]);
+            return;
+        }
+
+        // Fallback: parameterless method if plugin view prefers pulling values itself
+        var noArgs = _viewType.GetMethod(
+            "OnUpdateConfig",
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+            null,
+            Type.EmptyTypes,
+            null
+        );
+        noArgs?.Invoke(_viewInstance, null);
     }
 }

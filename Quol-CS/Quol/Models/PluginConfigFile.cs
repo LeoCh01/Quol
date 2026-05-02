@@ -24,6 +24,9 @@ public class PluginAppSection
     [JsonPropertyName("description")]
     public string Description { get; set; } = "Plugin";
 
+    [JsonPropertyName("show_config")]
+    public bool ShowConfig { get; set; } = true;
+
     [JsonPropertyName("default_geometry")]
     public int[] DefaultGeometry { get; set; } = [40, 40, 250, 250];
 

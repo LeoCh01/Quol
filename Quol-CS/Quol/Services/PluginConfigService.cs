@@ -56,6 +56,12 @@ public class PluginConfigService
         File.WriteAllText(path, json);
     }
 
+    public void SavePluginConfig(string pluginId, PluginConfigFile config)
+    {
+        var path = GetPluginConfigPath(pluginId);
+        Save(path, config);
+    }
+
     public void ApplyWindowGeometry(Window window, PluginConfigFile config)
     {
         var isDefaultPos = GetIsDefaultPos(config);

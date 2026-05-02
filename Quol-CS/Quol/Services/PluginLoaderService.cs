@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Quol.Plugins;
 
@@ -45,19 +46,19 @@ public class PluginLoaderService
     {
         var controlType = typeof(Avalonia.Controls.Control);
 
-        foreach (var type in asm.GetTypes())
-        {
-            if (!type.IsClass || type.IsAbstract)
-                continue;
-
-            if (
-                controlType.IsAssignableFrom(type)
-                && type.Namespace?.StartsWith("Avalonia") == false
+        var candidates = asm.GetTypes()
+            .Where(t =>
+                t.IsClass
+                && !t.IsAbstract
+                && controlType.IsAssignableFrom(t)
+                && t.Namespace?.StartsWith("Avalonia") == false
             )
-                return type;
-        }
+            .ToList();
 
-        return null;
+        // Prefer a type named exactly "View"
+        return candidates.FirstOrDefault(t => t.Name == "View")
+            // Last resort: first candidate
+            ?? candidates.FirstOrDefault();
     }
 
     public void Unload(string pluginName)

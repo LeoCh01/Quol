@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using Quol.Plugins;
+using Quol.Services;
 
 namespace Quol.Views.Controls;
 
@@ -78,7 +80,25 @@ public partial class QuolWindowShell : UserControl
 
     private void OnConfigClicked(object? sender, RoutedEventArgs e)
     {
-        // Intentionally no-op for now.
+        var hostWindow = this.FindAncestorOfType<Window>();
+        if (hostWindow?.Tag is not QuolPluginBase plugin)
+            return;
+
+        var configService = new PluginConfigService();
+        var cfg = configService.LoadPluginConfig(plugin.PluginId);
+
+        // Create and show the dedicated config window
+        var configWindow = new Quol.Views.Windows.ConfigWindow();
+        configWindow.Initialize(plugin.PluginId, cfg.App.Description, cfg.Custom);
+
+        // Reload only when user saved
+        configWindow.Closed += (s, e) =>
+        {
+            if (configWindow.WasSaved)
+                plugin.ReloadConfig();
+        };
+
+        configWindow.ShowDialog(hostWindow);
     }
 
     private void OnCloseClicked(object? sender, RoutedEventArgs e)

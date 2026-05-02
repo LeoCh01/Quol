@@ -3,8 +3,25 @@
     "id": "PluginExample",
     "version": "0.1.0",
     "description": "Example plugin",
+    "show_config": true,
     "default_geometry": [500, 500, 220, 0],
     "geometry": [500, 500, 220, 0]
   },
-  "+": {}
+  "+": {
+    "listen_key": "1",
+    "show_message": true,
+    "log_all_keys": false,
+    "message_text": "You pressed a key!",
+    "op": [["+", "-", "*", "/"], 0],
+    "a": 10,
+    "b": 5,
+    "advanced": {
+      "debug_mode": false,
+      "output_prefix": "[Examcccple]",
+      "nested_test": {
+        "enabled": true,
+        "threshold": 3
+      }
+    }
+  }
 }

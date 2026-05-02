@@ -1,12 +1,24 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="PluginExample.PluginView">
+             x:Class="PluginExample.View">
 
   <StackPanel Margin="10" Spacing="8">
+    <TextBlock Text="Example Plugin" FontSize="14" FontWeight="Bold" />
 
+    <Border BorderThickness="1" BorderBrush="#444" CornerRadius="4" Padding="8">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Config Arithmetic Test" FontWeight="SemiBold" />
+        <TextBlock x:Name="MathLabel" Text="10 + 5 = 15" />
+        <TextBlock x:Name="OpInfoLabel" Text="Operator source: list[index]" Opacity="0.8" FontSize="11" />
+      </StackPanel>
+    </Border>
+
+    <Button x:Name="OpenTestWindowButton" Click="OnOpenTestWindowClick">Open Closable Test Window</Button>
+
+    <Separator />
+
+    <Button x:Name="ToggleButton" Click="OnToggleClick">Start Listening</Button>
     <TextBlock x:Name="KeyLabel" Text="Last Key: None" />
     <TextBlock x:Name="MessageLabel" />
-
   </StackPanel>
-
 </UserControl>

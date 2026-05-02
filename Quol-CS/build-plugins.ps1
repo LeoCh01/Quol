@@ -69,11 +69,19 @@ foreach ($proj in $pluginProjects) {
         Write-Host "   Copied $pluginName.dll" -ForegroundColor DarkGray
     }
 
-    # Copy config.json if present
+    # Copy config.json
+    # Prefer build output if present; otherwise fall back to plugin source folder.
     $cfg = Join-Path $pluginBin "config.json"
     if (Test-Path $cfg) {
         Copy-Item $cfg $pluginTarget -Force
-        Write-Host "   Copied config.json" -ForegroundColor DarkGray
+        Write-Host "   Copied config.json (from build output)" -ForegroundColor DarkGray
+    }
+    else {
+        $cfgSource = Join-Path $projDir "config.json"
+        if (Test-Path $cfgSource) {
+            Copy-Item $cfgSource $pluginTarget -Force
+            Write-Host "   Copied config.json (from source)" -ForegroundColor DarkGray
+        }
     }
 
     # Copy any extra assets (e.g. images, fonts) — exclude framework DLLs
