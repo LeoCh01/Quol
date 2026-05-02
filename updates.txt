@@ -1,10 +1,9 @@
 TODO
 - add better tooltips
-- hide on toggle optimization
 - opencv maybe
-- C# migration
-- chat quick snip prompt
 
+
+******* C++ MIGRATION (under Quol-CPP folder), will slowly start to move to Qt C++ *******
 
 4.2.0 (CURRENT)
 - code consistency cleanup

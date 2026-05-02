@@ -22,7 +22,10 @@
       180,
       1
     ],
-    "tools": [],
+    "tools": [
+      "draw",
+      "example"
+    ],
     "name": "Quol"
   }
 }

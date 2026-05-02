@@ -1,0 +1,16 @@
+{
+  "name": "Quol",
+  "version": "4.2.0-cpp-mvp",
+  "description": "Versatile toolbox for windows.",
+  "startup": false,
+  "toggle_key": "`",
+  "style": "dark",
+  "transition": "random",
+  "is_default_pos": true,
+  "plugins_dir": "plugins",
+  "plugins": ["example"],
+  "show_updates": true,
+  "admin_key": "",
+  "package_version": 2,
+  "packages": ["qlib", "quol", "res", "transitions"]
+}

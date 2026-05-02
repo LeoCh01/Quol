@@ -8,7 +8,10 @@
   "transition": "rand",
   "is_default_pos": false,
   "tools_dir": "tools",
-  "tools": [],
+  "tools": [
+    "draw",
+    "example"
+  ],
   "show_updates": true,
   "admin_key": "",
   "package_version": 2,
