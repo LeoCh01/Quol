@@ -19,7 +19,6 @@ public:
                   const QJsonObject &appSettings,
                   const QJsonObject &pluginConfig) override;
   void onUpdateConfig(const QJsonObject &pluginConfig) override;
-  void shutdown() override;
 
 private:
   void refreshLabels();

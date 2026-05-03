@@ -20,7 +20,7 @@ async def check_for_update() -> tuple:  # is_new_version, new, old
             return '', '', ''
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
+            response = await client.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/Quol-PY/app/settings.json')
             response.raise_for_status()
             data = response.json()
 
@@ -32,7 +32,7 @@ async def check_for_update() -> tuple:  # is_new_version, new, old
 
 
 async def download_minor(item: str) -> bool:
-    raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/packages/{item}"
+    raw_url = f"https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/Quol-PY/packages/{item}"
 
     try:
         async with httpx.AsyncClient() as client:
@@ -62,7 +62,7 @@ async def update_minor() -> bool:
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/app/settings.json')
+            response = await client.get(f'https://raw.githubusercontent.com/LeoCh01/Quol/{BRANCH}/Quol-PY/app/settings.json')
             response.raise_for_status()
             settings_new = response.json()
     except Exception as e:
