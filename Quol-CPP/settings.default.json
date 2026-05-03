@@ -8,7 +8,7 @@
   "transition": "random",
   "is_default_pos": true,
   "plugins_dir": "plugins",
-  "plugins": ["example"],
+  "plugins": ["example", "broken"],
   "show_updates": true,
   "admin_key": "",
   "package_version": 2,

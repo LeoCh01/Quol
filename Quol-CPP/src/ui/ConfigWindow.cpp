@@ -3,6 +3,7 @@
 #include "core/AppSettingsManager.hpp"
 
 #include <QApplication>
+#include <QBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFile>
@@ -17,6 +18,32 @@
 #include <QPushButton>
 #include <QScreen>
 #include <QVBoxLayout>
+
+namespace
+{
+  void clearLayoutRecursively(QLayout *layout)
+  {
+    if (!layout)
+    {
+      return;
+    }
+
+    while (QLayoutItem *item = layout->takeAt(0))
+    {
+      if (QWidget *widget = item->widget())
+      {
+        delete widget;
+      }
+      else if (QLayout *childLayout = item->layout())
+      {
+        clearLayoutRecursively(childLayout);
+        delete childLayout;
+      }
+
+      delete item;
+    }
+  }
+}
 
 ConfigWindow::ConfigWindow(
     const QString &pluginId,
@@ -98,35 +125,7 @@ void ConfigWindow::buildUi()
 
 void ConfigWindow::clearDynamicUi()
 {
-  while (m_configLayout->count() > 0)
-  {
-    QLayoutItem *item = m_configLayout->takeAt(0);
-    if (!item)
-    {
-      continue;
-    }
-
-    if (QWidget *w = item->widget())
-    {
-      delete w;
-    }
-    else if (QLayout *l = item->layout())
-    {
-      while (l->count() > 0)
-      {
-        QLayoutItem *child = l->takeAt(0);
-        if (!child)
-        {
-          continue;
-        }
-        delete child->widget();
-        delete child->layout();
-        delete child;
-      }
-      delete l;
-    }
-    delete item;
-  }
+  clearLayoutRecursively(m_configLayout);
 }
 
 void ConfigWindow::generateSettings()
@@ -141,10 +140,23 @@ void ConfigWindow::generateSettings()
     QLayout *itemLayout = createItem(it.key(), it.value());
     addItemToLayout(m_configLayout, itemLayout);
   }
+
+  m_configLayout->invalidate();
+  const int contentHeight = m_configLayout->sizeHint().height();
+  const int buttonHeight = 40;
+  const int verticalSpacing = 12;
+  const int totalHeight = contentHeight + buttonHeight + verticalSpacing;
+  resize(width(), totalHeight + 40);
 }
 
 void ConfigWindow::addItemToLayout(QLayout *layout, QLayout *itemLayout)
 {
+  if (auto *boxLayout = qobject_cast<QBoxLayout *>(layout))
+  {
+    boxLayout->addLayout(itemLayout);
+    return;
+  }
+
   layout->addItem(itemLayout);
 }
 
@@ -173,6 +185,11 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value)
     const QJsonObject object = value.toObject();
     for (auto it = object.begin(); it != object.end(); ++it)
     {
+      if (it.key() == "_")
+      {
+        continue;
+      }
+
       QLayout *itemLayout = createItem(it.key(), it.value());
       addItemToLayout(groupLayout, itemLayout);
     }

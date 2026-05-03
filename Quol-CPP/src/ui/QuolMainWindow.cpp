@@ -3,6 +3,7 @@
 #include "core/AppSettingsManager.hpp"
 
 #include <QApplication>
+#include <QProcess>
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDir>
@@ -109,7 +110,7 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings,
   reloadBtn->setIconSize(iconSize);
   reloadBtn->setToolTip("Reload application");
   connect(reloadBtn, &QPushButton::clicked, this, []()
-          { QCoreApplication::quit(); });
+          { QProcess::startDetached(QCoreApplication::applicationFilePath()); QCoreApplication::quit(); });
   grid->addWidget(reloadBtn, 2, 0, 1, 1);
 
   auto *quitBtn = new QPushButton("Quit");
@@ -214,5 +215,8 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config)
     settings.insert("plugins", underscore.value("plugins"));
   }
 
+  const QString updatedToggleKey = settings.value("toggle_key").toString("`");
+  const bool updatedResetPos = settings.value("is_default_pos").toBool(false);
   m_settings->save();
+  emit mainConfigApplied(updatedToggleKey, updatedResetPos);
 }

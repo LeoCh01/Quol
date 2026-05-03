@@ -31,7 +31,6 @@ public:
   QString settingString(const QString &key, const QString &defaultValue = QString()) const;
 
 private:
-  QJsonObject defaultSettings() const;
   QJsonObject ensurePluginConfig(const QString &pluginId);
   void setPluginConfig(const QString &pluginId, const QJsonObject &pluginConfig);
 

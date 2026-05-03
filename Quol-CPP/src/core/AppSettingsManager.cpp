@@ -15,40 +15,13 @@ AppSettingsManager::AppSettingsManager(QString settingsPath, QObject *parent)
 bool AppSettingsManager::load()
 {
     QFile file(m_settingsPath);
-    if (!file.exists())
-    {
-        m_data = defaultSettings();
-        return save();
-    }
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        m_data = defaultSettings();
-        return false;
-    }
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
 
     const auto doc = QJsonDocument::fromJson(file.readAll());
     file.close();
 
-    if (!doc.isObject())
-    {
-        m_data = defaultSettings();
-        save();
-        return false;
-    }
-
-    m_data = defaultSettings();
-    const auto loaded = doc.object();
-
-    for (auto it = loaded.begin(); it != loaded.end(); ++it)
-    {
-        m_data.insert(it.key(), it.value());
-    }
-
-    // C++ migration keeps a single supported theme for now.
-    m_data.insert("style", "dark");
-
-    return true;
+    m_data = doc.object();
+    return !m_data.isEmpty();
 }
 
 bool AppSettingsManager::save() const
@@ -125,23 +98,6 @@ QString AppSettingsManager::settingString(const QString &key, const QString &def
         return defaultValue;
     }
     return value.toString(defaultValue);
-}
-
-QJsonObject AppSettingsManager::defaultSettings() const
-{
-    return {
-        {"name", "Quol"},
-        {"version", "4.2.0-cpp-mvp"},
-        {"description", "Versatile toolbox for windows."},
-        {"startup", false},
-        {"toggle_key", "`"},
-        {"style", "dark"},
-        {"transition", "none"},
-        {"is_default_pos", false},
-        {"plugins_dir", "plugins"},
-        {"plugins", QJsonArray{"example"}},
-        {"show_updates", true},
-        {"configs", QJsonObject()}};
 }
 
 QJsonObject AppSettingsManager::ensurePluginConfig(const QString &pluginId)

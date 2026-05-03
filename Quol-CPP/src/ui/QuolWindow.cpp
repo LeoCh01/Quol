@@ -115,14 +115,14 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
 
   m_titleBar->setConfigAction([this]()
                               {
-        if (!m_configWindow)
-        {
-            return;
-        }
-        m_configWindow->reloadFromDisk();
-        m_configWindow->show();
-        m_configWindow->raise();
-        m_configWindow->activateWindow(); });
+      if (!m_configWindow)
+      {
+        return;
+      }
+
+      m_configWindow->show();
+      m_configWindow->raise();
+      m_configWindow->activateWindow(); });
 
   if (!loadGeometryFromPluginConfig())
   {
@@ -138,6 +138,11 @@ void QuolWindow::setConfigSavedCallback(const std::function<void(const QJsonObje
 void QuolWindow::setGeometryPersistence(bool enabled)
 {
   m_persistGeometry = enabled;
+}
+
+bool QuolWindow::applyGeometryFromConfig()
+{
+  return loadGeometryFromPluginConfig();
 }
 
 void QuolWindow::snapToGrid()

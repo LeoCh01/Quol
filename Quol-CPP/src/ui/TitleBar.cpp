@@ -1,32 +1,39 @@
 #include "ui/TitleBar.hpp"
 #include "ui/QuolWindow.hpp"
 
+#include <QCoreApplication>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPushButton>
 
-TitleBar::TitleBar(QuolWindow* window, const QString& title, QWidget* parent)
-    : QFrame(parent)
-    , m_window(window)
+TitleBar::TitleBar(QuolWindow *window, const QString &title, QWidget *parent)
+    : QFrame(parent), m_window(window)
 {
     setObjectName("title-bar");
     setFixedHeight(36);
     setCursor(Qt::SizeAllCursor);
 
-    auto* layout = new QHBoxLayout(this);
+    auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(10, 0, 8, 0);
 
-    auto* label = new QLabel(title, this);
+    auto *label = new QLabel(title, this);
     layout->addWidget(label, 1);
 
-    m_configBtn = new QPushButton(QString::fromUtf8("⚙"), this);
+    m_configBtn = new QPushButton(this);
     m_configBtn->setToolTip("Open config");
     m_configBtn->setVisible(false);
+    m_configBtn->setCursor(Qt::PointingHandCursor);
+
+    // Load the SVG icon for the config button
+    const QString iconPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/config.svg";
+    QIcon configIcon(iconPath);
+    m_configBtn->setIcon(configIcon);
     layout->addWidget(m_configBtn);
 }
 
-void TitleBar::setConfigAction(const std::function<void()>& onClick)
+void TitleBar::setConfigAction(const std::function<void()> &onClick)
 {
     if (!m_configBtn)
     {
@@ -35,15 +42,15 @@ void TitleBar::setConfigAction(const std::function<void()>& onClick)
 
     m_configBtn->setVisible(true);
     m_configBtn->disconnect();
-    connect(m_configBtn, &QPushButton::clicked, this, [onClick]() {
+    connect(m_configBtn, &QPushButton::clicked, this, [onClick]()
+            {
         if (onClick)
         {
             onClick();
-        }
-    });
+        } });
 }
 
-void TitleBar::mousePressEvent(QMouseEvent* event)
+void TitleBar::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
@@ -54,14 +61,14 @@ void TitleBar::mousePressEvent(QMouseEvent* event)
     event->accept();
 }
 
-void TitleBar::mouseMoveEvent(QMouseEvent* event)
+void TitleBar::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_dragging && (event->buttons() & Qt::LeftButton))
         m_window->move(event->globalPosition().toPoint() - m_dragOffset);
     event->accept();
 }
 
-void TitleBar::mouseReleaseEvent(QMouseEvent* event)
+void TitleBar::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton && m_dragging)
     {

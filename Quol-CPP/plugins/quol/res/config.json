@@ -1,11 +1,11 @@
 {
-  "startup": false,
-  "reset_pos": false,
-  "toggle_key": "`",
-  "transition": [["rand", "fade", "cursor", "up", "left", "down", "right", "none"], 0],
   "_": {
     "default_geometry": [20, 20, 200, 0],
     "plugins": ["example"],
     "name": "Quol"
-  }
+  },
+  "startup": false,
+  "reset_pos": false,
+  "toggle_key": "`",
+  "transition": [["rand", "fade", "cursor", "up", "left", "down", "right", "none"], 0]
 }

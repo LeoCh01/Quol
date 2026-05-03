@@ -10,36 +10,36 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPluginLoader>
+
+#include <exception>
 
 namespace
 {
-  QJsonArray readDefaultGeometry(const QString &configPath,
-                                 int fallbackX,
-                                 int fallbackY,
-                                 int fallbackW,
-                                 int fallbackH)
+  QJsonObject readPluginConfig(const QString &configPath)
   {
     QFile file(configPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-      return QJsonArray{fallbackX, fallbackY, fallbackW, fallbackH};
+      throw std::runtime_error(QString("Failed to open config: %1").arg(configPath).toStdString());
     }
 
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
     if (!doc.isObject())
     {
-      return QJsonArray{fallbackX, fallbackY, fallbackW, fallbackH};
+      throw std::runtime_error(QString("Invalid JSON object in config: %1").arg(configPath).toStdString());
     }
 
-    const QJsonArray cfg = doc.object().value("_").toObject().value("default_geometry").toArray();
-    if (cfg.size() < 4)
+    const QJsonObject config = doc.object();
+    const QJsonArray geometry = config.value("_").toObject().value("default_geometry").toArray();
+    if (geometry.size() < 4)
     {
-      return QJsonArray{fallbackX, fallbackY, fallbackW, fallbackH};
+      throw std::runtime_error(QString("Missing _.default_geometry in config: %1").arg(configPath).toStdString());
     }
 
-    return cfg;
+    return config;
   }
 }
 
@@ -63,53 +63,70 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
   const QString pluginsDir = appDir + "/plugins";
   const QJsonArray pluginIds = settings->data().value("plugins").toArray();
 
-  int y = 230;
   for (const auto &val : pluginIds)
   {
     const QString id = val.toString().trimmed();
     if (id.isEmpty())
       continue;
 
-    QString title = id;
-    if (!title.isEmpty())
-      title[0] = title[0].toUpper();
-
-    const QString libPath = pluginsDir + "/" + id + "/" + id;
-    auto *loader = new QPluginLoader(libPath, this);
-    auto *plugin = qobject_cast<IQuolPlugin *>(loader->instance());
-
-    const QString configPath = pluginsDir + "/" + id + "/res/config.json";
-    const QJsonArray defaultGeometry = readDefaultGeometry(configPath, 320, y, 260, 150);
-
-    auto *win = new QuolWindow(id, plugin ? plugin->displayName() : title,
-                               settings,
-                               defaultGeometry.at(0).toInt(320),
-                               defaultGeometry.at(1).toInt(y),
-                               defaultGeometry.at(2).toInt(260),
-                               defaultGeometry.at(3).toInt(150));
-
-    if (QFileInfo::exists(configPath))
+    QuolWindow *win = nullptr;
+    try
     {
-      win->attachConfigWindow(configPath, title + " Config");
-    }
+      const QString configPath = pluginsDir + "/" + id + "/res/config.json";
+      const QJsonObject pluginConfig = readPluginConfig(configPath);
+      const QJsonArray defaultGeometry = pluginConfig.value("_").toObject().value("default_geometry").toArray();
+      const QString displayTitle = pluginConfig.value("title").toString();
 
-    if (plugin)
-    {
-      plugin->initialize(pluginsDir + "/" + id, settings->data(), {});
+      const QString libPath = pluginsDir + "/" + id + "/" + id;
+      auto *loader = new QPluginLoader(libPath, this);
+      auto *plugin = qobject_cast<IQuolPlugin *>(loader->instance());
+      if (!plugin)
+      {
+        throw std::runtime_error(QString("Failed to load plugin library: %1").arg(libPath).toStdString());
+      }
+
+      win = new QuolWindow(id, displayTitle,
+                           settings,
+                           defaultGeometry.at(0).toInt(),
+                           defaultGeometry.at(1).toInt(),
+                           defaultGeometry.at(2).toInt(),
+                           defaultGeometry.at(3).toInt());
+
+      win->attachConfigWindow(configPath, displayTitle + " Config");
+
+      plugin->initialize(pluginsDir + "/" + id, settings->data(), pluginConfig);
+      win->setConfigSavedCallback([plugin](const QJsonObject &updatedConfig)
+                                  { plugin->onUpdateConfig(updatedConfig); });
       win->addContent(plugin->createWidget());
+
+      if (transitions)
+        transitions->addWindow(win);
+
+      m_windows.append(win);
+      win = nullptr;
     }
-    else
+    catch (const std::exception &e)
     {
-      auto *label = new QLabel(QString("Plugin '%1' loaded.").arg(id));
-      label->setWordWrap(true);
-      win->addContent(label);
+      if (win)
+      {
+        delete win;
+      }
+
+      QMessageBox::critical(nullptr,
+                            "Plugin Load Error",
+                            QString("Failed to load plugin '%1':\n%2").arg(id).arg(QString::fromStdString(e.what())));
     }
+    catch (...)
+    {
+      if (win)
+      {
+        delete win;
+      }
 
-    if (transitions)
-      transitions->addWindow(win);
-
-    m_windows.append(win);
-    y += 170;
+      QMessageBox::critical(nullptr,
+                            "Plugin Load Error",
+                            QString("Failed to load plugin '%1' with an unknown error.").arg(id));
+    }
   }
 }
 
