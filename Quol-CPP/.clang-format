@@ -7,7 +7,7 @@ Standard: Latest
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
-ContinuationIndentWidth: 8
+ContinuationIndentWidth: 4
 
 # Braces and layout
 BreakBeforeBraces: Attach

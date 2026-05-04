@@ -5,26 +5,27 @@
 
 #include <QCloseEvent>
 #include <QFile>
+#include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QPainterPath>
 #include <QRegion>
 #include <QResizeEvent>
+#include <QScreen>
 #include <QShowEvent>
 #include <QVBoxLayout>
 
 QuolWindow::QuolWindow(
-        const QString &pluginId,
-        const QString &title,
-        AppSettingsManager *settings,
-        int defaultX,
-        int defaultY,
-        int defaultW,
-        int defaultH,
-        QWidget *parent
+    const QString &title,
+    AppSettingsManager *settings,
+    int defaultX,
+    int defaultY,
+    int defaultW,
+    int defaultH,
+    QWidget *parent
 )
-    : QWidget(parent), m_pluginId(pluginId), m_titleText(title), m_settings(settings) {
+    : QWidget(parent), m_titleText(title), m_settings(settings) {
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
 
     auto *rootLayout = new QVBoxLayout(this);
@@ -55,10 +56,6 @@ TitleBar *QuolWindow::titleBar() const {
     return m_titleBar;
 }
 
-const QString &QuolWindow::pluginId() const {
-    return m_pluginId;
-}
-
 const QString &QuolWindow::titleText() const {
     return m_titleText;
 }
@@ -81,7 +78,7 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
 
     const QString resolvedTitle = configTitle.isEmpty() ? (m_titleText + " Config") : configTitle;
 
-    m_configWindow = new ConfigWindow(m_pluginId, resolvedTitle, m_settings, configPath, this);
+    m_configWindow = new ConfigWindow(resolvedTitle, m_settings, configPath, this);
     connect(m_configWindow, &ConfigWindow::configSaved, this, [this](const QJsonObject &config) {
         if (m_onConfigSaved) {
             m_onConfigSaved(config);
@@ -105,6 +102,9 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
             return;
         }
 
+        const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
+        const QSize sz = m_configWindow->size();
+        m_configWindow->move(screen.center().x() - sz.width() / 2, screen.center().y() - sz.height() / 2);
         m_configWindow->show();
         m_configWindow->raise();
         m_configWindow->activateWindow();
@@ -144,7 +144,7 @@ void QuolWindow::saveGeometry() {
     }
 
     if (m_settings) {
-        m_settings->setWindowGeometry(m_pluginId, x(), y(), width(), height());
+        m_settings->setWindowGeometry(m_titleText, x(), y(), width(), height());
     }
 }
 
@@ -185,15 +185,15 @@ void QuolWindow::loadGeometry(int defaultX, int defaultY, int defaultW, int defa
     }
 
     const QJsonObject configs = m_settings->data().value("configs").toObject();
-    const QJsonObject pluginCfg = configs.value(m_pluginId).toObject();
-    const QJsonArray geometry = pluginCfg.value("_").toObject().value("geometry").toArray();
+    const QJsonObject windowCfg = configs.value(m_titleText).toObject();
+    const QJsonArray geometry = windowCfg.value("_").toObject().value("geometry").toArray();
 
     if (geometry.size() >= 4) {
         setGeometry(
-                geometry.at(0).toInt(defaultX),
-                geometry.at(1).toInt(defaultY),
-                geometry.at(2).toInt(defaultW),
-                geometry.at(3).toInt(defaultH)
+            geometry.at(0).toInt(defaultX),
+            geometry.at(1).toInt(defaultY),
+            geometry.at(2).toInt(defaultW),
+            geometry.at(3).toInt(defaultH)
         );
         return;
     }
@@ -219,8 +219,8 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
 
     QJsonObject root = doc.object();
     QJsonObject underscore = root.value("_").toObject();
-    const bool hasDefaultGeometry = underscore.value("default_geometry").isArray()
-                                    && underscore.value("default_geometry").toArray().size() >= 4;
+    const bool hasDefaultGeometry =
+        underscore.value("default_geometry").isArray() && underscore.value("default_geometry").toArray().size() >= 4;
     const bool useDefaultPos = m_settings && m_settings->data().value("is_default_pos").toBool(false);
     const QJsonArray defaultGeometry = underscore.value("default_geometry").toArray();
     QJsonArray geometry = underscore.value("geometry").toArray();

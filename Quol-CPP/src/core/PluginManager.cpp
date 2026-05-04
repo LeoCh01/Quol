@@ -74,13 +74,12 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             }
 
             win = new QuolWindow(
-                    id,
-                    displayTitle,
-                    settings,
-                    defaultGeometry.at(0).toInt(),
-                    defaultGeometry.at(1).toInt(),
-                    defaultGeometry.at(2).toInt(),
-                    defaultGeometry.at(3).toInt()
+                displayTitle,
+                settings,
+                defaultGeometry.at(0).toInt(),
+                defaultGeometry.at(1).toInt(),
+                defaultGeometry.at(2).toInt(),
+                defaultGeometry.at(3).toInt()
             );
 
             win->attachConfigWindow(configPath, displayTitle + " Config");
@@ -102,9 +101,9 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             }
 
             QMessageBox::critical(
-                    nullptr,
-                    "Plugin Load Error",
-                    QString("Failed to load plugin '%1':\n%2").arg(id).arg(QString::fromStdString(e.what()))
+                nullptr,
+                "Plugin Load Error",
+                QString("Failed to load plugin '%1':\n%2").arg(id).arg(QString::fromStdString(e.what()))
             );
         } catch (...) {
             if (win) {
@@ -112,7 +111,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             }
 
             QMessageBox::critical(
-                    nullptr, "Plugin Load Error", QString("Failed to load plugin '%1' with an unknown error.").arg(id)
+                nullptr, "Plugin Load Error", QString("Failed to load plugin '%1' with an unknown error.").arg(id)
             );
         }
     }

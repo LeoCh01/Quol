@@ -44,9 +44,9 @@ QJsonObject &AppSettingsManager::data() {
 }
 
 QVariantList AppSettingsManager::windowGeometry(
-        const QString &pluginId, int defaultX, int defaultY, int defaultWidth, int defaultHeight
+    const QString &configKey, int defaultX, int defaultY, int defaultWidth, int defaultHeight
 ) {
-    QJsonObject pluginConfig = ensurePluginConfig(pluginId);
+    QJsonObject pluginConfig = ensurePluginConfig(configKey);
     QJsonObject meta = pluginConfig.value("_").toObject();
     QJsonArray geometry = meta.value("geometry").toArray();
 
@@ -54,25 +54,25 @@ QVariantList AppSettingsManager::windowGeometry(
         geometry = QJsonArray{defaultX, defaultY, defaultWidth, defaultHeight};
         meta.insert("geometry", geometry);
         pluginConfig.insert("_", meta);
-        setPluginConfig(pluginId, pluginConfig);
+        setPluginConfig(configKey, pluginConfig);
         save();
     }
 
     return QVariantList{
-            geometry.at(0).toInt(defaultX),
-            geometry.at(1).toInt(defaultY),
-            geometry.at(2).toInt(defaultWidth),
-            geometry.at(3).toInt(defaultHeight)
+        geometry.at(0).toInt(defaultX),
+        geometry.at(1).toInt(defaultY),
+        geometry.at(2).toInt(defaultWidth),
+        geometry.at(3).toInt(defaultHeight)
     };
 }
 
-void AppSettingsManager::setWindowGeometry(const QString &pluginId, int x, int y, int width, int height) {
-    QJsonObject pluginConfig = ensurePluginConfig(pluginId);
+void AppSettingsManager::setWindowGeometry(const QString &configKey, int x, int y, int width, int height) {
+    QJsonObject pluginConfig = ensurePluginConfig(configKey);
     QJsonObject meta = pluginConfig.value("_").toObject();
     meta.insert("geometry", QJsonArray{x, y, width, height});
     pluginConfig.insert("_", meta);
 
-    setPluginConfig(pluginId, pluginConfig);
+    setPluginConfig(configKey, pluginConfig);
     save();
 }
 
@@ -84,13 +84,13 @@ QString AppSettingsManager::settingString(const QString &key, const QString &def
     return value.toString(defaultValue);
 }
 
-QJsonObject AppSettingsManager::ensurePluginConfig(const QString &pluginId) {
+QJsonObject AppSettingsManager::ensurePluginConfig(const QString &configKey) {
     const QJsonObject configs = m_data.value("configs").toObject();
-    return configs.value(pluginId).toObject();
+    return configs.value(configKey).toObject();
 }
 
-void AppSettingsManager::setPluginConfig(const QString &pluginId, const QJsonObject &pluginConfig) {
+void AppSettingsManager::setPluginConfig(const QString &configKey, const QJsonObject &pluginConfig) {
     QJsonObject configs = m_data.value("configs").toObject();
-    configs.insert(pluginId, pluginConfig);
+    configs.insert(configKey, pluginConfig);
     m_data.insert("configs", configs);
 }

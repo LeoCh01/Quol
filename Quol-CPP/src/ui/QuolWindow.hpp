@@ -14,18 +14,16 @@ class QuolWindow : public QWidget {
 
 public:
     explicit QuolWindow(
-            const QString &pluginId,
-            const QString &title,
-            AppSettingsManager *settings,
-            int defaultX,
-            int defaultY,
-            int defaultW,
-            int defaultH,
-            QWidget *parent = nullptr
+        const QString &title,
+        AppSettingsManager *settings,
+        int defaultX,
+        int defaultY,
+        int defaultW,
+        int defaultH,
+        QWidget *parent = nullptr
     );
 
     TitleBar *titleBar() const;
-    const QString &pluginId() const;
     const QString &titleText() const;
 
     void addContent(QWidget *widget);
@@ -51,7 +49,6 @@ private:
     bool saveGeometryToPluginConfig() const;
     int autoHeightFromContent() const;
 
-    QString m_pluginId;
     QString m_titleText;
     QString m_pluginConfigPath;
     AppSettingsManager *m_settings;

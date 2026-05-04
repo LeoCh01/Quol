@@ -11,8 +11,9 @@ class TitleBar : public QFrame {
     Q_OBJECT
 
 public:
-    explicit TitleBar(QuolWindow *window, const QString &title, QWidget *parent = nullptr);
+    explicit TitleBar(QWidget *window, const QString &title, QWidget *parent = nullptr);
     void setConfigAction(const std::function<void()> &onClick);
+    void setCloseAction(const std::function<void()> &onClick);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -20,8 +21,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
-    QuolWindow *m_window;
+    QWidget *m_window;
     QPoint m_dragOffset;
     bool m_dragging = false;
     QPushButton *m_configBtn = nullptr;
+    QPushButton *m_closeBtn = nullptr;
 };

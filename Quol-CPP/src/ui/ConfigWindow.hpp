@@ -13,11 +13,7 @@ class ConfigWindow : public QuolWindow {
 
 public:
     explicit ConfigWindow(
-            const QString &pluginId,
-            const QString &title,
-            AppSettingsManager *settings,
-            const QString &configPath,
-            QWidget *parent = nullptr
+        const QString &title, AppSettingsManager *settings, const QString &configPath, QWidget *parent = nullptr
     );
 
     void reloadFromDisk();

@@ -130,24 +130,51 @@ QTextBrowser {
     border: none;
 }
 
-QDialog {
-    background-color: #444;
-    color: white;
-}
-
 QTextEdit {
     background-color: #3d3d3d;
     color: white;
     border: 1px solid #555;
 }
 
-#content QTabWidget::pane {
+/* ── Close button in TitleBar ───────────────────────────────────── */
+#close-btn {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: white;
+    font-weight: bold;
+}
+
+#close-btn:hover {
+    background-color: #c0392b;
+}
+
+#close-btn:pressed {
+    background-color: #922b21;
+}
+
+/* ── Status labels in plugin manager ────────────────────────────── */
+#status-active {
+    color: #2ecc71;
+    font-size: 11px;
+}
+
+#status-inactive {
+    color: #888;
+    font-size: 11px;
+}
+
+/* ── Tabs (shared: #content and QuolPopupWindow) ─────────────────── */
+#content QTabWidget::pane,
+QuolPopupWindow QTabWidget::pane {
     border: 1px solid #555;
     background: #444;
     top: -1px;
 }
 
-#content QTabBar::tab {
+#content QTabBar::tab,
+QuolPopupWindow QTabBar::tab {
     background: #333;
     color: white;
     padding: 6px 12px;
@@ -158,35 +185,68 @@ QTextEdit {
     margin-right: 2px;
 }
 
-#content QTabBar::tab:selected {
+#content QTabBar::tab:selected,
+QuolPopupWindow QTabBar::tab:selected {
     background: #444;
     border-color: #666;
 }
 
-#content QTabBar::tab:hover {
+#content QTabBar::tab:hover,
+QuolPopupWindow QTabBar::tab:hover {
     background: #444;
     border-color: #777;
 }
 
-#content QTabBar {
+#content QTabBar,
+QuolPopupWindow QTabBar {
     background-color: #444;
 }
 
-#content QListWidget {
+/* ── List widget (shared) ────────────────────────────────────────── */
+#content QListWidget,
+QuolPopupWindow QListWidget {
     background-color: #333;
     border: 1px solid #555;
 }
 
-#content QListWidget::item {
+#content QListWidget::item,
+QuolPopupWindow QListWidget::item {
     padding: 2px;
 }
 
-#content QListWidget::item:hover {
+#content QListWidget::item:hover,
+QuolPopupWindow QListWidget::item:hover {
     background-color: #3d3d3d;
 }
 
-#content QListWidget::item:selected {
+#content QListWidget::item:selected,
+QuolPopupWindow QListWidget::item:selected {
     background-color: #555;
+}
+
+/* ── CheckBox / Button / Label inside QuolPopupWindow content ────── */
+QuolPopupWindow #content QCheckBox {
+    background-color: transparent;
+    spacing: 6px;
+}
+
+QuolPopupWindow #content * {
+    color: white;
+}
+
+QuolPopupWindow #content QPushButton {
+    background-color: #333;
+    border-radius: 4px;
+    border: 1px solid #555;
+    padding: 3px 10px;
+}
+
+QuolPopupWindow #content QPushButton:hover {
+    background-color: #555;
+}
+
+QuolPopupWindow #content QAbstractItemView {
+    background-color: #333;
 }
 
 QToolTip {

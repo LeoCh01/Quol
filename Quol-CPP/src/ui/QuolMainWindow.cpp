@@ -1,21 +1,37 @@
 #include "ui/QuolMainWindow.hpp"
 #include "core/AppSettingsManager.hpp"
+#include "ui/QuolPopupWindow.hpp"
 #include "ui/TransitionManager.hpp"
 
+#include <QAbstractButton>
+#include <QAbstractItemView>
 #include <QApplication>
+#include <QCheckBox>
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QGridLayout>
+#include <QGuiApplication>
+#include <QHBoxLayout>
 #include <QIcon>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLabel>
+#include <QListWidget>
+#include <QMessageBox>
 #include <QProcess>
 #include <QPushButton>
+#include <QScreen>
+#include <QSet>
+#include <QSignalBlocker>
 #include <QSize>
+#include <QStyle>
+#include <QTabWidget>
 #include <QUrl>
+#include <QVBoxLayout>
 
 namespace {
 QJsonArray readMainDefaultGeometry() {
@@ -50,14 +66,13 @@ int mainDefaultGeometryValue(int index, int fallback) {
 
 QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *transitions, QWidget *parent)
     : QuolWindow(
-              "quol",
-              "Quol",
-              settings,
-              mainDefaultGeometryValue(0, 20),
-              mainDefaultGeometryValue(1, 20),
-              mainDefaultGeometryValue(2, 260),
-              mainDefaultGeometryValue(3, 180),
-              parent
+          "Quol",
+          settings,
+          mainDefaultGeometryValue(0, 20),
+          mainDefaultGeometryValue(1, 20),
+          mainDefaultGeometryValue(2, 260),
+          mainDefaultGeometryValue(3, 180),
+          parent
       )
     , m_settings(settings)
     , m_transitions(transitions) {
@@ -72,7 +87,8 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     const QSize iconSize(16, 16);
 
     auto *managePluginsBtn = new QPushButton("Manage Plugins");
-    managePluginsBtn->setToolTip("Manage plugins UI is not implemented yet");
+    managePluginsBtn->setToolTip("Enable or disable installed plugins");
+    connect(managePluginsBtn, &QPushButton::clicked, this, &QuolMainWindow::openManagePluginsDialog);
     grid->addWidget(managePluginsBtn, 0, 0, 1, 3);
 
     auto *versionBtn = new QPushButton();
@@ -104,10 +120,7 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     reloadBtn->setIcon(QIcon(iconRoot + "reload.svg"));
     reloadBtn->setIconSize(iconSize);
     reloadBtn->setToolTip("Reload application");
-    connect(reloadBtn, &QPushButton::clicked, this, []() {
-        QProcess::startDetached(QCoreApplication::applicationFilePath());
-        QCoreApplication::quit();
-    });
+    connect(reloadBtn, &QPushButton::clicked, this, &QuolMainWindow::reloadApplication);
     grid->addWidget(reloadBtn, 2, 0, 1, 1);
 
     auto *quitBtn = new QPushButton("Quit");
@@ -121,6 +134,202 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
 void QuolMainWindow::updateToggleButton() {
     if (m_toggleBtn)
         m_toggleBtn->setText(m_transitions->isHidden() ? "Toggle ON" : "Toggle OFF");
+}
+
+QStringList QuolMainWindow::discoverInstalledPluginIds() const {
+    const QString pluginsDirPath = QCoreApplication::applicationDirPath() + "/plugins";
+    QDir pluginsDir(pluginsDirPath);
+
+    QStringList installed;
+    const QStringList folderNames = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    for (const QString &id : folderNames) {
+        if (id.compare("quol", Qt::CaseInsensitive) == 0) {
+            continue;
+        }
+
+        const QString root = pluginsDir.filePath(id);
+        const QString configPath = root + "/res/config.json";
+        const QString dllPath = root + "/" + id + ".dll";
+
+        if (QFileInfo::exists(configPath) && QFileInfo::exists(dllPath)) {
+            installed.append(id);
+        }
+    }
+
+    return installed;
+}
+
+void QuolMainWindow::reloadApplication() const {
+    QProcess::startDetached(QCoreApplication::applicationFilePath());
+    QCoreApplication::quit();
+}
+
+void QuolMainWindow::openManagePluginsDialog() {
+    if (!m_settings) {
+        return;
+    }
+
+    if (m_pluginManagerWindow) {
+        m_pluginManagerWindow->raise();
+        m_pluginManagerWindow->activateWindow();
+        return;
+    }
+
+    auto *popup = new QuolPopupWindow("Manage Plugins", this);
+    m_pluginManagerWindow = popup;
+    connect(popup, &QObject::destroyed, this, [this]() { m_pluginManagerWindow = nullptr; });
+    popup->resize(420, 420);
+    const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
+    popup->move(screen.center().x() - 210, screen.center().y() - 210);
+
+    auto *tabs = new QTabWidget();
+
+    // --- Installed tab ---
+    auto *installedTab = new QWidget();
+    auto *installedLayout = new QVBoxLayout(installedTab);
+    installedLayout->setContentsMargins(4, 4, 4, 4);
+    installedLayout->setSpacing(4);
+
+    QList<QCheckBox *> pluginChecks;
+    const QStringList pluginIds = discoverInstalledPluginIds();
+
+    auto *topRow = new QHBoxLayout();
+    auto *selectAllCheck = new QCheckBox("Select All");
+    topRow->addWidget(selectAllCheck);
+    topRow->addStretch(1);
+    auto *applyBtn = new QPushButton("Apply");
+    applyBtn->setToolTip("Save and reload");
+    topRow->addWidget(applyBtn);
+    installedLayout->addLayout(topRow);
+
+    QSet<QString> enabledIds;
+    const QJsonArray enabledArr = m_settings->data().value("plugins").toArray();
+    for (const QJsonValue &value : enabledArr) {
+        enabledIds.insert(value.toString().trimmed());
+    }
+
+    if (pluginIds.isEmpty()) {
+        installedLayout->addWidget(new QLabel("No installed plugins found."));
+        selectAllCheck->setEnabled(false);
+    } else {
+        auto *listWidget = new QListWidget();
+        listWidget->setSelectionMode(QAbstractItemView::NoSelection);
+
+        for (const QString &id : pluginIds) {
+            auto *itemWidget = new QWidget();
+            auto *row = new QHBoxLayout(itemWidget);
+            row->setContentsMargins(6, 2, 6, 2);
+
+            const QString configPath = QCoreApplication::applicationDirPath() + "/plugins/" + id + "/res/config.json";
+            QString displayName = id;
+            QFile cf(configPath);
+            if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
+                cf.close();
+                if (doc.isObject()) {
+                    const QString title = doc.object().value("title").toString();
+                    if (!title.isEmpty()) {
+                        displayName = title;
+                    }
+                }
+            }
+
+            auto *nameLabel = new QLabel(displayName);
+            auto *statusLabel = new QLabel(enabledIds.contains(id) ? "Active" : "Inactive");
+            statusLabel->setObjectName(enabledIds.contains(id) ? "status-active" : "status-inactive");
+            auto *check = new QCheckBox();
+            check->setProperty("pluginId", id);
+            check->setChecked(enabledIds.contains(id));
+
+            connect(check, &QCheckBox::checkStateChanged, popup, [statusLabel](Qt::CheckState state) {
+                const bool on = state == Qt::Checked;
+                statusLabel->setText(on ? "Active" : "Inactive");
+                statusLabel->setObjectName(on ? "status-active" : "status-inactive");
+                statusLabel->style()->unpolish(statusLabel);
+                statusLabel->style()->polish(statusLabel);
+            });
+
+            row->addWidget(nameLabel);
+            row->addStretch(1);
+            row->addWidget(statusLabel);
+            row->addWidget(check);
+
+            auto *item = new QListWidgetItem(listWidget);
+            item->setSizeHint(QSize(0, 34));
+            listWidget->addItem(item);
+            listWidget->setItemWidget(item, itemWidget);
+
+            pluginChecks.append(check);
+        }
+
+        installedLayout->addWidget(listWidget);
+
+        bool allSelected = !pluginChecks.isEmpty();
+        for (QCheckBox *check : pluginChecks) {
+            if (!check->isChecked()) {
+                allSelected = false;
+                break;
+            }
+        }
+        selectAllCheck->setChecked(allSelected);
+
+        connect(selectAllCheck, &QCheckBox::checkStateChanged, popup, [pluginChecks](Qt::CheckState state) {
+            const bool on = state == Qt::Checked;
+            for (QCheckBox *c : pluginChecks) {
+                if (c)
+                    c->setChecked(on);
+            }
+        });
+
+        for (QCheckBox *check : pluginChecks) {
+            connect(check, &QCheckBox::checkStateChanged, popup, [pluginChecks, selectAllCheck]() {
+                bool all = !pluginChecks.isEmpty();
+                for (QCheckBox *c : pluginChecks) {
+                    if (!c || !c->isChecked()) {
+                        all = false;
+                        break;
+                    }
+                }
+                const QSignalBlocker blocker(selectAllCheck);
+                selectAllCheck->setChecked(all);
+            });
+        }
+    }
+
+    // --- Store tab ---
+    auto *storeTab = new QWidget();
+    auto *storeLayout = new QVBoxLayout(storeTab);
+    storeLayout->setContentsMargins(4, 4, 4, 4);
+    storeLayout->addWidget(new QLabel("Plugin Store (coming soon)"));
+    storeLayout->addStretch(1);
+
+    tabs->addTab(installedTab, "Installed");
+    tabs->addTab(storeTab, "Store");
+
+    popup->addContent(tabs);
+
+    connect(applyBtn, &QPushButton::clicked, popup, [this, popup, pluginChecks]() {
+        QJsonArray selected;
+        for (QCheckBox *check : pluginChecks) {
+            if (check && check->isChecked()) {
+                selected.append(check->property("pluginId").toString());
+            }
+        }
+
+        QJsonObject &settings = m_settings->data();
+        settings.insert("plugins", selected);
+        if (!m_settings->save()) {
+            return;
+        }
+
+        copySettingsToMainConfig();
+        popup->close();
+        reloadApplication();
+    });
+
+    popup->show();
+    popup->raise();
+    popup->activateWindow();
 }
 
 void QuolMainWindow::copySettingsToMainConfig() {

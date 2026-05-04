@@ -12,7 +12,7 @@ class BrokenPlugin final : public QObject, public IQuolPlugin {
 public:
     QWidget *createWidget(QWidget *parent = nullptr) override;
     void initialize(
-            const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
+        const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
     ) override;
     void shutdown() override;
 };

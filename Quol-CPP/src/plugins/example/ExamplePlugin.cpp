@@ -46,7 +46,7 @@ QWidget *ExamplePlugin::createWidget(QWidget *parent) {
 }
 
 void ExamplePlugin::initialize(
-        const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
+    const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
 ) {
     m_pluginRootPath = pluginRootPath;
     m_appSettings = appSettings;

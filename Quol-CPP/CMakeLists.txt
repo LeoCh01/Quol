@@ -16,6 +16,7 @@ add_executable(Quol WIN32
     src/ui/ConfigWindow.cpp
     src/ui/QuolWindow.cpp
     src/ui/TitleBar.cpp
+    src/ui/QuolPopupWindow.cpp
     src/ui/QuolMainWindow.cpp
     src/ui/TransitionManager.cpp
 )

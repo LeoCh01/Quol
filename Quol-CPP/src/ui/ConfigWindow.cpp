@@ -39,13 +39,9 @@ void clearLayoutRecursively(QLayout *layout) {
 }  // namespace
 
 ConfigWindow::ConfigWindow(
-        const QString &pluginId,
-        const QString &title,
-        AppSettingsManager *settings,
-        const QString &configPath,
-        QWidget *parent
+    const QString &title, AppSettingsManager *settings, const QString &configPath, QWidget *parent
 )
-    : QuolWindow(pluginId + "_config", title, settings, 500, 300, 400, 240, parent), m_configPath(configPath) {
+    : QuolWindow(title, settings, 500, 300, 400, 240, parent), m_configPath(configPath) {
     setGeometryPersistence(false);
     buildUi();
     reloadFromDisk();

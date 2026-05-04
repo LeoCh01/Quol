@@ -8,7 +8,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 
-TitleBar::TitleBar(QuolWindow *window, const QString &title, QWidget *parent) : QFrame(parent), m_window(window) {
+TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFrame(parent), m_window(window) {
     setObjectName("title-bar");
     setFixedHeight(36);
     setCursor(Qt::SizeAllCursor);
@@ -29,6 +29,15 @@ TitleBar::TitleBar(QuolWindow *window, const QString &title, QWidget *parent) : 
     QIcon configIcon(iconPath);
     m_configBtn->setIcon(configIcon);
     layout->addWidget(m_configBtn);
+
+    m_closeBtn = new QPushButton(this);
+    m_closeBtn->setToolTip("Close");
+    m_closeBtn->setVisible(false);
+    m_closeBtn->setCursor(Qt::PointingHandCursor);
+    m_closeBtn->setObjectName("close-btn");
+    const QString closeIconPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/close.svg";
+    m_closeBtn->setIcon(QIcon(closeIconPath));
+    layout->addWidget(m_closeBtn);
 }
 
 void TitleBar::setConfigAction(const std::function<void()> &onClick) {
@@ -39,6 +48,20 @@ void TitleBar::setConfigAction(const std::function<void()> &onClick) {
     m_configBtn->setVisible(true);
     m_configBtn->disconnect();
     connect(m_configBtn, &QPushButton::clicked, this, [onClick]() {
+        if (onClick) {
+            onClick();
+        }
+    });
+}
+
+void TitleBar::setCloseAction(const std::function<void()> &onClick) {
+    if (!m_closeBtn) {
+        return;
+    }
+
+    m_closeBtn->setVisible(true);
+    m_closeBtn->disconnect();
+    connect(m_closeBtn, &QPushButton::clicked, this, [onClick]() {
         if (onClick) {
             onClick();
         }
@@ -64,7 +87,9 @@ void TitleBar::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && m_dragging) {
         m_dragging = false;
         m_window->setWindowOpacity(1.0);
-        m_window->snapToGrid();
+        if (auto *qw = qobject_cast<QuolWindow *>(m_window)) {
+            qw->snapToGrid();
+        }
     }
     event->accept();
 }

@@ -10,7 +10,7 @@ QWidget *BrokenPlugin::createWidget(QWidget *parent) {
 }
 
 void BrokenPlugin::initialize(
-        const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
+    const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
 ) {
     // Intentionally fail
     throw std::runtime_error("Broken plugin intentionally failed during initialize");

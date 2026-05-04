@@ -18,14 +18,14 @@ public:
     QJsonObject &data();
 
     QVariantList windowGeometry(
-            const QString &pluginId, int defaultX, int defaultY, int defaultWidth, int defaultHeight
+        const QString &configKey, int defaultX, int defaultY, int defaultWidth, int defaultHeight
     );
-    void setWindowGeometry(const QString &pluginId, int x, int y, int width, int height);
+    void setWindowGeometry(const QString &configKey, int x, int y, int width, int height);
     QString settingString(const QString &key, const QString &defaultValue = QString()) const;
 
 private:
-    QJsonObject ensurePluginConfig(const QString &pluginId);
-    void setPluginConfig(const QString &pluginId, const QJsonObject &pluginConfig);
+    QJsonObject ensurePluginConfig(const QString &configKey);
+    void setPluginConfig(const QString &configKey, const QJsonObject &pluginConfig);
 
     QString m_settingsPath;
     QJsonObject m_data;
