@@ -7,22 +7,15 @@
 #include <windows.h>
 #endif
 
-InputManager::InputManager(QObject* parent)
-    : QObject(parent),
-      m_running(false),
-      m_nextId(1)
-{
+InputManager::InputManager(QObject *parent) : QObject(parent), m_running(false), m_nextId(1) {
 }
 
-InputManager::~InputManager()
-{
+InputManager::~InputManager() {
     stop();
 }
 
-void InputManager::start()
-{
-    if (m_running)
-    {
+void InputManager::start() {
+    if (m_running) {
         return;
     }
 
@@ -30,10 +23,8 @@ void InputManager::start()
     m_running = true;
 }
 
-void InputManager::stop()
-{
-    if (!m_running)
-    {
+void InputManager::stop() {
+    if (!m_running) {
         return;
     }
 
@@ -42,22 +33,19 @@ void InputManager::stop()
     m_running = false;
 }
 
-int InputManager::addHotkey(const QString& combo, bool suppressed)
-{
+int InputManager::addHotkey(const QString &combo, bool suppressed) {
 #ifdef Q_OS_WIN
     quint32 modifiers = 0;
     quint32 vk = 0;
 
-    if (!parseHotkey(combo, modifiers, vk))
-    {
+    if (!parseHotkey(combo, modifiers, vk)) {
         return -1;
     }
 
     start();
 
     const int id = m_nextId++;
-    if (!RegisterHotKey(nullptr, id, modifiers, vk))
-    {
+    if (!RegisterHotKey(nullptr, id, modifiers, vk)) {
         return -1;
     }
 
@@ -70,11 +58,9 @@ int InputManager::addHotkey(const QString& combo, bool suppressed)
 #endif
 }
 
-void InputManager::removeHotkey(int id)
-{
+void InputManager::removeHotkey(int id) {
 #ifdef Q_OS_WIN
-    if (m_hotkeys.contains(id))
-    {
+    if (m_hotkeys.contains(id)) {
         UnregisterHotKey(nullptr, id);
         m_hotkeys.remove(id);
     }
@@ -83,42 +69,35 @@ void InputManager::removeHotkey(int id)
 #endif
 }
 
-void InputManager::clearHotkeys()
-{
+void InputManager::clearHotkeys() {
 #ifdef Q_OS_WIN
     const auto ids = m_hotkeys.keys();
-    for (const int id : ids)
-    {
+    for (const int id : ids) {
         UnregisterHotKey(nullptr, id);
     }
 #endif
     m_hotkeys.clear();
 }
 
-bool InputManager::nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result)
-{
+bool InputManager::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) {
 #ifdef Q_OS_WIN
     Q_UNUSED(eventType)
 
-    MSG* msg = static_cast<MSG*>(message);
-    if (!msg || msg->message != WM_HOTKEY)
-    {
+    MSG *msg = static_cast<MSG *>(message);
+    if (!msg || msg->message != WM_HOTKEY) {
         return false;
     }
 
     const int id = static_cast<int>(msg->wParam);
-    if (!m_hotkeys.contains(id))
-    {
+    if (!m_hotkeys.contains(id)) {
         return false;
     }
 
     const auto hotkey = m_hotkeys.value(id);
     emit hotkeyTriggered(hotkey.combo);
 
-    if (hotkey.suppressed)
-    {
-        if (result)
-        {
+    if (hotkey.suppressed) {
+        if (result) {
             *result = 0;
         }
         return true;
@@ -133,12 +112,10 @@ bool InputManager::nativeEventFilter(const QByteArray& eventType, void* message,
 #endif
 }
 
-bool InputManager::parseHotkey(const QString& combo, quint32& modifiers, quint32& vk) const
-{
+bool InputManager::parseHotkey(const QString &combo, quint32 &modifiers, quint32 &vk) const {
 #ifdef Q_OS_WIN
     QStringList parts = combo.toLower().split('+', Qt::SkipEmptyParts);
-    if (parts.isEmpty())
-    {
+    if (parts.isEmpty()) {
         return false;
     }
 
@@ -146,58 +123,51 @@ bool InputManager::parseHotkey(const QString& combo, quint32& modifiers, quint32
     vk = 0;
 
     static const QHash<QString, quint32> modifierMap = {
-        {"ctrl", MOD_CONTROL},
-        {"control", MOD_CONTROL},
-        {"shift", MOD_SHIFT},
-        {"alt", MOD_ALT},
-        {"win", MOD_WIN},
-        {"meta", MOD_WIN}
+            {"ctrl", MOD_CONTROL},
+            {"control", MOD_CONTROL},
+            {"shift", MOD_SHIFT},
+            {"alt", MOD_ALT},
+            {"win", MOD_WIN},
+            {"meta", MOD_WIN}
     };
 
     static const QHash<QString, quint32> specialMap = {
-        {"`", VK_OEM_3},
-        {"esc", VK_ESCAPE},
-        {"space", VK_SPACE},
-        {"tab", VK_TAB},
-        {"enter", VK_RETURN},
-        {"left", VK_LEFT},
-        {"right", VK_RIGHT},
-        {"up", VK_UP},
-        {"down", VK_DOWN}
+            {"`", VK_OEM_3},
+            {"esc", VK_ESCAPE},
+            {"space", VK_SPACE},
+            {"tab", VK_TAB},
+            {"enter", VK_RETURN},
+            {"left", VK_LEFT},
+            {"right", VK_RIGHT},
+            {"up", VK_UP},
+            {"down", VK_DOWN}
     };
 
-    for (const QString& token : parts)
-    {
+    for (const QString &token : parts) {
         const QString key = token.trimmed();
 
-        if (modifierMap.contains(key))
-        {
+        if (modifierMap.contains(key)) {
             modifiers |= modifierMap.value(key);
             continue;
         }
 
-        if (specialMap.contains(key))
-        {
+        if (specialMap.contains(key)) {
             vk = specialMap.value(key);
             continue;
         }
 
-        if (key.size() == 1)
-        {
+        if (key.size() == 1) {
             const QChar ch = key.at(0).toUpper();
-            if (ch.isLetterOrNumber())
-            {
+            if (ch.isLetterOrNumber()) {
                 vk = static_cast<quint32>(ch.unicode());
                 continue;
             }
         }
 
-        if (key.startsWith('f'))
-        {
+        if (key.startsWith('f')) {
             bool ok = false;
             const int fn = key.mid(1).toInt(&ok);
-            if (ok && fn >= 1 && fn <= 24)
-            {
+            if (ok && fn >= 1 && fn <= 24) {
                 vk = static_cast<quint32>(VK_F1 + (fn - 1));
                 continue;
             }

@@ -8,8 +8,7 @@
 #include "ui/QuolMainWindow.hpp"
 #include "ui/TransitionManager.hpp"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     // Load settings
@@ -21,8 +20,7 @@ int main(int argc, char *argv[])
     const QString style = settings.settingString("style", "dark");
     const QString qssPath = QCoreApplication::applicationDirPath() + "/res/styles/" + style + "/styles.qss";
     QFile qssFile(qssPath);
-    if (qssFile.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
+    if (qssFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         app.setStyleSheet(QString::fromUtf8(qssFile.readAll()));
         qssFile.close();
     }
@@ -49,43 +47,33 @@ int main(int argc, char *argv[])
     QString activeToggleKey = settings.settingString("toggle_key", "`").toLower();
     int hotkeyId = inputManager.addHotkey(activeToggleKey, true);
 
-    QObject::connect(&inputManager, &InputManager::hotkeyTriggered,
-                     [&](const QString &combo)
-                     {
-                         if (combo == activeToggleKey)
-                         {
-                             transitions.toggleAll();
-                             mainWindow.updateToggleButton();
-                         }
-                     });
+    QObject::connect(&inputManager, &InputManager::hotkeyTriggered, [&](const QString &combo) {
+        if (combo == activeToggleKey) {
+            transitions.toggleAll();
+            mainWindow.updateToggleButton();
+        }
+    });
 
-    QObject::connect(&mainWindow, &QuolMainWindow::mainConfigApplied,
-                     [&](const QString &toggleKey, bool resetPos)
-                     {
-                         const QString nextToggleKey = toggleKey.toLower();
-                         if (nextToggleKey != activeToggleKey)
-                         {
-                             if (hotkeyId >= 0)
-                             {
-                                 inputManager.removeHotkey(hotkeyId);
-                             }
+    QObject::connect(&mainWindow, &QuolMainWindow::mainConfigApplied, [&](const QString &toggleKey, bool resetPos) {
+        const QString nextToggleKey = toggleKey.toLower();
+        if (nextToggleKey != activeToggleKey) {
+            if (hotkeyId >= 0) {
+                inputManager.removeHotkey(hotkeyId);
+            }
 
-                             hotkeyId = inputManager.addHotkey(nextToggleKey, true);
-                             if (hotkeyId >= 0)
-                             {
-                                 activeToggleKey = nextToggleKey;
-                             }
-                         }
+            hotkeyId = inputManager.addHotkey(nextToggleKey, true);
+            if (hotkeyId >= 0) {
+                activeToggleKey = nextToggleKey;
+            }
+        }
 
-                         if (resetPos)
-                         {
-                             mainWindow.applyGeometryFromConfig();
-                             for (auto *win : pluginManager.windows())
-                             {
-                                 win->applyGeometryFromConfig();
-                             }
-                         }
-                     });
+        if (resetPos) {
+            mainWindow.applyGeometryFromConfig();
+            for (auto *win : pluginManager.windows()) {
+                win->applyGeometryFromConfig();
+            }
+        }
+    });
 
     const int exitCode = app.exec();
 

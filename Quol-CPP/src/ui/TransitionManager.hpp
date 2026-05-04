@@ -1,16 +1,15 @@
 #pragma once
 
-#include <QObject>
-#include <QList>
-#include <QPoint>
 #include <QHash>
+#include <QList>
+#include <QObject>
+#include <QPoint>
 
 class QWidget;
 class QAbstractAnimation;
 class QParallelAnimationGroup;
 
-class TransitionManager : public QObject
-{
+class TransitionManager : public QObject {
     Q_OBJECT
 
 public:

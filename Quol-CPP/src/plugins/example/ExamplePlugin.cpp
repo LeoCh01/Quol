@@ -6,8 +6,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-QWidget *ExamplePlugin::createWidget(QWidget *parent)
-{
+QWidget *ExamplePlugin::createWidget(QWidget *parent) {
     auto *widget = new QWidget(parent);
     auto *layout = new QVBoxLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -46,61 +45,50 @@ QWidget *ExamplePlugin::createWidget(QWidget *parent)
     return widget;
 }
 
-void ExamplePlugin::initialize(const QString &pluginRootPath,
-                               const QJsonObject &appSettings,
-                               const QJsonObject &pluginConfig)
-{
+void ExamplePlugin::initialize(
+        const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
+) {
     m_pluginRootPath = pluginRootPath;
     m_appSettings = appSettings;
     m_pluginConfig = pluginConfig;
     refreshLabels();
 }
 
-void ExamplePlugin::onUpdateConfig(const QJsonObject &pluginConfig)
-{
+void ExamplePlugin::onUpdateConfig(const QJsonObject &pluginConfig) {
     m_pluginConfig = pluginConfig;
     refreshLabels();
 }
 
-void ExamplePlugin::shutdown()
-{
+void ExamplePlugin::shutdown() {
 }
 
-void ExamplePlugin::refreshLabels()
-{
-    if (m_titleLabel)
-    {
+void ExamplePlugin::refreshLabels() {
+    if (m_titleLabel) {
         const QString title = m_pluginConfig.value("title").toString("Example");
         m_titleLabel->setText(title);
     }
 
-    if (m_valueLabel)
-    {
+    if (m_valueLabel) {
         m_valueLabel->setText(examplelib::calculateFromConfig(m_pluginConfig));
     }
 
-    if (m_nestedNoteLabel)
-    {
+    if (m_nestedNoteLabel) {
         m_nestedNoteLabel->setText(examplelib::nestedNoteLine(m_pluginConfig));
     }
 
-    if (m_nestedEnabledLabel)
-    {
+    if (m_nestedEnabledLabel) {
         m_nestedEnabledLabel->setText(examplelib::nestedEnabledLine(m_pluginConfig));
     }
 
-    if (m_nestedModeLabel)
-    {
+    if (m_nestedModeLabel) {
         m_nestedModeLabel->setText(examplelib::nestedModeLine(m_pluginConfig));
     }
 
-    if (m_nestedInnerLabelLabel)
-    {
+    if (m_nestedInnerLabelLabel) {
         m_nestedInnerLabelLabel->setText(examplelib::nestedInnerLabelLine(m_pluginConfig));
     }
 
-    if (m_nestedInnerChoiceLabel)
-    {
+    if (m_nestedInnerChoiceLabel) {
         m_nestedInnerChoiceLabel->setText(examplelib::nestedInnerChoiceLine(m_pluginConfig));
     }
 }

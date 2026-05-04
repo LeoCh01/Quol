@@ -6,14 +6,11 @@ class AppSettingsManager;
 class TransitionManager;
 class QPushButton;
 
-class QuolMainWindow : public QuolWindow
-{
+class QuolMainWindow : public QuolWindow {
     Q_OBJECT
 
 public:
-    explicit QuolMainWindow(AppSettingsManager *settings,
-                            TransitionManager *transitions,
-                            QWidget *parent = nullptr);
+    explicit QuolMainWindow(AppSettingsManager *settings, TransitionManager *transitions, QWidget *parent = nullptr);
 
     void updateToggleButton();
 

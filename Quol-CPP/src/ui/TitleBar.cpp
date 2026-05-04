@@ -8,9 +8,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 
-TitleBar::TitleBar(QuolWindow *window, const QString &title, QWidget *parent)
-    : QFrame(parent), m_window(window)
-{
+TitleBar::TitleBar(QuolWindow *window, const QString &title, QWidget *parent) : QFrame(parent), m_window(window) {
     setObjectName("title-bar");
     setFixedHeight(36);
     setCursor(Qt::SizeAllCursor);
@@ -33,27 +31,22 @@ TitleBar::TitleBar(QuolWindow *window, const QString &title, QWidget *parent)
     layout->addWidget(m_configBtn);
 }
 
-void TitleBar::setConfigAction(const std::function<void()> &onClick)
-{
-    if (!m_configBtn)
-    {
+void TitleBar::setConfigAction(const std::function<void()> &onClick) {
+    if (!m_configBtn) {
         return;
     }
 
     m_configBtn->setVisible(true);
     m_configBtn->disconnect();
-    connect(m_configBtn, &QPushButton::clicked, this, [onClick]()
-            {
-        if (onClick)
-        {
+    connect(m_configBtn, &QPushButton::clicked, this, [onClick]() {
+        if (onClick) {
             onClick();
-        } });
+        }
+    });
 }
 
-void TitleBar::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
+void TitleBar::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
         m_dragOffset = event->globalPosition().toPoint() - m_window->pos();
         m_dragging = true;
         m_window->setWindowOpacity(0.8);
@@ -61,17 +54,14 @@ void TitleBar::mousePressEvent(QMouseEvent *event)
     event->accept();
 }
 
-void TitleBar::mouseMoveEvent(QMouseEvent *event)
-{
+void TitleBar::mouseMoveEvent(QMouseEvent *event) {
     if (m_dragging && (event->buttons() & Qt::LeftButton))
         m_window->move(event->globalPosition().toPoint() - m_dragOffset);
     event->accept();
 }
 
-void TitleBar::mouseReleaseEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton && m_dragging)
-    {
+void TitleBar::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton && m_dragging) {
         m_dragging = false;
         m_window->setWindowOpacity(1.0);
         m_window->snapToGrid();
