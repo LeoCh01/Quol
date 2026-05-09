@@ -351,10 +351,10 @@ void QuolMainWindow::copySettingsToMainConfig() {
 
     config.insert("startup", m_settings->data().value("startup").toBool(false));
     config.insert("reset_pos", m_settings->data().value("is_default_pos").toBool(false));
-    config.insert("toggle_key", m_settings->data().value("toggle_key").toString("`"));
+    config.insert("toggle_key", m_settings->data().value("toggle_key").toString("backtick"));
 
-    const QString transition = m_settings->data().value("transition").toString("none");
-    QJsonArray transitionOptions = QJsonArray{"rand", "fade", "cursor", "up", "left", "down", "right", "none"};
+    QString transition = m_settings->data().value("transition").toString("none").toLower();
+    QJsonArray transitionOptions = QJsonArray{"none", "rand"};
     int transitionIndex = -1;
     for (int i = 0; i < transitionOptions.size(); ++i) {
         if (transitionOptions.at(i).toString() == transition) {
@@ -363,7 +363,7 @@ void QuolMainWindow::copySettingsToMainConfig() {
         }
     }
     if (transitionIndex < 0) {
-        transitionIndex = transitionOptions.size() - 1;
+        transitionIndex = 0;
     }
     config.insert("transition", QJsonArray{transitionOptions, transitionIndex});
 
@@ -379,14 +379,12 @@ void QuolMainWindow::copySettingsToMainConfig() {
 }
 
 void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
-    if (!m_settings) {
-        return;
-    }
-
     QJsonObject &settings = m_settings->data();
-    settings.insert("startup", config.value("startup").toBool(settings.value("startup").toBool()));
-    settings.insert("is_default_pos", config.value("reset_pos").toBool(settings.value("is_default_pos").toBool()));
-    settings.insert("toggle_key", config.value("toggle_key").toString(settings.value("toggle_key").toString("`")));
+    settings.insert("startup", config.value("startup").toBool());
+    settings.insert("is_default_pos", config.value("reset_pos").toBool());
+
+    const QString toggleKey = config.value("toggle_key").toVariant().toString().trimmed().toLower();
+    settings.insert("toggle_key", toggleKey);
 
     const QJsonValue transitionValue = config.value("transition");
     if (transitionValue.isArray()) {
@@ -395,7 +393,8 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
             const QJsonArray options = arr.at(0).toArray();
             const int idx = arr.at(1).toInt();
             if (idx >= 0 && idx < options.size()) {
-                settings.insert("transition", options.at(idx).toString(settings.value("transition").toString("none")));
+                const QString selected = options.at(idx).toString().toLower();
+                settings.insert("transition", selected == "rand" ? "rand" : "none");
             }
         }
     }
@@ -405,8 +404,9 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
         settings.insert("plugins", underscore.value("plugins"));
     }
 
-    const QString updatedToggleKey = settings.value("toggle_key").toString("`");
-    const bool updatedResetPos = settings.value("is_default_pos").toBool(false);
+    const QString updatedToggleKey = settings.value("toggle_key").toString();
+    const bool updatedResetPos = settings.value("is_default_pos").toBool();
+    const QString updatedTransition = settings.value("transition").toString().toLower();
     m_settings->save();
-    emit mainConfigApplied(updatedToggleKey, updatedResetPos);
+    emit mainConfigApplied(updatedToggleKey, updatedResetPos, updatedTransition);
 }

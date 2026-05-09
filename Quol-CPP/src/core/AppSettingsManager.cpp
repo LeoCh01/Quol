@@ -77,11 +77,8 @@ void AppSettingsManager::setWindowGeometry(const QString &configKey, int x, int 
 }
 
 QString AppSettingsManager::settingString(const QString &key, const QString &defaultValue) const {
-    const QJsonValue value = m_data.value(key);
-    if (!value.isString()) {
-        return defaultValue;
-    }
-    return value.toString(defaultValue);
+    const QString text = m_data.value(key).toVariant().toString().trimmed();
+    return text.isEmpty() ? defaultValue : text;
 }
 
 QJsonObject AppSettingsManager::ensurePluginConfig(const QString &configKey) {

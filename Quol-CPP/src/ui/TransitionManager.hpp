@@ -18,6 +18,7 @@ public:
     void addWindow(QWidget *window);
     void toggleAll();
     bool isHidden() const;
+    void setType(const QString &type);
 
 private:
     void hideAll();

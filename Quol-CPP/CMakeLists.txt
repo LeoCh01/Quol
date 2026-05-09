@@ -53,6 +53,33 @@ add_custom_command(TARGET example_plugin POST_BUILD
         $<TARGET_FILE_DIR:Quol>/plugins/example/res/config.json
 )
 
+add_library(inputtest_plugin MODULE
+    src/plugins/inputtest/InputTestPlugin.cpp
+    src/core/InputManager.cpp
+)
+
+target_include_directories(inputtest_plugin PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(inputtest_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+set_target_properties(inputtest_plugin PROPERTIES
+    PREFIX ""
+    OUTPUT_NAME "inputtest"
+    AUTOMOC_COMPILER_PREDEFINES OFF
+)
+
+add_custom_command(TARGET inputtest_plugin POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Quol>/plugins/inputtest/res
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:inputtest_plugin>
+        $<TARGET_FILE_DIR:Quol>/plugins/inputtest/$<TARGET_FILE_NAME:inputtest_plugin>
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/inputtest/res/config.json
+        $<TARGET_FILE_DIR:Quol>/plugins/inputtest/res/config.json
+)
+
 add_library(broken_plugin MODULE
     src/plugins/broken/BrokenPlugin.cpp
 )

@@ -9,6 +9,16 @@
 #include <QWidget>
 
 TransitionManager::TransitionManager(const QString &type, QObject *parent) : QObject(parent), m_type(type.toLower()) {
+    if (m_type == "random") {
+        m_type = "rand";
+    }
+}
+
+void TransitionManager::setType(const QString &type) {
+    m_type = type.toLower();
+    if (m_type == "random") {
+        m_type = "rand";
+    }
 }
 
 void TransitionManager::addWindow(QWidget *window) {

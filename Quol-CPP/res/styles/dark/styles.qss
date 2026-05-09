@@ -13,12 +13,6 @@
     background-color: #444;
 }
 
-#content QCheckBox {
-    background-color: #444;
-    border-radius: 5px;
-    spacing: 0px;
-}
-
 #content * {
     color: white;
 }
@@ -225,10 +219,6 @@ QuolPopupWindow QListWidget::item:selected {
 }
 
 /* ── CheckBox / Button / Label inside QuolPopupWindow content ────── */
-QuolPopupWindow #content QCheckBox {
-    background-color: transparent;
-    spacing: 6px;
-}
 
 QuolPopupWindow #content * {
     color: white;

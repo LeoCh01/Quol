@@ -63,7 +63,20 @@ void ConfigWindow::reloadFromDisk() {
 
 void ConfigWindow::saveConfig() {
     QJsonObject updated = extractFromLayout(m_configLayout);
-    if (m_config.contains("_")) {
+
+    QJsonObject latestUnderscore;
+    QFile readFile(m_configPath);
+    if (readFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        const QJsonDocument latestDoc = QJsonDocument::fromJson(readFile.readAll());
+        if (latestDoc.isObject()) {
+            latestUnderscore = latestDoc.object().value("_").toObject();
+        }
+        readFile.close();
+    }
+
+    if (!latestUnderscore.isEmpty()) {
+        updated.insert("_", latestUnderscore);
+    } else if (m_config.contains("_")) {
         updated.insert("_", m_config.value("_"));
     }
 
@@ -243,7 +256,11 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
             if (auto *checkbox = qobject_cast<QCheckBox *>(valueWidget)) {
                 result.insert(key, checkbox->isChecked());
             } else if (auto *lineEdit = qobject_cast<QLineEdit *>(valueWidget)) {
-                result.insert(key, parseLineEditValue(lineEdit->text()));
+                if (key == "toggle_key") {
+                    result.insert(key, lineEdit->text().trimmed().toLower());
+                } else {
+                    result.insert(key, parseLineEditValue(lineEdit->text()));
+                }
             } else if (auto *combo = qobject_cast<QComboBox *>(valueWidget)) {
                 QJsonArray options;
                 for (int j = 0; j < combo->count(); ++j) {

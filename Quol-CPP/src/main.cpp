@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     InputManager inputManager;
     inputManager.start();
 
-    QString activeToggleKey = settings.settingString("toggle_key", "`").toLower();
+    QString activeToggleKey = settings.settingString("toggle_key").toLower();
     int hotkeyId = inputManager.addHotkey(activeToggleKey, true);
 
     QObject::connect(&inputManager, &InputManager::hotkeyTriggered, [&](const QString &combo) {
@@ -54,26 +54,32 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    QObject::connect(&mainWindow, &QuolMainWindow::mainConfigApplied, [&](const QString &toggleKey, bool resetPos) {
-        const QString nextToggleKey = toggleKey.toLower();
-        if (nextToggleKey != activeToggleKey) {
-            if (hotkeyId >= 0) {
-                inputManager.removeHotkey(hotkeyId);
+    QObject::connect(
+        &mainWindow,
+        &QuolMainWindow::mainConfigApplied,
+        [&](const QString &toggleKey, bool resetPos, const QString &transitionType) {
+            const QString nextToggleKey = toggleKey.toLower();
+            if (nextToggleKey != activeToggleKey) {
+                if (hotkeyId >= 0) {
+                    inputManager.removeHotkey(hotkeyId);
+                }
+
+                hotkeyId = inputManager.addHotkey(nextToggleKey, true);
+                if (hotkeyId >= 0) {
+                    activeToggleKey = nextToggleKey;
+                }
             }
 
-            hotkeyId = inputManager.addHotkey(nextToggleKey, true);
-            if (hotkeyId >= 0) {
-                activeToggleKey = nextToggleKey;
-            }
-        }
+            transitions.setType(transitionType);
 
-        if (resetPos) {
-            mainWindow.applyGeometryFromConfig();
-            for (auto *win : pluginManager.windows()) {
-                win->applyGeometryFromConfig();
+            if (resetPos) {
+                mainWindow.applyGeometryFromConfig();
+                for (auto *win : pluginManager.windows()) {
+                    win->applyGeometryFromConfig();
+                }
             }
         }
-    });
+    );
 
     const int exitCode = app.exec();
 

@@ -6,6 +6,6 @@
   },
   "startup": false,
   "reset_pos": false,
-  "toggle_key": "`",
-  "transition": [["rand", "fade", "cursor", "up", "left", "down", "right", "none"], 0]
+  "toggle_key": "backtick",
+  "transition": [["none", "rand"], 1]
 }

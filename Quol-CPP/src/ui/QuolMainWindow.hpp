@@ -18,7 +18,7 @@ public:
     void updateToggleButton();
 
 signals:
-    void mainConfigApplied(const QString &toggleKey, bool resetPos);
+    void mainConfigApplied(const QString &toggleKey, bool resetPos, const QString &transitionType);
 
 private:
     void openManagePluginsDialog();

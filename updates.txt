@@ -2,6 +2,9 @@ TODO
 - add better tooltips
 - opencv maybe
 
+- transition easing
+- toggle key dropdown
+
 
 ******* C++ MIGRATION (under Quol-CPP folder), will slowly start to move to Qt C++ *******
 
