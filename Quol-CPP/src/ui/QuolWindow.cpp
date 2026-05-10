@@ -197,7 +197,7 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
     }
 
     QFile file(m_pluginConfigPath);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
 
@@ -271,7 +271,7 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
     underscore.insert("geometry", QJsonArray{x(), y(), width(), height()});
     root.insert("_", underscore);
 
-    file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
+    bool written = file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
     file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
     file.close();
     return true;

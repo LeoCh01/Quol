@@ -4,6 +4,9 @@ project(Quol LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOMOC_COMPILER_PREDEFINES OFF)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
@@ -27,58 +30,9 @@ target_include_directories(Quol PRIVATE
 
 target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
-add_library(example_plugin MODULE
-    src/plugins/example/ExamplePlugin.cpp
-    src/plugins/example/lib/adder.cpp
-)
-
-target_include_directories(example_plugin PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-target_link_libraries(example_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-
-set_target_properties(example_plugin PROPERTIES
-    PREFIX ""
-    OUTPUT_NAME "example"
-)
-
-add_custom_command(TARGET example_plugin POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Quol>/plugins/example/res
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:example_plugin>
-        $<TARGET_FILE_DIR:Quol>/plugins/example/$<TARGET_FILE_NAME:example_plugin>
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/example/res/config.json
-        $<TARGET_FILE_DIR:Quol>/plugins/example/res/config.json
-)
-
-add_library(inputtest_plugin MODULE
-    src/plugins/inputtest/InputTestPlugin.cpp
-    src/core/InputManager.cpp
-)
-
-target_include_directories(inputtest_plugin PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-target_link_libraries(inputtest_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-
-set_target_properties(inputtest_plugin PROPERTIES
-    PREFIX ""
-    OUTPUT_NAME "inputtest"
-    AUTOMOC_COMPILER_PREDEFINES OFF
-)
-
-add_custom_command(TARGET inputtest_plugin POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Quol>/plugins/inputtest/res
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:inputtest_plugin>
-        $<TARGET_FILE_DIR:Quol>/plugins/inputtest/$<TARGET_FILE_NAME:inputtest_plugin>
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/inputtest/res/config.json
-        $<TARGET_FILE_DIR:Quol>/plugins/inputtest/res/config.json
-)
+# Build plugins
+add_subdirectory(plugins/example)
+add_subdirectory(plugins/inputtest)
 
 add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
