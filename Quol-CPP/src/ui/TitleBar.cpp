@@ -41,10 +41,6 @@ TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFr
 }
 
 void TitleBar::setConfigAction(const std::function<void()> &onClick) {
-    if (!m_configBtn) {
-        return;
-    }
-
     m_configBtn->setVisible(true);
     m_configBtn->disconnect();
     connect(m_configBtn, &QPushButton::clicked, this, [onClick]() {
@@ -55,10 +51,6 @@ void TitleBar::setConfigAction(const std::function<void()> &onClick) {
 }
 
 void TitleBar::setCloseAction(const std::function<void()> &onClick) {
-    if (!m_closeBtn) {
-        return;
-    }
-
     m_closeBtn->setVisible(true);
     m_closeBtn->disconnect();
     connect(m_closeBtn, &QPushButton::clicked, this, [onClick]() {

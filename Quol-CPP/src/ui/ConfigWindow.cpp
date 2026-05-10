@@ -21,10 +21,6 @@
 
 namespace {
 void clearLayoutRecursively(QLayout *layout) {
-    if (!layout) {
-        return;
-    }
-
     while (QLayoutItem *item = layout->takeAt(0)) {
         if (QWidget *widget = item->widget()) {
             delete widget;
@@ -49,12 +45,12 @@ ConfigWindow::ConfigWindow(
 
 void ConfigWindow::reloadFromDisk() {
     QFile file(m_configPath);
-    if (!file.exists()) {
-        m_config = QJsonObject{};
-    } else if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const auto doc = QJsonDocument::fromJson(file.readAll());
-        m_config = doc.isObject() ? doc.object() : QJsonObject{};
+        m_config = doc.object();
         file.close();
+    } else {
+        m_config = QJsonObject{};
     }
 
     clearDynamicUi();
@@ -68,17 +64,15 @@ void ConfigWindow::saveConfig() {
     QFile readFile(m_configPath);
     if (readFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QJsonDocument latestDoc = QJsonDocument::fromJson(readFile.readAll());
-        if (latestDoc.isObject()) {
-            latestUnderscore = latestDoc.object().value("_").toObject();
-        }
+        latestUnderscore = latestDoc.object().value("_").toObject();
         readFile.close();
     }
 
-    if (!latestUnderscore.isEmpty()) {
-        updated.insert("_", latestUnderscore);
-    } else if (m_config.contains("_")) {
-        updated.insert("_", m_config.value("_"));
+    if (latestUnderscore.isEmpty() && m_config.contains("_")) {
+        latestUnderscore = m_config.value("_").toObject();
     }
+
+    updated.insert("_", latestUnderscore);
 
     QFile file(m_configPath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
@@ -216,10 +210,6 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
 
     for (int i = 0; i < layout->count(); ++i) {
         QLayoutItem *item = layout->itemAt(i);
-        if (!item) {
-            continue;
-        }
-
         QWidget *widget = item->widget();
         QLayout *subLayout = item->layout();
 
@@ -233,7 +223,7 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
         }
 
         if (subLayout->count() == 1) {
-            QWidget *firstWidget = subLayout->itemAt(0) ? subLayout->itemAt(0)->widget() : nullptr;
+            QWidget *firstWidget = subLayout->itemAt(0)->widget();
             if (auto *group = qobject_cast<QGroupBox *>(firstWidget)) {
                 result.insert(group->title(), extractFromLayout(group->layout()));
                 continue;
@@ -241,15 +231,8 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
         }
 
         if (auto *hbox = qobject_cast<QHBoxLayout *>(subLayout)) {
-            if (hbox->count() < 2) {
-                continue;
-            }
-
             auto *label = qobject_cast<QLabel *>(hbox->itemAt(0)->widget());
             QWidget *valueWidget = hbox->itemAt(1)->widget();
-            if (!label || !valueWidget) {
-                continue;
-            }
 
             const QString key = label->text();
 

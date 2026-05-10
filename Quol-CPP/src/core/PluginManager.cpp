@@ -5,6 +5,7 @@
 #include "ui/TransitionManager.hpp"
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
@@ -18,23 +19,10 @@
 namespace {
 QJsonObject readPluginConfig(const QString &configPath) {
     QFile file(configPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        throw std::runtime_error(QString("Failed to open config: %1").arg(configPath).toStdString());
-    }
-
+    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
-    if (!doc.isObject()) {
-        throw std::runtime_error(QString("Invalid JSON object in config: %1").arg(configPath).toStdString());
-    }
-
-    const QJsonObject config = doc.object();
-    const QJsonArray geometry = config.value("_").toObject().value("default_geometry").toArray();
-    if (geometry.size() < 4) {
-        throw std::runtime_error(QString("Missing _.default_geometry in config: %1").arg(configPath).toStdString());
-    }
-
-    return config;
+    return doc.object();
 }
 }  // namespace
 
@@ -51,13 +39,17 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         return;
 
     const QString appDir = QCoreApplication::applicationDirPath();
-    const QString pluginsDir = appDir + "/plugins";
+    QString pluginsDirSetting = settings->settingString("plugins_dir", "plugins").trimmed();
+    if (pluginsDirSetting.isEmpty()) {
+        pluginsDirSetting = "plugins";
+    }
+
+    const QString pluginsDir =
+        QDir::isRelativePath(pluginsDirSetting) ? QDir(appDir).filePath(pluginsDirSetting) : pluginsDirSetting;
     const QJsonArray pluginIds = settings->data().value("plugins").toArray();
 
     for (const auto &val : pluginIds) {
         const QString id = val.toString().trimmed();
-        if (id.isEmpty())
-            continue;
 
         QuolWindow *win = nullptr;
         try {
@@ -90,8 +82,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             });
             win->addContent(plugin->createWidget());
 
-            if (transitions)
-                transitions->addWindow(win);
+            transitions->addWindow(win);
 
             m_windows.append(win);
             win = nullptr;

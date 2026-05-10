@@ -37,22 +37,10 @@ namespace {
 QJsonArray readMainDefaultGeometry() {
     const QString path = QCoreApplication::applicationDirPath() + "/plugins/quol/res/config.json";
     QFile file(path);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return QJsonArray{20, 20, 260, 180};
-    }
-
+    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
-    if (!doc.isObject()) {
-        return QJsonArray{20, 20, 260, 180};
-    }
-
-    const QJsonArray cfg = doc.object().value("_").toObject().value("default_geometry").toArray();
-    if (cfg.size() < 4) {
-        return QJsonArray{20, 20, 260, 180};
-    }
-
-    return cfg;
+    return doc.object().value("_").toObject().value("default_geometry").toArray();
 }
 
 int mainDefaultGeometryValue(int index, int fallback) {
@@ -165,10 +153,6 @@ void QuolMainWindow::reloadApplication() const {
 }
 
 void QuolMainWindow::openManagePluginsDialog() {
-    if (!m_settings) {
-        return;
-    }
-
     if (m_pluginManagerWindow) {
         m_pluginManagerWindow->raise();
         m_pluginManagerWindow->activateWindow();
@@ -208,10 +192,7 @@ void QuolMainWindow::openManagePluginsDialog() {
         enabledIds.insert(value.toString().trimmed());
     }
 
-    if (pluginIds.isEmpty()) {
-        installedLayout->addWidget(new QLabel("No installed plugins found."));
-        selectAllCheck->setEnabled(false);
-    } else {
+    if (!pluginIds.isEmpty()) {
         auto *listWidget = new QListWidget();
         listWidget->setSelectionMode(QAbstractItemView::NoSelection);
 
@@ -226,11 +207,9 @@ void QuolMainWindow::openManagePluginsDialog() {
             if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
                 cf.close();
-                if (doc.isObject()) {
-                    const QString title = doc.object().value("title").toString();
-                    if (!title.isEmpty()) {
-                        displayName = title;
-                    }
+                const QString title = doc.object().value("title").toString();
+                if (!title.isEmpty()) {
+                    displayName = title;
                 }
             }
 
@@ -264,7 +243,7 @@ void QuolMainWindow::openManagePluginsDialog() {
 
         installedLayout->addWidget(listWidget);
 
-        bool allSelected = !pluginChecks.isEmpty();
+        bool allSelected = true;
         for (QCheckBox *check : pluginChecks) {
             if (!check->isChecked()) {
                 allSelected = false;
@@ -276,8 +255,7 @@ void QuolMainWindow::openManagePluginsDialog() {
         connect(selectAllCheck, &QCheckBox::checkStateChanged, popup, [pluginChecks](Qt::CheckState state) {
             const bool on = state == Qt::Checked;
             for (QCheckBox *c : pluginChecks) {
-                if (c)
-                    c->setChecked(on);
+                c->setChecked(on);
             }
         });
 
@@ -311,16 +289,14 @@ void QuolMainWindow::openManagePluginsDialog() {
     connect(applyBtn, &QPushButton::clicked, popup, [this, popup, pluginChecks]() {
         QJsonArray selected;
         for (QCheckBox *check : pluginChecks) {
-            if (check && check->isChecked()) {
+            if (check->isChecked()) {
                 selected.append(check->property("pluginId").toString());
             }
         }
 
         QJsonObject &settings = m_settings->data();
         settings.insert("plugins", selected);
-        if (!m_settings->save()) {
-            return;
-        }
+        m_settings->save();
 
         copySettingsToMainConfig();
         popup->close();
@@ -333,19 +309,13 @@ void QuolMainWindow::openManagePluginsDialog() {
 }
 
 void QuolMainWindow::copySettingsToMainConfig() {
-    if (!m_settings) {
-        return;
-    }
-
     const QString configPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/config.json";
     QFile file(configPath);
     QJsonObject config;
 
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        if (doc.isObject()) {
-            config = doc.object();
-        }
+        config = doc.object();
         file.close();
     }
 

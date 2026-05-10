@@ -12,23 +12,16 @@ AppSettingsManager::AppSettingsManager(QString settingsPath, QObject *parent)
 
 bool AppSettingsManager::load() {
     QFile file(m_settingsPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
-    }
-
+    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
     const auto doc = QJsonDocument::fromJson(file.readAll());
     file.close();
-
     m_data = doc.object();
-    return !m_data.isEmpty();
+    return true;
 }
 
 bool AppSettingsManager::save() const {
     QFile file(m_settingsPath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-        return false;
-    }
-
+    bool opened = file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
     const QJsonDocument doc(m_data);
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();

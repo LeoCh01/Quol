@@ -73,7 +73,6 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
 
     if (m_configWindow) {
         m_configWindow->deleteLater();
-        m_configWindow = nullptr;
     }
 
     const QString resolvedTitle = configTitle.isEmpty() ? (m_titleText + " Config") : configTitle;
@@ -98,10 +97,6 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
     });
 
     m_titleBar->setConfigAction([this]() {
-        if (!m_configWindow) {
-            return;
-        }
-
         const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
         const QSize sz = m_configWindow->size();
         m_configWindow->move(screen.center().x() - sz.width() / 2, screen.center().y() - sz.height() / 2);
@@ -124,7 +119,8 @@ void QuolWindow::setGeometryPersistence(bool enabled) {
 }
 
 bool QuolWindow::applyGeometryFromConfig() {
-    return loadGeometryFromPluginConfig();
+    loadGeometryFromPluginConfig();
+    return true;
 }
 
 void QuolWindow::snapToGrid() {
@@ -139,11 +135,7 @@ void QuolWindow::saveGeometry() {
         return;
     }
 
-    if (saveGeometryToPluginConfig()) {
-        return;
-    }
-
-    if (m_settings) {
+    if (!saveGeometryToPluginConfig()) {
         m_settings->setWindowGeometry(m_titleText, x(), y(), width(), height());
     }
 }
@@ -163,13 +155,11 @@ void QuolWindow::closeEvent(QCloseEvent *event) {
 void QuolWindow::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
 
-    if (!m_autoHeightRequested) {
-        return;
+    if (m_autoHeightRequested) {
+        m_autoHeightRequested = false;
+        resize(width(), autoHeightFromContent());
+        saveGeometry();
     }
-
-    m_autoHeightRequested = false;
-    resize(width(), autoHeightFromContent());
-    saveGeometry();
 }
 
 void QuolWindow::updateMask() {
@@ -179,7 +169,7 @@ void QuolWindow::updateMask() {
 }
 
 void QuolWindow::loadGeometry(int defaultX, int defaultY, int defaultW, int defaultH) {
-    if (!m_persistGeometry || !m_settings) {
+    if (!m_persistGeometry) {
         setGeometry(defaultX, defaultY, defaultW, defaultH);
         return;
     }
@@ -207,15 +197,9 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
     }
 
     QFile file(m_pluginConfigPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
-    }
-
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
-    if (!doc.isObject()) {
-        return false;
-    }
 
     QJsonObject root = doc.object();
     QJsonObject underscore = root.value("_").toObject();
@@ -241,10 +225,6 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
             root.insert("_", underscore);
             configChanged = true;
         }
-    }
-
-    if (geometry.size() < 4) {
-        return false;
     }
 
     const int gx = geometry.at(0).toInt(x());
@@ -278,11 +258,9 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
     QFile file(m_pluginConfigPath);
     QJsonObject root;
 
-    if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        if (doc.isObject()) {
-            root = doc.object();
-        }
+        root = doc.object();
         file.close();
     }
 
@@ -293,10 +271,7 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
     underscore.insert("geometry", QJsonArray{x(), y(), width(), height()});
     root.insert("_", underscore);
 
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-        return false;
-    }
-
+    file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
     file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
     file.close();
     return true;
