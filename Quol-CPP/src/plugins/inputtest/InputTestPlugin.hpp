@@ -36,6 +36,5 @@ private:
     QLabel *m_pressedLabel = nullptr;
     QLabel *m_releasedLabel = nullptr;
     QLabel *m_triggeredLabel = nullptr;
-    QLabel *m_availableKeysLabel = nullptr;
     QLineEdit *m_sendComboEdit = nullptr;
 };
