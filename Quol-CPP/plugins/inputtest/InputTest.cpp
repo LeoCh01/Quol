@@ -1,4 +1,4 @@
-#include "plugins/inputtest/InputTestPlugin.hpp"
+#include "plugins/inputTest/InputTest.hpp"
 
 #include "core/InputManager.hpp"
 
@@ -8,14 +8,11 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-QWidget *InputTestPlugin::createWidget(QWidget *parent) {
+QWidget *InputTest::createWidget(QWidget *parent) {
     auto *widget = new QWidget(parent);
     auto *layout = new QVBoxLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setAlignment(Qt::AlignTop);
-
-    const QString configHotkey = m_pluginConfig.value("hotkey").toVariant().toString().trimmed().toLower();
-    const QString hotkey = configHotkey.isEmpty() ? "ctrl+f9" : configHotkey;
 
     m_pressedLabel = new QLabel("Key down: (none)", widget);
     m_releasedLabel = new QLabel("Key up: (none)", widget);
@@ -43,7 +40,7 @@ QWidget *InputTestPlugin::createWidget(QWidget *parent) {
     return widget;
 }
 
-void InputTestPlugin::initialize(
+void InputTest::initialize(
     const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
 ) {
     m_pluginRootPath = pluginRootPath;
@@ -51,19 +48,19 @@ void InputTestPlugin::initialize(
     m_pluginConfig = pluginConfig;
 }
 
-void InputTestPlugin::onUpdateConfig(const QJsonObject &pluginConfig) {
+void InputTest::onUpdateConfig(const QJsonObject &pluginConfig) {
     m_pluginConfig = pluginConfig;
 
     applyHotkeyFromConfig();
 }
 
-void InputTestPlugin::shutdown() {
+void InputTest::shutdown() {
     if (m_inputManager) {
         m_inputManager->removeHotkey(m_hotkeyId);
     }
 }
 
-void InputTestPlugin::applyHotkeyFromConfig() {
+void InputTest::applyHotkeyFromConfig() {
     if (!m_inputManager) {
         return;
     }

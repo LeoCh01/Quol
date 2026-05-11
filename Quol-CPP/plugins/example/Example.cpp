@@ -1,4 +1,4 @@
-#include "plugins/example/ExamplePlugin.hpp"
+#include "plugins/example/Example.hpp"
 #include "plugins/example/lib/adder.hpp"
 
 #include <QJsonObject>
@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-QWidget *ExamplePlugin::createWidget(QWidget *parent) {
+QWidget *Example::createWidget(QWidget *parent) {
     auto *widget = new QWidget(parent);
     auto *layout = new QVBoxLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -45,7 +45,7 @@ QWidget *ExamplePlugin::createWidget(QWidget *parent) {
     return widget;
 }
 
-void ExamplePlugin::initialize(
+void Example::initialize(
     const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
 ) {
     m_pluginRootPath = pluginRootPath;
@@ -54,15 +54,15 @@ void ExamplePlugin::initialize(
     refreshLabels();
 }
 
-void ExamplePlugin::onUpdateConfig(const QJsonObject &pluginConfig) {
+void Example::onUpdateConfig(const QJsonObject &pluginConfig) {
     m_pluginConfig = pluginConfig;
     refreshLabels();
 }
 
-void ExamplePlugin::shutdown() {
+void Example::shutdown() {
 }
 
-void ExamplePlugin::refreshLabels() {
+void Example::refreshLabels() {
     if (m_titleLabel) {
         const QString title = m_pluginConfig.value("title").toString();
         m_titleLabel->setText(title);

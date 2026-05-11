@@ -1,6 +1,6 @@
 add_library(example_plugin MODULE
-    ExamplePlugin.cpp
-    ExamplePlugin.hpp
+    Example.cpp
+    Example.hpp
     lib/adder.cpp
 )
 

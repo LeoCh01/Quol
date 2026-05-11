@@ -6,7 +6,7 @@
 
 class QLabel;
 
-class ExamplePlugin final : public QObject, public IQuolPlugin {
+class Example final : public QObject, public IQuolPlugin {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID IQuolPlugin_iid)
     Q_INTERFACES(IQuolPlugin)

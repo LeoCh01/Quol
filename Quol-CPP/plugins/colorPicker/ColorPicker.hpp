@@ -4,11 +4,13 @@
 
 #include <QObject>
 
-class InputManager;
+class QGridLayout;
+class QIcon;
 class QLabel;
-class QLineEdit;
+class QPushButton;
+class QTimer;
 
-class InputTestPlugin final : public QObject, public IQuolPlugin {
+class ColorPicker final : public QObject, public IQuolPlugin {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID IQuolPlugin_iid)
     Q_INTERFACES(IQuolPlugin)
@@ -23,18 +25,20 @@ public:
     void shutdown() override;
 
 private:
-    void applyHotkeyFromConfig();
+    void togglePicking();
+    void stopPicking();
+    void updateColor();
+    void drawFrame(QPixmap &pixmap);
 
     QString m_pluginRootPath;
-    QJsonObject m_appSettings;
     QJsonObject m_pluginConfig;
-    QString m_hotkeyId = "plugin.inputtest.hotkey";
 
-    InputManager *m_inputManager = nullptr;
+    qreal m_sf = 1.0;
 
-    QLabel *m_hotkeyLabel = nullptr;
-    QLabel *m_pressedLabel = nullptr;
-    QLabel *m_releasedLabel = nullptr;
-    QLabel *m_triggeredLabel = nullptr;
-    QLineEdit *m_sendComboEdit = nullptr;
+    QGridLayout *m_gridLayout = nullptr;
+    QLabel *m_previewLabel = nullptr;
+    QLabel *m_hexLabel = nullptr;
+    QLabel *m_rgbLabel = nullptr;
+    QPushButton *m_pickButton = nullptr;
+    QTimer *m_timer = nullptr;
 };

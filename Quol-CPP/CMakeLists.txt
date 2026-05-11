@@ -32,7 +32,9 @@ target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # Build plugins
 add_subdirectory(plugins/example)
-add_subdirectory(plugins/inputtest)
+add_subdirectory(plugins/inputTest)
+add_subdirectory(plugins/chance)
+add_subdirectory(plugins/colorPicker)
 
 add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
