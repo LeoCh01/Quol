@@ -1,6 +1,7 @@
 add_library(color_picker_plugin MODULE
     ColorPicker.cpp
     ColorPicker.hpp
+    ${CMAKE_SOURCE_DIR}/src/core/InputManager.cpp
 )
 
 target_include_directories(color_picker_plugin PRIVATE

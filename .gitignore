@@ -1,6 +1,7 @@
 .idea/
 .venv/
 .vscode/
+.github/
 **/__pycache__/
 build/
 dist/

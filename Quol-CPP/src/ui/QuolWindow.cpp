@@ -124,8 +124,8 @@ bool QuolWindow::applyGeometryFromConfig() {
 }
 
 void QuolWindow::snapToGrid() {
-    const int nx = (pos().x() / m_snapGrid) * m_snapGrid;
-    const int ny = (pos().y() / m_snapGrid) * m_snapGrid;
+    const int nx = qRound(static_cast<double>(pos().x()) / static_cast<double>(m_snapGrid)) * m_snapGrid;
+    const int ny = qRound(static_cast<double>(pos().y()) / static_cast<double>(m_snapGrid)) * m_snapGrid;
     move(nx, ny);
     saveGeometry();
 }

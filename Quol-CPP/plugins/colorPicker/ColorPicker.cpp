@@ -14,34 +14,44 @@
 #include <QScreen>
 #include <QTimer>
 #include <QWidget>
+#include <algorithm>
+
+#include "core/InputManager.hpp"
 
 // ---------------------------------------------------------------------------
 QWidget *ColorPicker::createWidget(QWidget *parent) {
-    auto *widget = new QWidget(parent);
-    m_gridLayout = new QGridLayout(widget);
+    m_widget = new QWidget(parent);
+    m_gridLayout = new QGridLayout(m_widget);
     m_gridLayout->setContentsMargins(4, 4, 4, 4);
     m_gridLayout->setSpacing(4);
 
-    // Preview label (zoomed pixel grid, top-left)
-    m_previewLabel = new QLabel(widget);
-    m_previewLabel->setFixedSize(55, 55);
+    m_inputManager = new InputManager(m_widget);
+    QObject::connect(m_inputManager, &InputManager::hotkeyTriggered, m_widget, [this](const QString &combo) {
+        if (m_picking && combo == "esc") {
+            stopPicking();
+        }
+    });
+
+    // Preview label (fixed size — zoom adapts to sample size)
+    m_previewLabel = new QLabel(m_widget);
+    m_previewLabel->setFixedSize(kPreviewSize, kPreviewSize);
     m_previewLabel->setAlignment(Qt::AlignCenter);
     m_gridLayout->addWidget(m_previewLabel, 0, 0, 3, 1);
 
     // Hex value (selectable so user can copy)
-    m_hexLabel = new QLabel(QStringLiteral("#------"), widget);
+    m_hexLabel = new QLabel(QStringLiteral("#------"), m_widget);
     m_hexLabel->setAlignment(Qt::AlignCenter);
     m_hexLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     m_gridLayout->addWidget(m_hexLabel, 0, 1);
 
     // RGB value (selectable)
-    m_rgbLabel = new QLabel(QStringLiteral("r, g, b"), widget);
+    m_rgbLabel = new QLabel(QStringLiteral("r, g, b"), m_widget);
     m_rgbLabel->setAlignment(Qt::AlignCenter);
     m_rgbLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     m_gridLayout->addWidget(m_rgbLabel, 1, 1);
 
     // Pick button with eyedropper icon
-    m_pickButton = new QPushButton(widget);
+    m_pickButton = new QPushButton(m_widget);
     m_pickButton->setCheckable(true);
     if (!m_pluginRootPath.isEmpty()) {
         m_pickButton->setIcon(QIcon(m_pluginRootPath + "/res/img/pick.svg"));
@@ -54,10 +64,12 @@ QWidget *ColorPicker::createWidget(QWidget *parent) {
     if (QScreen *screen = QGuiApplication::primaryScreen())
         m_sf = screen->devicePixelRatio();
 
+    applyVisualConfig();
+
     // Update color once on creation so the preview isn't blank
     updateColor();
 
-    return widget;
+    return m_widget;
 }
 
 // ---------------------------------------------------------------------------
@@ -73,10 +85,14 @@ void ColorPicker::initialize(
 
     if (QScreen *screen = QGuiApplication::primaryScreen())
         m_sf = screen->devicePixelRatio();
+
+    applyVisualConfig();
 }
 
 void ColorPicker::onUpdateConfig(const QJsonObject &pluginConfig) {
     m_pluginConfig = pluginConfig;
+    applyVisualConfig();
+    updateColor();
 }
 
 void ColorPicker::shutdown() {
@@ -86,21 +102,40 @@ void ColorPicker::shutdown() {
     m_rgbLabel = nullptr;
     m_pickButton = nullptr;
     m_gridLayout = nullptr;
+    m_widget = nullptr;
+    m_inputManager = nullptr;
+}
+
+void ColorPicker::applyVisualConfig() {
+    int sampleSize = m_pluginConfig.value("sample_size").toInt(kDefaultSampleSize);
+    sampleSize = std::clamp(sampleSize, 1, 31);
+    if ((sampleSize % 2) == 0)
+        sampleSize += 1;
+    m_sampleSize = sampleSize;
+
+    if (m_previewLabel)
+        m_previewLabel->setFixedSize(kPreviewSize, kPreviewSize);
 }
 
 // ---------------------------------------------------------------------------
 void ColorPicker::togglePicking() {
-    if (m_timer && m_timer->isActive()) {
+    if (m_picking) {
         stopPicking();
         return;
     }
+
+    m_picking = true;
 
     // Start polling
     if (!m_timer) {
         m_timer = new QTimer(this);
         QObject::connect(m_timer, &QTimer::timeout, this, &ColorPicker::updateColor);
     }
-    m_timer->start(100);
+    m_timer->start(60);
+
+    if (m_inputManager) {
+        m_inputManager->addHotkey(m_escapeHotkeyId, "esc", true);
+    }
 
     if (m_pickButton) {
         m_pickButton->setText(QStringLiteral("Stop"));
@@ -113,6 +148,12 @@ void ColorPicker::togglePicking() {
 void ColorPicker::stopPicking() {
     if (m_timer)
         m_timer->stop();
+
+    m_picking = false;
+
+    if (m_inputManager) {
+        m_inputManager->removeHotkey(m_escapeHotkeyId);
+    }
 
     if (m_pickButton) {
         m_pickButton->setText(QString{});
@@ -130,7 +171,7 @@ void ColorPicker::updateColor() {
         return;
 
     const QPoint pos = QCursor::pos();
-    const int ps = 5;  // pixel sample radius (5×5 area)
+    const int ps = m_sampleSize;
 
     // Grab a small region around the cursor (in physical pixels on HiDPI)
     const int x = pos.x() - ps / 2;
@@ -141,13 +182,19 @@ void ColorPicker::updateColor() {
         return;
 
     QImage image = grabbed.toImage();
-    if (image.isNull() || image.width() < 3 || image.height() < 3)
+    if (image.isNull())
         return;
 
-    // Scale up for the preview widget
+    // Normalize to exactly ps×ps logical samples regardless of HiDPI scale factor
+    if (image.width() != ps || image.height() != ps)
+        image = image.scaled(ps, ps, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+
+    // Scale up to fill the fixed preview label (physical pixels)
+    const int physicalPreview = static_cast<int>(kPreviewSize * m_sf);
     QPixmap scaled = QPixmap::fromImage(image).scaled(
-        QSize(static_cast<int>(55 * m_sf), static_cast<int>(55 * m_sf)), Qt::IgnoreAspectRatio, Qt::FastTransformation
+        QSize(physicalPreview, physicalPreview), Qt::IgnoreAspectRatio, Qt::FastTransformation
     );
+    scaled.setDevicePixelRatio(m_sf);
 
     drawFrame(scaled);
 
@@ -174,33 +221,27 @@ void ColorPicker::drawFrame(QPixmap &pixmap) {
         return;
 
     const qreal sq = pixmap.width() / m_sf;
-    const qreal cx = sq / 2.0;
-    const qreal cy = sq / 2.0;
+    const qreal cell = sq / m_sampleSize;
+    const qreal center = (m_sampleSize / 2.0) * cell;
 
     QPen pen;
-    pen.setColor(Qt::white);
-    pen.setWidth(2);
-    painter.setPen(pen);
-
-    // Inner highlight box around centre pixel
-    painter.drawRect(
-        static_cast<int>(sq / 5.0 * 2),
-        static_cast<int>(sq / 5.0 * 2),
-        static_cast<int>(sq / 5.0 + 2),
-        static_cast<int>(sq / 5.0 + 2)
-    );
-    // Outer border
-    painter.drawRect(0, 0, static_cast<int>(sq), static_cast<int>(sq));
-
+    pen.setColor(QColor(255, 255, 255, 160));
     pen.setWidth(1);
     painter.setPen(pen);
 
-    const qreal b = sq / 10.0;
-    // Cross-hair lines
-    painter.drawLine(QPointF(cx, 0), QPointF(cx, cy - b - 1));
-    painter.drawLine(QPointF(0, cy), QPointF(cx - b - 1, cy));
-    painter.drawLine(QPointF(cx, sq), QPointF(cx, cy + b + 1));
-    painter.drawLine(QPointF(sq, cy), QPointF(cy + b + 1, cy));
+    // Outer border
+    painter.drawRect(0, 0, static_cast<int>(sq), static_cast<int>(sq));
+
+    for (int i = 1; i < m_sampleSize; ++i) {
+        const qreal p = i * cell;
+        painter.drawLine(QPointF(p, 0), QPointF(p, sq));
+        painter.drawLine(QPointF(0, p), QPointF(sq, p));
+    }
+
+    pen.setColor(QColor(255, 255, 255, 220));
+    pen.setWidth(2);
+    painter.setPen(pen);
+    painter.drawRect(QRectF(center - cell / 2.0, center - cell / 2.0, cell, cell));
 
     painter.end();
 }
