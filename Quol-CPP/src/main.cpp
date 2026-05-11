@@ -44,8 +44,9 @@ int main(int argc, char *argv[]) {
     InputManager inputManager;
     inputManager.start();
 
+    const QString mainHotkeyId = "main.toggle";
     QString activeToggleKey = settings.settingString("toggle_key").toLower();
-    int hotkeyId = inputManager.addHotkey(activeToggleKey, true);
+    bool hotkeyRegistered = inputManager.addHotkey(mainHotkeyId, activeToggleKey, true);
 
     QObject::connect(&inputManager, &InputManager::hotkeyTriggered, [&](const QString &combo) {
         if (combo == activeToggleKey) {
@@ -60,12 +61,12 @@ int main(int argc, char *argv[]) {
         [&](const QString &toggleKey, bool resetPos, const QString &transitionType) {
             const QString nextToggleKey = toggleKey.toLower();
             if (nextToggleKey != activeToggleKey) {
-                if (hotkeyId >= 0) {
-                    inputManager.removeHotkey(hotkeyId);
+                if (hotkeyRegistered) {
+                    inputManager.removeHotkey(mainHotkeyId);
                 }
 
-                hotkeyId = inputManager.addHotkey(nextToggleKey, true);
-                if (hotkeyId >= 0) {
+                hotkeyRegistered = inputManager.addHotkey(mainHotkeyId, nextToggleKey, true);
+                if (hotkeyRegistered) {
                     activeToggleKey = nextToggleKey;
                 }
             }
@@ -83,8 +84,8 @@ int main(int argc, char *argv[]) {
 
     const int exitCode = app.exec();
 
-    if (hotkeyId >= 0)
-        inputManager.removeHotkey(hotkeyId);
+    if (hotkeyRegistered)
+        inputManager.removeHotkey(mainHotkeyId);
 
     return exitCode;
 }

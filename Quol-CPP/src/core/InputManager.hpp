@@ -17,8 +17,8 @@ public:
     void start();
     void stop();
 
-    Q_INVOKABLE int addHotkey(const QString &combo, bool suppressed = true);
-    Q_INVOKABLE void removeHotkey(int id);
+    Q_INVOKABLE bool addHotkey(const QString &id, const QString &combo, bool suppressed = true);
+    Q_INVOKABLE void removeHotkey(const QString &id);
     Q_INVOKABLE void clearHotkeys();
     Q_INVOKABLE QStringList availableKeys() const;
 
@@ -37,7 +37,7 @@ signals:
 
 private:
     struct HotkeyEntry {
-        int id;
+        int nativeId;
         QString combo;
         quint32 registerModifiers;
         quint32 vk;
@@ -55,8 +55,7 @@ private:
     ) const;
 
     bool m_running;
-    int m_nextId;
-    QHash<int, HotkeyEntry> m_hotkeys;
+    QHash<QString, HotkeyEntry> m_hotkeys;
     bool m_sendEvent = false;
 
 #ifdef Q_OS_WIN

@@ -261,7 +261,7 @@ void sendVirtualKey(quint32 vk, bool isDown) {
 #endif
 }  // namespace
 
-InputManager::InputManager(QObject *parent) : QObject(parent), m_running(false), m_nextId(1) {
+InputManager::InputManager(QObject *parent) : QObject(parent), m_running(false) {
 }
 
 InputManager::~InputManager() {
@@ -298,39 +298,75 @@ void InputManager::stop() {
     m_running = false;
 }
 
-int InputManager::addHotkey(const QString &combo, bool suppressed) {
+bool InputManager::addHotkey(const QString &id, const QString &combo, bool suppressed) {
 #ifdef Q_OS_WIN
+    const QString hotkeyId = id.trimmed();
+
+    if (m_hotkeys.contains(hotkeyId)) {
+        removeHotkey(hotkeyId);
+    }
+
     quint32 registerModifiers = 0;
     quint32 vk = 0;
     quint32 requiredModifiers = 0;
     QList<quint32> requiredKeys;
 
     if (!parseHotkey(combo, registerModifiers, vk, requiredModifiers, requiredKeys)) {
-        return -1;
+        return false;
     }
 
     start();
 
-    const int id = m_nextId++;
-    if (!RegisterHotKey(nullptr, id, registerModifiers, vk)) {
-        return -1;
+    const int minNativeId = 1;
+    const int maxNativeId = 0xBFFF;
+    int nativeId = static_cast<int>(qHash(hotkeyId.toLower()) % maxNativeId);
+    if (nativeId < minNativeId) {
+        nativeId = minNativeId;
+    }
+
+    bool registered = false;
+    for (int attempts = 0; attempts < maxNativeId; ++attempts) {
+        bool nativeIdTaken = false;
+        for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
+            if (it.value().nativeId == nativeId) {
+                nativeIdTaken = true;
+                break;
+            }
+        }
+
+        if (!nativeIdTaken && RegisterHotKey(nullptr, nativeId, registerModifiers, vk)) {
+            registered = true;
+            break;
+        }
+
+        ++nativeId;
+        if (nativeId > maxNativeId) {
+            nativeId = minNativeId;
+        }
+    }
+
+    if (!registered) {
+        return false;
     }
 
     m_hotkeys.insert(
-        id, HotkeyEntry{id, combo.toLower(), registerModifiers, vk, requiredModifiers, requiredKeys, suppressed}
+        hotkeyId,
+        HotkeyEntry{nativeId, combo.toLower(), registerModifiers, vk, requiredModifiers, requiredKeys, suppressed}
     );
-    return id;
+    return true;
 #else
+    Q_UNUSED(id)
     Q_UNUSED(combo)
     Q_UNUSED(suppressed)
-    return -1;
+    return false;
 #endif
 }
 
-void InputManager::removeHotkey(int id) {
+void InputManager::removeHotkey(const QString &id) {
 #ifdef Q_OS_WIN
     if (m_hotkeys.contains(id)) {
-        UnregisterHotKey(nullptr, id);
+        const int nativeId = m_hotkeys.value(id).nativeId;
+        UnregisterHotKey(nullptr, nativeId);
         m_hotkeys.remove(id);
     }
 #else
@@ -340,9 +376,8 @@ void InputManager::removeHotkey(int id) {
 
 void InputManager::clearHotkeys() {
 #ifdef Q_OS_WIN
-    const auto ids = m_hotkeys.keys();
-    for (const int id : ids) {
-        UnregisterHotKey(nullptr, id);
+    for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
+        UnregisterHotKey(nullptr, it.value().nativeId);
     }
 #endif
     m_hotkeys.clear();
@@ -402,12 +437,21 @@ bool InputManager::nativeEventFilter(const QByteArray &eventType, void *message,
         return false;
     }
 
-    const int id = static_cast<int>(msg->wParam);
-    if (!m_hotkeys.contains(id)) {
-        return false;
+    const int nativeId = static_cast<int>(msg->wParam);
+
+    HotkeyEntry hotkey{};
+    bool found = false;
+    for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
+        if (it.value().nativeId == nativeId) {
+            hotkey = it.value();
+            found = true;
+            break;
+        }
     }
 
-    const auto hotkey = m_hotkeys.value(id);
+    if (!found) {
+        return false;
+    }
 
     if (!isModifierDown(hotkey.requiredModifiers)) {
         return false;

@@ -28,9 +28,9 @@ private:
     QString m_pluginRootPath;
     QJsonObject m_appSettings;
     QJsonObject m_pluginConfig;
+    QString m_hotkeyId = "plugin.inputtest.hotkey";
 
     InputManager *m_inputManager = nullptr;
-    int m_hotkeyId = -1;
 
     QLabel *m_hotkeyLabel = nullptr;
     QLabel *m_pressedLabel = nullptr;
