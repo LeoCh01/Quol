@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "description": "Example Quol C++ plugin"
   },
-  "title": "Example",
+  "sss": "hello",
   "a": 3,
   "b": 64,
   "op": [["+", "-", "*", "/"], 0],

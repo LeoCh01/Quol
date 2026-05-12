@@ -64,7 +64,7 @@ void Example::shutdown() {
 
 void Example::refreshLabels() {
     if (m_titleLabel) {
-        const QString title = m_pluginConfig.value("title").toString();
+        const QString title = m_pluginConfig.value("sss").toString();
         m_titleLabel->setText(title);
     }
 

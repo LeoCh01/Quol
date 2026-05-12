@@ -207,10 +207,8 @@ void QuolMainWindow::openManagePluginsDialog() {
             if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
                 cf.close();
-                const QString title = doc.object().value("title").toString();
-                if (!title.isEmpty()) {
-                    displayName = title;
-                }
+                const QString title = doc.object().value("_").toObject().value("name").toString().trimmed();
+                displayName = title;
             }
 
             auto *nameLabel = new QLabel(displayName);

@@ -1,10 +1,9 @@
 {
   "_": {
-    "default_geometry": [200, 10, 160, 0],
+    "default_geometry": [220, 10, 160, 0],
     "name": "Color Picker",
     "version": "1.0.0",
     "description": "Screen color picker"
   },
-  "title": "Color Picker",
   "sample_size": 7
 }

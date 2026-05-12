@@ -1,5 +1,4 @@
 #include "ui/TitleBar.hpp"
-#include "ui/QuolWindow.hpp"
 
 #include <QCoreApplication>
 #include <QHBoxLayout>
@@ -60,6 +59,10 @@ void TitleBar::setCloseAction(const std::function<void()> &onClick) {
     });
 }
 
+void TitleBar::setDragReleaseAction(const std::function<void()> &onRelease) {
+    m_onDragRelease = onRelease;
+}
+
 void TitleBar::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         m_dragOffset = event->globalPosition().toPoint() - m_window->pos();
@@ -79,8 +82,8 @@ void TitleBar::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && m_dragging) {
         m_dragging = false;
         m_window->setWindowOpacity(1.0);
-        if (auto *qw = qobject_cast<QuolWindow *>(m_window)) {
-            qw->snapToGrid();
+        if (m_onDragRelease) {
+            m_onDragRelease();
         }
     }
     event->accept();

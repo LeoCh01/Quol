@@ -138,7 +138,7 @@ void ColorPicker::togglePicking() {
     }
 
     if (m_pickButton) {
-        m_pickButton->setText(QStringLiteral("Stop"));
+        m_pickButton->setText(QStringLiteral("Stop (ESC)"));
         m_pickButton->setIcon(QIcon{});
         m_pickButton->setStyleSheet(QStringLiteral("background-color: #eee; color: #000;"));
         m_pickButton->setChecked(true);

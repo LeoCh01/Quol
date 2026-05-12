@@ -8,8 +8,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC_COMPILER_PREDEFINES OFF)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 
 add_executable(Quol WIN32
     src/main.cpp
@@ -35,6 +35,7 @@ add_subdirectory(plugins/example)
 add_subdirectory(plugins/inputTest)
 add_subdirectory(plugins/chance)
 add_subdirectory(plugins/colorPicker)
+add_subdirectory(plugins/chat)
 
 add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

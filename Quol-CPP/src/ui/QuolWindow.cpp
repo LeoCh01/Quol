@@ -33,6 +33,7 @@ QuolWindow::QuolWindow(
     rootLayout->setSpacing(0);
 
     m_titleBar = new TitleBar(this, title, this);
+    m_titleBar->setDragReleaseAction([this]() { snapToGrid(); });
     rootLayout->addWidget(m_titleBar);
 
     auto *sep = new QWidget(this);

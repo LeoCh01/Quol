@@ -56,7 +56,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             const QString configPath = pluginsDir + "/" + id + "/res/config.json";
             const QJsonObject pluginConfig = readPluginConfig(configPath);
             const QJsonArray defaultGeometry = pluginConfig.value("_").toObject().value("default_geometry").toArray();
-            const QString displayTitle = pluginConfig.value("title").toString();
+            const QString displayTitle = pluginConfig.value("_").toObject().value("name").toString().trimmed();
 
             const QString libPath = pluginsDir + "/" + id + "/" + id;
             auto *loader = new QPluginLoader(libPath, this);
