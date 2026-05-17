@@ -60,6 +60,15 @@ public:
     QString addKeyListener(std::function<void(const QString &key, bool pressed)> callback);
     void removeKeyListener(const QString &id);
 
+    // --- Key remaps ---
+    // Remaps a single key (or combo) to another at the low-level hook, suppressing
+    // the source and injecting the destination.  Works for plain keys (no modifier
+    // required), unlike RegisterHotKey-based hotkeys.  Injection is marked with
+    // m_sendEvent so it does NOT re-trigger other remaps (no chaining).
+    // Returns a handle ID, or empty on failure (unknown key name).
+    QString addKeyRemap(const QString &srcKey, const QString &dstCombo);
+    void removeKeyRemap(const QString &id);
+
     // --- Mouse listeners ---
     // callback is fired for mouse move / click / scroll events.
     // Returns a handle ID.
@@ -74,7 +83,7 @@ public:
     QStringList availableKeys() const;
 
     // Called by the global hook callbacks (public for hook proc access).
-    bool handleKeyEvent(unsigned long wParam, quint32 vkCode);
+    bool handleKeyEvent(unsigned long wParam, quint32 vkCode, bool injected);
     void handleMouseEvent(unsigned long wParam, long x, long y, int wheelDelta);
 
     bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
@@ -105,16 +114,21 @@ private:
         std::function<void(const QString &, bool)> callback;
     };
 
+    struct KeyRemapEntry {
+        quint32 srcVk = 0;
+        QString dstCombo;
+    };
+
     struct MouseListenerEntry {
         std::function<void(const MouseEvent &)> callback;
     };
 
     int m_idCounter = 0;
     bool m_running = false;
-    bool m_sendEvent = false;
 
     QHash<QString, HotkeyEntry> m_hotkeys;
     QHash<QString, KeyListenerEntry> m_keyListeners;
+    QHash<QString, KeyRemapEntry> m_keyRemaps;
     QHash<QString, MouseListenerEntry> m_mouseListeners;
 
 #ifdef Q_OS_WIN

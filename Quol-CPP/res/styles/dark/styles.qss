@@ -239,6 +239,28 @@ QuolPopupWindow #content QAbstractItemView {
     background-color: #333;
 }
 
+/* ── Scroll area in popup editors (keymap, etc.) ─────────────────── */
+QuolPopupWindow #content QScrollArea {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 0px;
+}
+
+QuolPopupWindow #content QScrollArea > QWidget#qt_scrollarea_viewport {
+    background-color: #333;
+    border-radius: 6px;
+}
+
+QuolPopupWindow #content QScrollArea > QWidget#qt_scrollarea_viewport > QWidget {
+    background-color: #333;
+    border-radius: 6px;
+}
+
+QuolPopupWindow #content QWidget#mapRow {
+    background-color: #333;
+}
+
 QToolTip {
     background-color: #333;
     color: #ddd;

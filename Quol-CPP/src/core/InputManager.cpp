@@ -231,7 +231,8 @@ LRESULT CALLBACK keyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
         return CallNextHookEx(nullptr, nCode, wParam, lParam);
     }
 
-    const bool suppress = g_inputManager->handleKeyEvent(static_cast<unsigned long>(wParam), data->vkCode);
+    const bool injected = (data->flags & LLKHF_INJECTED) != 0;
+    const bool suppress = g_inputManager->handleKeyEvent(static_cast<unsigned long>(wParam), data->vkCode, injected);
     if (suppress) {
         return 1;
     }
@@ -416,6 +417,28 @@ void InputManager::removeKeyListener(const QString &id) {
     m_keyListeners.remove(id);
 }
 
+QString InputManager::addKeyRemap(const QString &srcKey, const QString &dstCombo) {
+#ifdef Q_OS_WIN
+    quint32 vk = 0;
+    bool isModifier = false;
+    if (!tokenToVK(srcKey.trimmed().toLower(), vk, isModifier))
+        return {};
+
+    start();
+    const QString id = nextId();
+    m_keyRemaps.insert(id, KeyRemapEntry{vk, dstCombo.trimmed().toLower()});
+    return id;
+#else
+    Q_UNUSED(srcKey)
+    Q_UNUSED(dstCombo)
+    return {};
+#endif
+}
+
+void InputManager::removeKeyRemap(const QString &id) {
+    m_keyRemaps.remove(id);
+}
+
 QString InputManager::addMouseListener(std::function<void(const MouseEvent &)> callback) {
     start();
     const QString id = nextId();
@@ -452,14 +475,12 @@ void InputManager::sendKeys(const QString &combo) {
 void InputManager::sendPress(const QString &combo) {
 #ifdef Q_OS_WIN
     const QStringList keys = splitCombo(combo);
-    m_sendEvent = true;
     for (const QString &token : keys) {
         quint32 vk = 0;
         bool isModifier = false;
         if (tokenToVK(token, vk, isModifier))
             sendVirtualKey(vk, true);
     }
-    m_sendEvent = false;
 #else
     Q_UNUSED(combo)
 #endif
@@ -468,14 +489,12 @@ void InputManager::sendPress(const QString &combo) {
 void InputManager::sendRelease(const QString &combo) {
 #ifdef Q_OS_WIN
     const QStringList keys = splitCombo(combo);
-    m_sendEvent = true;
     for (int i = keys.size() - 1; i >= 0; --i) {
         quint32 vk = 0;
         bool isModifier = false;
         if (tokenToVK(keys.at(i), vk, isModifier))
             sendVirtualKey(vk, false);
     }
-    m_sendEvent = false;
 #else
     Q_UNUSED(combo)
 #endif
@@ -600,21 +619,33 @@ bool InputManager::parseHotkey(
 #endif
 }
 
-bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode) {
+bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode, bool injected) {
 #ifdef Q_OS_WIN
-    if (m_sendEvent) {
+    // Skip injected key events (produced by sendKeys/sendPress/sendRelease)
+    // so they don't re-trigger remaps or key listeners.
+    if (injected)
         return false;
-    }
 
     const QString key = VKToToken(vkCode).toLower();
-    if (key.isEmpty()) {
+    if (key.isEmpty())
         return false;
-    }
 
     const bool isKeyMessage =
         (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_SYSKEYUP);
     if (isKeyMessage) {
         const bool pressed = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
+
+        // Key remaps: handled at WH_KEYBOARD_LL level so plain keys (no modifier)
+        // are supported.  Only fire on press; inject dst and suppress src.
+        if (pressed) {
+            for (const auto &remap : std::as_const(m_keyRemaps)) {
+                if (remap.srcVk == vkCode) {
+                    sendKeys(remap.dstCombo);
+                    return true;  // Suppress the source keystroke.
+                }
+            }
+        }
+
         const auto listeners = m_keyListeners;
         for (const auto &entry : listeners)
             entry.callback(key, pressed);
@@ -624,6 +655,7 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode) {
 #else
     Q_UNUSED(wParam)
     Q_UNUSED(vkCode)
+    Q_UNUSED(injected)
     return false;
 #endif
 }
