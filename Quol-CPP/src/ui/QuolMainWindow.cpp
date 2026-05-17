@@ -65,7 +65,10 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     , m_settings(settings)
     , m_transitions(transitions) {
     copySettingsToMainConfig();
-    attachConfigWindow(QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"), QStringLiteral("Quol Config"));
+    attachConfigWindow(
+        QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"),
+        QStringLiteral("Quol Config")
+    );
     setConfigSavedCallback([this](const QJsonObject &config) { applyMainConfigToSettings(config); });
 
     auto *grid = new QGridLayout();
@@ -201,19 +204,28 @@ void QuolMainWindow::openManagePluginsDialog() {
             auto *row = new QHBoxLayout(itemWidget);
             row->setContentsMargins(6, 2, 6, 2);
 
-            const QString configPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + id + QStringLiteral("/res/config.json");
+            const QString configPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + id
+                                       + QStringLiteral("/res/config.json");
             QString displayName = id;
             QFile cf(configPath);
             if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
                 cf.close();
-                const QString title = doc.object().value(QStringLiteral("_")).toObject().value(QStringLiteral("name")).toString().trimmed();
+                const QString title = doc.object()
+                                          .value(QStringLiteral("_"))
+                                          .toObject()
+                                          .value(QStringLiteral("name"))
+                                          .toString()
+                                          .trimmed();
                 displayName = title;
             }
 
             auto *nameLabel = new QLabel(displayName);
-            auto *statusLabel = new QLabel(enabledIds.contains(id) ? QStringLiteral("Active") : QStringLiteral("Inactive"));
-            statusLabel->setObjectName(enabledIds.contains(id) ? QStringLiteral("status-active") : QStringLiteral("status-inactive"));
+            auto *statusLabel =
+                new QLabel(enabledIds.contains(id) ? QStringLiteral("Active") : QStringLiteral("Inactive"));
+            statusLabel->setObjectName(
+                enabledIds.contains(id) ? QStringLiteral("status-active") : QStringLiteral("status-inactive")
+            );
             auto *check = new QCheckBox();
             check->setProperty("pluginId", id);
             check->setChecked(enabledIds.contains(id));
@@ -318,12 +330,25 @@ void QuolMainWindow::copySettingsToMainConfig() {
     }
 
     config.insert(QStringLiteral("startup"), m_settings->data().value(QStringLiteral("startup")).toBool(false));
-    config.insert(QStringLiteral("reset_pos"), m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false));
-    config.insert(QStringLiteral("toggle_key"), m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick")));
+    config.insert(
+        QStringLiteral("reset_pos"), m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false)
+    );
+    config.insert(
+        QStringLiteral("toggle_key"),
+        m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick"))
+    );
 
-    QString transition = m_settings->data().value(QStringLiteral("transition")).toString(QStringLiteral("none")).toLower();
-    QJsonArray transitionOptions =
-        QJsonArray{QStringLiteral("none"), QStringLiteral("fade"), QStringLiteral("slide-left"), QStringLiteral("slide-right"), QStringLiteral("slide-up"), QStringLiteral("slide-down"), QStringLiteral("rand-slide")};
+    QString transition =
+        m_settings->data().value(QStringLiteral("transition")).toString(QStringLiteral("none")).toLower();
+    QJsonArray transitionOptions = QJsonArray{
+        QStringLiteral("none"),
+        QStringLiteral("fade"),
+        QStringLiteral("slide-left"),
+        QStringLiteral("slide-right"),
+        QStringLiteral("slide-up"),
+        QStringLiteral("slide-down"),
+        QStringLiteral("rand-slide")
+    };
     int transitionIndex = -1;
     for (int i = 0; i < transitionOptions.size(); ++i) {
         if (transitionOptions.at(i).toString() == transition) {
@@ -337,7 +362,9 @@ void QuolMainWindow::copySettingsToMainConfig() {
     config.insert(QStringLiteral("transition"), QJsonArray{transitionOptions, transitionIndex});
 
     QJsonObject underscore = config.value(QStringLiteral("_")).toObject();
-    underscore.insert(QStringLiteral("name"), m_settings->data().value(QStringLiteral("name")).toString(QStringLiteral("Quol")));
+    underscore.insert(
+        QStringLiteral("name"), m_settings->data().value(QStringLiteral("name")).toString(QStringLiteral("Quol"))
+    );
     underscore.insert(QStringLiteral("plugins"), m_settings->data().value(QStringLiteral("plugins")).toArray());
     config.insert(QStringLiteral("_"), underscore);
 

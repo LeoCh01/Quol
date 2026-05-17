@@ -177,7 +177,8 @@ void QuolWindow::loadGeometry(int defaultX, int defaultY, int defaultW, int defa
 
     const QJsonObject configs = m_settings->data().value(QStringLiteral("configs")).toObject();
     const QJsonObject windowCfg = configs.value(m_titleText).toObject();
-    const QJsonArray geometry = windowCfg.value(QStringLiteral("_")).toObject().value(QStringLiteral("geometry")).toArray();
+    const QJsonArray geometry =
+        windowCfg.value(QStringLiteral("_")).toObject().value(QStringLiteral("geometry")).toArray();
 
     if (geometry.size() >= 4) {
         setGeometry(
@@ -206,8 +207,8 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
 
     QJsonObject root = doc.object();
     QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
-    const bool hasDefaultGeometry =
-        underscore.value(QStringLiteral("default_geometry")).isArray() && underscore.value(QStringLiteral("default_geometry")).toArray().size() >= 4;
+    const bool hasDefaultGeometry = underscore.value(QStringLiteral("default_geometry")).isArray()
+                                    && underscore.value(QStringLiteral("default_geometry")).toArray().size() >= 4;
     const bool useDefaultPos = m_settings && m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false);
     const QJsonArray defaultGeometry = underscore.value(QStringLiteral("default_geometry")).toArray();
     QJsonArray geometry = underscore.value(QStringLiteral("geometry")).toArray();
@@ -268,7 +269,8 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
     }
 
     QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
-    if (!underscore.value(QStringLiteral("default_geometry")).isArray() || underscore.value(QStringLiteral("default_geometry")).toArray().size() < 4) {
+    if (!underscore.value(QStringLiteral("default_geometry")).isArray()
+        || underscore.value(QStringLiteral("default_geometry")).toArray().size() < 4) {
         underscore.insert(QStringLiteral("default_geometry"), QJsonArray{x(), y(), width(), 0});
     }
     underscore.insert(QStringLiteral("geometry"), QJsonArray{x(), y(), width(), height()});

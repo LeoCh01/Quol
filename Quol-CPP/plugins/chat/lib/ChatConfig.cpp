@@ -35,12 +35,17 @@ ParsedConfig parse(const QJsonObject &pluginConfig) {
     for (auto it = commands.begin(); it != commands.end(); ++it)
         out.commands.insert(it.key(), it.value().toString());
 
-    out.models[QStringLiteral("ollama")] = pluginConfig.value(QStringLiteral("ollama")).toObject().value(QStringLiteral("model")).toString();
-    out.models[QStringLiteral("gemini")] = pluginConfig.value(QStringLiteral("gemini")).toObject().value(QStringLiteral("model")).toString();
-    out.models[QStringLiteral("groq")] = pluginConfig.value(QStringLiteral("groq")).toObject().value(QStringLiteral("model")).toString();
+    out.models[QStringLiteral("ollama")] =
+        pluginConfig.value(QStringLiteral("ollama")).toObject().value(QStringLiteral("model")).toString();
+    out.models[QStringLiteral("gemini")] =
+        pluginConfig.value(QStringLiteral("gemini")).toObject().value(QStringLiteral("model")).toString();
+    out.models[QStringLiteral("groq")] =
+        pluginConfig.value(QStringLiteral("groq")).toObject().value(QStringLiteral("model")).toString();
 
-    out.apiKeys[QStringLiteral("gemini")] = pluginConfig.value(QStringLiteral("gemini")).toObject().value(QStringLiteral("apikey")).toString();
-    out.apiKeys[QStringLiteral("groq")] = pluginConfig.value(QStringLiteral("groq")).toObject().value(QStringLiteral("apikey")).toString();
+    out.apiKeys[QStringLiteral("gemini")] =
+        pluginConfig.value(QStringLiteral("gemini")).toObject().value(QStringLiteral("apikey")).toString();
+    out.apiKeys[QStringLiteral("groq")] =
+        pluginConfig.value(QStringLiteral("groq")).toObject().value(QStringLiteral("apikey")).toString();
 
     return out;
 }

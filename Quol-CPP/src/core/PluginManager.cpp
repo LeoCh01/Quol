@@ -51,7 +51,8 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         return;
 
     const QString appDir = QCoreApplication::applicationDirPath();
-    QString pluginsDirSetting = settings->settingString(QStringLiteral("plugins_dir"), QStringLiteral("plugins")).trimmed();
+    QString pluginsDirSetting =
+        settings->settingString(QStringLiteral("plugins_dir"), QStringLiteral("plugins")).trimmed();
     if (pluginsDirSetting.isEmpty()) {
         pluginsDirSetting = QStringLiteral("plugins");
     }
@@ -69,9 +70,17 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         try {
             const QString configPath = pluginsDir.filePath(id + QStringLiteral("/res/config.json"));
             const PluginConfig pluginConfig(readPluginConfig(configPath), configPath);
-            const QJsonArray defaultGeometry =
-                pluginConfig.root().value(QStringLiteral("_")).toObject().value(QStringLiteral("default_geometry")).toArray();
-            const QString displayTitle = pluginConfig.root().value(QStringLiteral("_")).toObject().value(QStringLiteral("name")).toString().trimmed();
+            const QJsonArray defaultGeometry = pluginConfig.root()
+                                                   .value(QStringLiteral("_"))
+                                                   .toObject()
+                                                   .value(QStringLiteral("default_geometry"))
+                                                   .toArray();
+            const QString displayTitle = pluginConfig.root()
+                                             .value(QStringLiteral("_"))
+                                             .toObject()
+                                             .value(QStringLiteral("name"))
+                                             .toString()
+                                             .trimmed();
 
             const QString libPath = pluginsDir.filePath(id + QStringLiteral("/") + id);
             loader = new QPluginLoader(libPath);
@@ -126,7 +135,9 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             }
 
             QMessageBox::critical(
-                nullptr, QStringLiteral("Plugin Load Error"), QString(QStringLiteral("Failed to load plugin '%1' with an unknown error.")).arg(id)
+                nullptr,
+                QStringLiteral("Plugin Load Error"),
+                QString(QStringLiteral("Failed to load plugin '%1' with an unknown error.")).arg(id)
             );
         }
     }

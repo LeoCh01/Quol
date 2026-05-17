@@ -40,7 +40,10 @@ QString calculateFromConfig(const QJsonObject &config) {
         if (b == 0) {
             return QString(QStringLiteral("%1 / %2 = undefined")).arg(a).arg(b);
         }
-        return QString(QStringLiteral("%1 / %2 = %3")).arg(a).arg(b).arg(static_cast<double>(a) / static_cast<double>(b));
+        return QString(QStringLiteral("%1 / %2 = %3"))
+            .arg(a)
+            .arg(b)
+            .arg(static_cast<double>(a) / static_cast<double>(b));
     }
 
     return QString(QStringLiteral("a=%1, b=%2, op=(invalid)")).arg(a).arg(b);

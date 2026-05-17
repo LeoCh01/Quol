@@ -13,20 +13,31 @@ ProviderRequest buildRequest(
 ) {
     ProviderRequest req;
     req.providerName = QStringLiteral("gemini");
-    req.url = QUrl(QString(QStringLiteral("https://generativelanguage.googleapis.com/v1beta/models/%1:generateContent?key=%2"))
-                       .arg(config.model, config.apiKey));
+    req.url = QUrl(
+        QString(QStringLiteral("https://generativelanguage.googleapis.com/v1beta/models/%1:generateContent?key=%2"))
+            .arg(config.model, config.apiKey)
+    );
 
     QJsonArray contents;
 
     if (includeHistory) {
         for (const auto &item : history) {
             QJsonObject c;
-            c.insert(QStringLiteral("role"), item.role == QStringLiteral("model") ? QStringLiteral("model") : QStringLiteral("user"));
+            c.insert(
+                QStringLiteral("role"),
+                item.role == QStringLiteral("model") ? QStringLiteral("model") : QStringLiteral("user")
+            );
             QJsonArray parts;
             parts.append(QJsonObject{{QStringLiteral("text"), item.text}});
             if (!item.imageBase64.isEmpty()) {
                 parts.append(
-                    QJsonObject{{QStringLiteral("inline_data"), QJsonObject{{QStringLiteral("mime_type"), QStringLiteral("image/png")}, {QStringLiteral("data"), item.imageBase64}}}}
+                    QJsonObject{
+                        {QStringLiteral("inline_data"),
+                         QJsonObject{
+                             {QStringLiteral("mime_type"), QStringLiteral("image/png")},
+                             {QStringLiteral("data"), item.imageBase64}
+                         }}
+                    }
                 );
             }
             c.insert(QStringLiteral("parts"), parts);
@@ -39,7 +50,14 @@ ProviderRequest buildRequest(
     QJsonArray parts;
     parts.append(QJsonObject{{QStringLiteral("text"), prompt}});
     if (!imageBase64.isEmpty()) {
-        parts.append(QJsonObject{{QStringLiteral("inline_data"), QJsonObject{{QStringLiteral("mime_type"), QStringLiteral("image/png")}, {QStringLiteral("data"), imageBase64}}}});
+        parts.append(
+            QJsonObject{
+                {QStringLiteral("inline_data"),
+                 QJsonObject{
+                     {QStringLiteral("mime_type"), QStringLiteral("image/png")}, {QStringLiteral("data"), imageBase64}
+                 }}
+            }
+        );
     }
     cur.insert(QStringLiteral("parts"), parts);
     contents.append(cur);

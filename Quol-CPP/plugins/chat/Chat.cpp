@@ -547,7 +547,8 @@ void Chat::appendLog(const QString &provider, bool isUser, const QString &text) 
         return;
 
     const QString ts = QDateTime::currentDateTime().toString(Qt::ISODate);
-    const QString line = isUser ? QString(QStringLiteral("%1\nQ: %2\n")).arg(ts, text) : QString(QStringLiteral("A: %1\n\n")).arg(text);
+    const QString line =
+        isUser ? QString(QStringLiteral("%1\nQ: %2\n")).arg(ts, text) : QString(QStringLiteral("A: %1\n\n")).arg(text);
     f.write(line.toUtf8());
     f.close();
 }
