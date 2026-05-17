@@ -1,7 +1,6 @@
 add_library(color_picker_plugin MODULE
     ColorPicker.cpp
     ColorPicker.hpp
-    ${CMAKE_SOURCE_DIR}/src/core/InputManager.cpp
 )
 
 target_include_directories(color_picker_plugin PRIVATE
@@ -9,7 +8,7 @@ target_include_directories(color_picker_plugin PRIVATE
     ${CMAKE_SOURCE_DIR}
 )
 
-target_link_libraries(color_picker_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(color_picker_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets quol_core)
 
 set_target_properties(color_picker_plugin PROPERTIES
     PREFIX ""

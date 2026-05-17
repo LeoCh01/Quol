@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "core/InputManager.hpp"
+#include "plugin_api/QuolServices.hpp"
 
 // ---------------------------------------------------------------------------
 QWidget *ColorPicker::createWidget(QWidget *parent) {
@@ -24,13 +25,6 @@ QWidget *ColorPicker::createWidget(QWidget *parent) {
     m_gridLayout = new QGridLayout(m_widget);
     m_gridLayout->setContentsMargins(4, 4, 4, 4);
     m_gridLayout->setSpacing(4);
-
-    m_inputManager = new InputManager(m_widget);
-    QObject::connect(m_inputManager, &InputManager::hotkeyTriggered, m_widget, [this](const QString &combo) {
-        if (m_picking && combo == "esc") {
-            stopPicking();
-        }
-    });
 
     // Preview label (fixed size — zoom adapts to sample size)
     m_previewLabel = new QLabel(m_widget);
@@ -73,12 +67,10 @@ QWidget *ColorPicker::createWidget(QWidget *parent) {
 }
 
 // ---------------------------------------------------------------------------
-void ColorPicker::initialize(
-    const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
-) {
-    Q_UNUSED(appSettings)
+void ColorPicker::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
     m_pluginRootPath = pluginRootPath;
     m_pluginConfig = pluginConfig;
+    m_services = services;
 
     if (m_pickButton && !pluginRootPath.isEmpty())
         m_pickButton->setIcon(QIcon(pluginRootPath + "/res/img/pick.svg"));
@@ -103,7 +95,6 @@ void ColorPicker::shutdown() {
     m_pickButton = nullptr;
     m_gridLayout = nullptr;
     m_widget = nullptr;
-    m_inputManager = nullptr;
 }
 
 void ColorPicker::applyVisualConfig() {
@@ -133,8 +124,15 @@ void ColorPicker::togglePicking() {
     }
     m_timer->start(60);
 
-    if (m_inputManager) {
-        m_inputManager->addHotkey(m_escapeHotkeyId, "esc", true);
+    if (m_services && m_services->inputManager()) {
+        m_escapeHotkeyId = m_services->inputManager()->addHotkey(
+            "esc",
+            [this]() {
+                if (m_picking)
+                    stopPicking();
+            },
+            true
+        );
     }
 
     if (m_pickButton) {
@@ -151,8 +149,9 @@ void ColorPicker::stopPicking() {
 
     m_picking = false;
 
-    if (m_inputManager) {
-        m_inputManager->removeHotkey(m_escapeHotkeyId);
+    if (m_services && m_services->inputManager() && !m_escapeHotkeyId.isEmpty()) {
+        m_services->inputManager()->removeHotkey(m_escapeHotkeyId);
+        m_escapeHotkeyId.clear();
     }
 
     if (m_pickButton) {

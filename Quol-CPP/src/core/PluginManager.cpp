@@ -1,6 +1,7 @@
 #include "core/PluginManager.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "plugin_api/IQuolPlugin.hpp"
+#include "plugin_api/QuolServices.hpp"
 #include "ui/QuolWindow.hpp"
 #include "ui/TransitionManager.hpp"
 
@@ -19,7 +20,9 @@
 namespace {
 QJsonObject readPluginConfig(const QString &configPath) {
     QFile file(configPath);
-    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        throw std::runtime_error(QString("Cannot open plugin config: %1").arg(configPath).toStdString());
+    }
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
     return doc.object();
@@ -32,9 +35,17 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
 PluginManager::~PluginManager() {
     qDeleteAll(m_windows);
     m_windows.clear();
+
+    for (const auto &lp : std::as_const(m_plugins)) {
+        if (lp.plugin) {
+            lp.plugin->shutdown();
+        }
+        delete lp.loader;
+    }
+    m_plugins.clear();
 }
 
-void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager *transitions) {
+void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager *transitions, QuolServices *services) {
     if (!settings)
         return;
 
@@ -44,25 +55,29 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         pluginsDirSetting = "plugins";
     }
 
-    const QString pluginsDir =
+    const QString pluginsDirPath =
         QDir::isRelativePath(pluginsDirSetting) ? QDir(appDir).filePath(pluginsDirSetting) : pluginsDirSetting;
+    const QDir pluginsDir(pluginsDirPath);
     const QJsonArray pluginIds = settings->data().value("plugins").toArray();
 
     for (const auto &val : pluginIds) {
         const QString id = val.toString().trimmed();
 
         QuolWindow *win = nullptr;
+        QPluginLoader *loader = nullptr;
         try {
-            const QString configPath = pluginsDir + "/" + id + "/res/config.json";
+            const QString configPath = pluginsDir.filePath(id + "/res/config.json");
             const QJsonObject pluginConfig = readPluginConfig(configPath);
             const QJsonArray defaultGeometry = pluginConfig.value("_").toObject().value("default_geometry").toArray();
             const QString displayTitle = pluginConfig.value("_").toObject().value("name").toString().trimmed();
 
-            const QString libPath = pluginsDir + "/" + id + "/" + id;
-            auto *loader = new QPluginLoader(libPath, this);
+            const QString libPath = pluginsDir.filePath(id + "/" + id);
+            loader = new QPluginLoader(libPath);
             auto *plugin = qobject_cast<IQuolPlugin *>(loader->instance());
             if (!plugin) {
-                throw std::runtime_error(QString("Failed to load plugin library: %1").arg(libPath).toStdString());
+                throw std::runtime_error(
+                    QString("Failed to load plugin library: %1 — %2").arg(libPath, loader->errorString()).toStdString()
+                );
             }
 
             win = new QuolWindow(
@@ -76,7 +91,8 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
 
             win->attachConfigWindow(configPath, displayTitle + " Config");
 
-            plugin->initialize(pluginsDir + "/" + id, settings->data(), pluginConfig);
+            // initialize() before createWidget() so plugins have config + services available.
+            plugin->initialize(pluginsDir.filePath(id), pluginConfig, services);
             win->setConfigSavedCallback([plugin](const QJsonObject &updatedConfig) {
                 plugin->onUpdateConfig(updatedConfig);
             });
@@ -85,10 +101,14 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             transitions->addWindow(win);
 
             m_windows.append(win);
+            m_plugins.append(LoadedPlugin{loader, plugin});
             win = nullptr;
+            loader = nullptr;
         } catch (const std::exception &e) {
-            if (win) {
-                delete win;
+            delete win;
+            if (loader) {
+                loader->unload();
+                delete loader;
             }
 
             QMessageBox::critical(
@@ -97,8 +117,10 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
                 QString("Failed to load plugin '%1':\n%2").arg(id).arg(QString::fromStdString(e.what()))
             );
         } catch (...) {
-            if (win) {
-                delete win;
+            delete win;
+            if (loader) {
+                loader->unload();
+                delete loader;
             }
 
             QMessageBox::critical(

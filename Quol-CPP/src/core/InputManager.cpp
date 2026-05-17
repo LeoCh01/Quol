@@ -251,6 +251,22 @@ LRESULT CALLBACK keyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
+LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (!g_inputManager || nCode < 0) {
+        return CallNextHookEx(nullptr, nCode, wParam, lParam);
+    }
+
+    const MSLLHOOKSTRUCT *data = reinterpret_cast<MSLLHOOKSTRUCT *>(lParam);
+    if (!data) {
+        return CallNextHookEx(nullptr, nCode, wParam, lParam);
+    }
+
+    const int wheelDelta =
+        (wParam == WM_MOUSEWHEEL) ? static_cast<int>(static_cast<short>(HIWORD(data->mouseData))) : 0;
+    g_inputManager->handleMouseEvent(static_cast<unsigned long>(wParam), data->pt.x, data->pt.y, wheelDelta);
+    return CallNextHookEx(nullptr, nCode, wParam, lParam);
+}
+
 void sendVirtualKey(quint32 vk, bool isDown) {
     INPUT input{};
     input.type = INPUT_KEYBOARD;
@@ -261,11 +277,24 @@ void sendVirtualKey(quint32 vk, bool isDown) {
 #endif
 }  // namespace
 
-InputManager::InputManager(QObject *parent) : QObject(parent), m_running(false) {
+InputManager::InputManager(QObject *parent) : QObject(parent) {
 }
 
 InputManager::~InputManager() {
-    stop();
+    // Skip explicit Win32 cleanup (UnhookWindowsHookEx / UnregisterHotKey).
+    // The OS removes all hooks and registered hotkeys when the process exits,
+    // and doing it synchronously here causes noticeable shutdown lag because
+    // UnhookWindowsHookEx blocks until any in-progress hook callback finishes.
+    m_hotkeys.clear();
+    m_keyListeners.clear();
+    m_mouseListeners.clear();
+#ifdef Q_OS_WIN
+    g_inputManager = nullptr;
+#endif
+}
+
+QString InputManager::nextId() {
+    return QStringLiteral("im_%1").arg(++m_idCounter);
 }
 
 void InputManager::start() {
@@ -277,6 +306,7 @@ void InputManager::start() {
 #ifdef Q_OS_WIN
     g_inputManager = this;
     m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardHookProc, GetModuleHandle(nullptr), 0);
+    // Mouse hook is installed lazily in addMouseListener.
 #endif
     m_running = true;
 }
@@ -286,40 +316,43 @@ void InputManager::stop() {
         return;
     }
 
-    clearHotkeys();
+#ifdef Q_OS_WIN
+    for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
+        UnregisterHotKey(nullptr, it.value().nativeId);
+    }
+#endif
+    m_hotkeys.clear();
+    m_keyListeners.clear();
+    m_mouseListeners.clear();
+
     QCoreApplication::instance()->removeNativeEventFilter(this);
 #ifdef Q_OS_WIN
     if (m_keyboardHook) {
         UnhookWindowsHookEx(reinterpret_cast<HHOOK>(m_keyboardHook));
         m_keyboardHook = nullptr;
     }
+    // m_mouseHook is managed lazily; already removed when last listener was removed.
     g_inputManager = nullptr;
 #endif
     m_running = false;
 }
 
-bool InputManager::addHotkey(const QString &id, const QString &combo, bool suppressed) {
+QString InputManager::addHotkey(const QString &combo, std::function<void()> callback, bool suppressed) {
 #ifdef Q_OS_WIN
-    const QString hotkeyId = id.trimmed();
-
-    if (m_hotkeys.contains(hotkeyId)) {
-        removeHotkey(hotkeyId);
-    }
-
     quint32 registerModifiers = 0;
     quint32 vk = 0;
     quint32 requiredModifiers = 0;
     QList<quint32> requiredKeys;
 
     if (!parseHotkey(combo, registerModifiers, vk, requiredModifiers, requiredKeys)) {
-        return false;
+        return {};
     }
 
     start();
 
     const int minNativeId = 1;
     const int maxNativeId = 0xBFFF;
-    int nativeId = static_cast<int>(qHash(hotkeyId.toLower()) % maxNativeId);
+    int nativeId = static_cast<int>(qHash(combo.toLower()) % maxNativeId);
     if (nativeId < minNativeId) {
         nativeId = minNativeId;
     }
@@ -346,19 +379,29 @@ bool InputManager::addHotkey(const QString &id, const QString &combo, bool suppr
     }
 
     if (!registered) {
-        return false;
+        return {};
     }
 
+    const QString id = nextId();
     m_hotkeys.insert(
-        hotkeyId,
-        HotkeyEntry{nativeId, combo.toLower(), registerModifiers, vk, requiredModifiers, requiredKeys, suppressed}
+        id,
+        HotkeyEntry{
+            nativeId,
+            combo.toLower(),
+            registerModifiers,
+            vk,
+            requiredModifiers,
+            requiredKeys,
+            suppressed,
+            std::move(callback)
+        }
     );
-    return true;
+    return id;
 #else
-    Q_UNUSED(id)
     Q_UNUSED(combo)
+    Q_UNUSED(callback)
     Q_UNUSED(suppressed)
-    return false;
+    return {};
 #endif
 }
 
@@ -374,13 +417,37 @@ void InputManager::removeHotkey(const QString &id) {
 #endif
 }
 
-void InputManager::clearHotkeys() {
+QString InputManager::addKeyListener(std::function<void(const QString &, bool)> callback) {
+    start();
+    const QString id = nextId();
+    m_keyListeners.insert(id, KeyListenerEntry{std::move(callback)});
+    return id;
+}
+
+void InputManager::removeKeyListener(const QString &id) {
+    m_keyListeners.remove(id);
+}
+
+QString InputManager::addMouseListener(std::function<void(const MouseEvent &)> callback) {
+    start();
+    const QString id = nextId();
+    m_mouseListeners.insert(id, MouseListenerEntry{std::move(callback)});
 #ifdef Q_OS_WIN
-    for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
-        UnregisterHotKey(nullptr, it.value().nativeId);
+    if (!m_mouseHook) {
+        m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseHookProc, GetModuleHandle(nullptr), 0);
     }
 #endif
-    m_hotkeys.clear();
+    return id;
+}
+
+void InputManager::removeMouseListener(const QString &id) {
+    m_mouseListeners.remove(id);
+#ifdef Q_OS_WIN
+    if (m_mouseListeners.isEmpty() && m_mouseHook) {
+        UnhookWindowsHookEx(reinterpret_cast<HHOOK>(m_mouseHook));
+        m_mouseHook = nullptr;
+    }
+#endif
 }
 
 QStringList InputManager::availableKeys() const {
@@ -463,7 +530,9 @@ bool InputManager::nativeEventFilter(const QByteArray &eventType, void *message,
         }
     }
 
-    emit hotkeyTriggered(hotkey.combo);
+    if (hotkey.callback) {
+        hotkey.callback();
+    }
 
     if (hotkey.suppressed) {
         if (result) {
@@ -563,10 +632,13 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode) {
         return false;
     }
 
-    if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-        emit keyPressed(key);
-    } else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) {
-        emit keyReleased(key);
+    if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_SYSKEYUP) {
+        const bool pressed = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
+        // Copy map to allow listeners to safely add/remove listeners inside the callback.
+        const auto listeners = m_keyListeners;
+        for (const auto &entry : listeners) {
+            entry.callback(key, pressed);
+        }
     }
 
     return false;
@@ -575,4 +647,54 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode) {
     Q_UNUSED(vkCode)
     return false;
 #endif
+}
+
+void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wheelDelta) {
+    if (m_mouseListeners.isEmpty()) {
+        return;
+    }
+
+    MouseEvent evt;
+    evt.globalPos = QPoint(static_cast<int>(x), static_cast<int>(y));
+    evt.wheelDelta = wheelDelta;
+
+#ifdef Q_OS_WIN
+    switch (wParam) {
+        case WM_MOUSEMOVE:
+            evt.type = MouseEvent::Type::Move;
+            break;
+        case WM_LBUTTONDOWN:
+            evt.type = MouseEvent::Type::LeftDown;
+            break;
+        case WM_LBUTTONUP:
+            evt.type = MouseEvent::Type::LeftUp;
+            break;
+        case WM_RBUTTONDOWN:
+            evt.type = MouseEvent::Type::RightDown;
+            break;
+        case WM_RBUTTONUP:
+            evt.type = MouseEvent::Type::RightUp;
+            break;
+        case WM_MBUTTONDOWN:
+            evt.type = MouseEvent::Type::MiddleDown;
+            break;
+        case WM_MBUTTONUP:
+            evt.type = MouseEvent::Type::MiddleUp;
+            break;
+        case WM_MOUSEWHEEL:
+            evt.type = (wheelDelta >= 0) ? MouseEvent::Type::WheelUp : MouseEvent::Type::WheelDown;
+            break;
+        default:
+            return;
+    }
+#else
+    Q_UNUSED(wParam)
+    return;
+#endif
+
+    // Copy map to allow listeners to safely add/remove listeners inside the callback.
+    const auto listeners = m_mouseListeners;
+    for (const auto &entry : listeners) {
+        entry.callback(evt);
+    }
 }

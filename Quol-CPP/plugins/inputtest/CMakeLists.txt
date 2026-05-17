@@ -1,7 +1,6 @@
 add_library(inputtest_plugin MODULE
     InputTest.cpp
     InputTest.hpp
-    ${CMAKE_SOURCE_DIR}/src/core/InputManager.cpp
 )
 
 target_include_directories(inputtest_plugin PRIVATE
@@ -9,7 +8,7 @@ target_include_directories(inputtest_plugin PRIVATE
     ${CMAKE_SOURCE_DIR}
 )
 
-target_link_libraries(inputtest_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(inputtest_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets quol_core)
 
 set_target_properties(inputtest_plugin PROPERTIES
     PREFIX ""

@@ -198,7 +198,9 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
     }
 
     QFile file(m_pluginConfigPath);
-    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
 

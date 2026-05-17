@@ -82,8 +82,8 @@ QWidget *Chat::createWidget(QWidget *parent) {
     return m_widget;
 }
 
-void Chat::initialize(const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig) {
-    Q_UNUSED(appSettings)
+void Chat::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
+    Q_UNUSED(services)
     m_pluginRootPath = pluginRootPath;
     m_pluginConfig = pluginConfig;
 

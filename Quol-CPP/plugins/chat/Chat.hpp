@@ -27,9 +27,7 @@ class Chat final : public QObject, public IQuolPlugin {
 public:
     QWidget *createWidget(QWidget *parent = nullptr) override;
 
-    void initialize(
-        const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
-    ) override;
+    void initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) override;
     void onUpdateConfig(const QJsonObject &pluginConfig) override;
     void shutdown() override;
 

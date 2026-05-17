@@ -45,11 +45,9 @@ QWidget *Example::createWidget(QWidget *parent) {
     return widget;
 }
 
-void Example::initialize(
-    const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
-) {
+void Example::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
+    Q_UNUSED(services)
     m_pluginRootPath = pluginRootPath;
-    m_appSettings = appSettings;
     m_pluginConfig = pluginConfig;
     refreshLabels();
 }

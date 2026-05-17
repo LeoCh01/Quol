@@ -10,8 +10,6 @@ class QLabel;
 class QPushButton;
 class QTimer;
 
-class InputManager;
-
 class ColorPicker final : public QObject, public IQuolPlugin {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID IQuolPlugin_iid)
@@ -20,9 +18,7 @@ class ColorPicker final : public QObject, public IQuolPlugin {
 public:
     QWidget *createWidget(QWidget *parent = nullptr) override;
 
-    void initialize(
-        const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
-    ) override;
+    void initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) override;
     void onUpdateConfig(const QJsonObject &pluginConfig) override;
     void shutdown() override;
 
@@ -38,14 +34,13 @@ private:
 
     QString m_pluginRootPath;
     QJsonObject m_pluginConfig;
-    QString m_escapeHotkeyId = "plugin.colorPicker.escape";
+    QuolServices *m_services = nullptr;
+    QString m_escapeHotkeyId;  // handle returned by InputManager::addHotkey
     int m_sampleSize = kDefaultSampleSize;
 
     QWidget *m_widget = nullptr;
     qreal m_sf = 1.0;
     bool m_picking = false;
-
-    InputManager *m_inputManager = nullptr;
 
     QGridLayout *m_gridLayout = nullptr;
     QLabel *m_previewLabel = nullptr;

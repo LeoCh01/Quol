@@ -12,7 +12,9 @@ AppSettingsManager::AppSettingsManager(QString settingsPath, QObject *parent)
 
 bool AppSettingsManager::load() {
     QFile file(m_settingsPath);
-    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
     const auto doc = QJsonDocument::fromJson(file.readAll());
     file.close();
     m_data = doc.object();
@@ -21,7 +23,9 @@ bool AppSettingsManager::load() {
 
 bool AppSettingsManager::save() const {
     QFile file(m_settingsPath);
-    bool opened = file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+        return false;
+    }
     const QJsonDocument doc(m_data);
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
@@ -70,7 +74,7 @@ void AppSettingsManager::setWindowGeometry(const QString &configKey, int x, int 
 }
 
 QString AppSettingsManager::settingString(const QString &key, const QString &defaultValue) const {
-    const QString text = m_data.value(key).toVariant().toString().trimmed();
+    const QString text = m_data.value(key).toString().trimmed();
     return text.isEmpty() ? defaultValue : text;
 }
 

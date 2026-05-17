@@ -1,8 +1,8 @@
 #include "plugins/inputTest/InputTest.hpp"
 
 #include "core/InputManager.hpp"
+#include "plugin_api/QuolServices.hpp"
 
-#include <QJsonArray>
 #include <QJsonObject>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -21,53 +21,70 @@ QWidget *InputTest::createWidget(QWidget *parent) {
     layout->addWidget(m_pressedLabel);
     layout->addWidget(m_releasedLabel);
     layout->addWidget(m_triggeredLabel);
-    m_inputManager = new InputManager(widget);
-
-    QObject::connect(m_inputManager, &InputManager::keyPressed, widget, [this](const QString &key) {
-        m_pressedLabel->setText(QString("Key down: %1").arg(key));
-    });
-
-    QObject::connect(m_inputManager, &InputManager::keyReleased, widget, [this](const QString &key) {
-        m_releasedLabel->setText(QString("Key up: %1").arg(key));
-    });
-
-    QObject::connect(m_inputManager, &InputManager::hotkeyTriggered, widget, [this](const QString &combo) {
-        m_triggeredLabel->setText(QString("Triggered: %1").arg(combo));
-    });
-
-    applyHotkeyFromConfig();
 
     return widget;
 }
 
-void InputTest::initialize(
-    const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
-) {
+void InputTest::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
     m_pluginRootPath = pluginRootPath;
-    m_appSettings = appSettings;
     m_pluginConfig = pluginConfig;
-}
+    m_services = services;
 
-void InputTest::onUpdateConfig(const QJsonObject &pluginConfig) {
-    m_pluginConfig = pluginConfig;
+    if (m_services && m_services->inputManager()) {
+        m_keyListenId = m_services->inputManager()->addKeyListener([this](const QString &key, bool pressed) {
+            if (pressed) {
+                if (m_pressedLabel)
+                    m_pressedLabel->setText(QStringLiteral("Key down: ") + key);
+            } else {
+                if (m_releasedLabel)
+                    m_releasedLabel->setText(QStringLiteral("Key up: ") + key);
+            }
+        });
+    }
 
     applyHotkeyFromConfig();
 }
 
+void InputTest::onUpdateConfig(const QJsonObject &pluginConfig) {
+    m_pluginConfig = pluginConfig;
+    applyHotkeyFromConfig();
+}
+
 void InputTest::shutdown() {
-    if (m_inputManager) {
-        m_inputManager->removeHotkey(m_hotkeyId);
+    if (m_services && m_services->inputManager()) {
+        if (!m_hotkeyId.isEmpty()) {
+            m_services->inputManager()->removeHotkey(m_hotkeyId);
+            m_hotkeyId.clear();
+        }
+        if (!m_keyListenId.isEmpty()) {
+            m_services->inputManager()->removeKeyListener(m_keyListenId);
+            m_keyListenId.clear();
+        }
     }
 }
 
 void InputTest::applyHotkeyFromConfig() {
-    if (!m_inputManager) {
+    if (!m_services || !m_services->inputManager()) {
         return;
     }
 
-    const QString combo = m_pluginConfig.value("send_combo").toVariant().toString().trimmed().toLower();
+    const QString combo = m_pluginConfig.value("send_combo").toString().trimmed().toLower();
 
-    m_inputManager->removeHotkey(m_hotkeyId);
+    if (!m_hotkeyId.isEmpty()) {
+        m_services->inputManager()->removeHotkey(m_hotkeyId);
+        m_hotkeyId.clear();
+    }
 
-    const bool ok = m_inputManager->addHotkey(m_hotkeyId, combo, true);
+    if (combo.isEmpty()) {
+        return;
+    }
+
+    m_hotkeyId = m_services->inputManager()->addHotkey(
+        combo,
+        [this, combo]() {
+            if (m_triggeredLabel)
+                m_triggeredLabel->setText(QStringLiteral("Triggered: ") + combo);
+        },
+        true
+    );
 }

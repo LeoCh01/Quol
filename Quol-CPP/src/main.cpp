@@ -5,6 +5,7 @@
 #include "core/AppSettingsManager.hpp"
 #include "core/InputManager.hpp"
 #include "core/PluginManager.hpp"
+#include "plugin_api/QuolServices.hpp"
 #include "ui/QuolMainWindow.hpp"
 #include "ui/TransitionManager.hpp"
 
@@ -35,25 +36,25 @@ int main(int argc, char *argv[]) {
     mainWindow.show();
 
     // Plugin windows
+    InputManager inputManager;
+    QuolServices services(&inputManager);
     PluginManager pluginManager;
-    pluginManager.loadPlugins(&settings, &transitions);
+    pluginManager.loadPlugins(&settings, &transitions, &services);
     for (auto *win : pluginManager.windows())
         win->show();
 
     // Global hotkey
-    InputManager inputManager;
     inputManager.start();
 
-    const QString mainHotkeyId = "main.toggle";
     QString activeToggleKey = settings.settingString("toggle_key").toLower();
-    bool hotkeyRegistered = inputManager.addHotkey(mainHotkeyId, activeToggleKey, true);
-
-    QObject::connect(&inputManager, &InputManager::hotkeyTriggered, [&](const QString &combo) {
-        if (combo == activeToggleKey) {
+    QString mainHotkeyId = inputManager.addHotkey(
+        activeToggleKey,
+        [&]() {
             transitions.toggleAll();
             mainWindow.updateToggleButton();
-        }
-    });
+        },
+        true
+    );
 
     QObject::connect(
         &mainWindow,
@@ -61,12 +62,19 @@ int main(int argc, char *argv[]) {
         [&](const QString &toggleKey, bool resetPos, const QString &transitionType) {
             const QString nextToggleKey = toggleKey.toLower();
             if (nextToggleKey != activeToggleKey) {
-                if (hotkeyRegistered) {
+                if (!mainHotkeyId.isEmpty()) {
                     inputManager.removeHotkey(mainHotkeyId);
                 }
 
-                hotkeyRegistered = inputManager.addHotkey(mainHotkeyId, nextToggleKey, true);
-                if (hotkeyRegistered) {
+                mainHotkeyId = inputManager.addHotkey(
+                    nextToggleKey,
+                    [&]() {
+                        transitions.toggleAll();
+                        mainWindow.updateToggleButton();
+                    },
+                    true
+                );
+                if (!mainHotkeyId.isEmpty()) {
                     activeToggleKey = nextToggleKey;
                 }
             }
@@ -84,7 +92,7 @@ int main(int argc, char *argv[]) {
 
     const int exitCode = app.exec();
 
-    if (hotkeyRegistered)
+    if (!mainHotkeyId.isEmpty())
         inputManager.removeHotkey(mainHotkeyId);
 
     return exitCode;

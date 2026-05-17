@@ -11,11 +11,21 @@ set(CMAKE_AUTOMOC_COMPILER_PREDEFINES OFF)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 
+add_library(quol_core STATIC
+    src/core/InputManager.cpp
+    src/core/InputManager.hpp
+)
+
+target_include_directories(quol_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
+
 add_executable(Quol WIN32
     src/main.cpp
     src/core/AppSettingsManager.cpp
     src/core/PluginManager.cpp
-    src/core/InputManager.cpp
     src/ui/ConfigWindow.cpp
     src/ui/QuolWindow.cpp
     src/ui/TitleBar.cpp
@@ -28,7 +38,7 @@ target_include_directories(Quol PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets quol_core)
 
 # Build plugins
 add_subdirectory(plugins/example)

@@ -4,7 +4,6 @@
 
 #include <QObject>
 
-class InputManager;
 class QLabel;
 
 class InputTest final : public QObject, public IQuolPlugin {
@@ -15,9 +14,7 @@ class InputTest final : public QObject, public IQuolPlugin {
 public:
     QWidget *createWidget(QWidget *parent = nullptr) override;
 
-    void initialize(
-        const QString &pluginRootPath, const QJsonObject &appSettings, const QJsonObject &pluginConfig
-    ) override;
+    void initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) override;
     void onUpdateConfig(const QJsonObject &pluginConfig) override;
     void shutdown() override;
 
@@ -25,11 +22,11 @@ private:
     void applyHotkeyFromConfig();
 
     QString m_pluginRootPath;
-    QJsonObject m_appSettings;
     QJsonObject m_pluginConfig;
-    QString m_hotkeyId = "plugin.inputtest.hotkey";
+    QuolServices *m_services = nullptr;
 
-    InputManager *m_inputManager = nullptr;
+    QString m_hotkeyId;     // handle returned by InputManager::addHotkey
+    QString m_keyListenId;  // handle returned by InputManager::addKeyListener
 
     QLabel *m_pressedLabel = nullptr;
     QLabel *m_releasedLabel = nullptr;

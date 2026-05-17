@@ -48,7 +48,7 @@ void TransitionManager::hideAll() {
     }
 
     for (QWidget *w : m_windows) {
-        if (m_type == "rand" || m_type == "random")
+        if (m_type == "rand")
             randHide(w, randomTarget(w));
         else if (m_type == "fade")
             fadeHide(w);
@@ -60,7 +60,7 @@ void TransitionManager::hideAll() {
 void TransitionManager::showAll() {
     for (int i = 0; i < m_windows.size(); ++i) {
         QWidget *w = m_windows[i];
-        if (m_type == "rand" || m_type == "random")
+        if (m_type == "rand")
             randShow(w, m_savedPositions[i]);
         else if (m_type == "fade")
             fadeShow(w);
