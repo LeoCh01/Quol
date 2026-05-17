@@ -1,6 +1,6 @@
 {
   "_": {
-    "default_geometry": [200, 150, 150, 0],
+    "default_geometry": [220, 140, 160, 0],
     "name": "Chance",
     "version": "1.0.0",
     "description": "Coin flip and dice roll"

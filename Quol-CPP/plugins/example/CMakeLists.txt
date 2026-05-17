@@ -9,11 +9,12 @@ target_include_directories(example_plugin PRIVATE
     ${CMAKE_SOURCE_DIR}
 )
 
-target_link_libraries(example_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(example_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets quol_core)
 
 set_target_properties(example_plugin PROPERTIES
     PREFIX ""
     OUTPUT_NAME "example"
+    AUTOMOC_COMPILER_PREDEFINES OFF
 )
 
 add_custom_command(TARGET example_plugin POST_BUILD

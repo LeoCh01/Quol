@@ -20,9 +20,15 @@ public:
 
 private:
     void refreshLabels();
+    void applyHotkeyFromConfig();
 
     QString m_pluginRootPath;
     QJsonObject m_pluginConfig;
+    QuolServices *m_services = nullptr;
+
+    QString m_hotkeyId;
+    QString m_keyListenId;
+
     QLabel *m_titleLabel = nullptr;
     QLabel *m_valueLabel = nullptr;
     QLabel *m_nestedNoteLabel = nullptr;
@@ -30,4 +36,7 @@ private:
     QLabel *m_nestedModeLabel = nullptr;
     QLabel *m_nestedInnerLabelLabel = nullptr;
     QLabel *m_nestedInnerChoiceLabel = nullptr;
+    QLabel *m_pressedLabel = nullptr;
+    QLabel *m_releasedLabel = nullptr;
+    QLabel *m_triggeredLabel = nullptr;
 };

@@ -42,7 +42,6 @@ target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets quol_core)
 
 # Build plugins
 add_subdirectory(plugins/example)
-add_subdirectory(plugins/inputTest)
 add_subdirectory(plugins/chance)
 add_subdirectory(plugins/colorPicker)
 add_subdirectory(plugins/chat)

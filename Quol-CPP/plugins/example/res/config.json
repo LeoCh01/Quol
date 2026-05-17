@@ -6,6 +6,7 @@
     "description": "Example Quol C++ plugin"
   },
   "sss": "hello",
+  "send_combo": "ctrl+a",
   "a": 3,
   "b": 64,
   "op": [["+", "-", "*", "/"], 0],

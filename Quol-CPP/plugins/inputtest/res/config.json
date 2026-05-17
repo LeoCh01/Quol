@@ -1,8 +1,0 @@
-{
-  "_": {
-    "default_geometry": [620, 230, 320, 0],
-    "name": "Input Test",
-    "version": "1.0.0"
-  },
-  "send_combo": "ctrl+a"
-}

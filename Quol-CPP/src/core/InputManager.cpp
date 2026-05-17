@@ -95,13 +95,13 @@ const QHash<QString, quint32> &keyMap() {
     return map;
 }
 
-bool tokenToVirtualKey(const QString &key, quint32 &vk, bool &isModifierToken) {
+bool tokenToVK(const QString &key, quint32 &vk, bool &isModifierToken) {
     isModifierToken = modifierFlagMap().contains(key);
     vk = keyMap().value(key, 0);
     return vk != 0;
 }
 
-QString tokenFromVirtualKey(quint32 vk) {
+QString VKToToken(quint32 vk) {
 #ifdef Q_OS_WIN
     if (vk >= 'A' && vk <= 'Z') {
         return QString(QChar(static_cast<ushort>(vk))).toLower();
@@ -192,29 +192,17 @@ QStringList splitCombo(const QString &combo) {
 
 bool isModifierDown(quint32 modifier) {
 #ifdef Q_OS_WIN
-    if (modifier & MOD_CONTROL) {
-        if (!(GetAsyncKeyState(VK_CONTROL) & 0x8000)) {
-            return false;
-        }
-    }
+    if ((modifier & MOD_CONTROL) && !(GetAsyncKeyState(VK_CONTROL) & 0x8000))
+        return false;
 
-    if (modifier & MOD_SHIFT) {
-        if (!(GetAsyncKeyState(VK_SHIFT) & 0x8000)) {
-            return false;
-        }
-    }
+    if ((modifier & MOD_SHIFT) && !(GetAsyncKeyState(VK_SHIFT) & 0x8000))
+        return false;
 
-    if (modifier & MOD_ALT) {
-        if (!(GetAsyncKeyState(VK_MENU) & 0x8000)) {
-            return false;
-        }
-    }
+    if ((modifier & MOD_ALT) && !(GetAsyncKeyState(VK_MENU) & 0x8000))
+        return false;
 
-    if (modifier & MOD_WIN) {
-        if (!((GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000))) {
-            return false;
-        }
-    }
+    if ((modifier & MOD_WIN) && !((GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000)))
+        return false;
 
     return true;
 #else
@@ -468,9 +456,8 @@ void InputManager::sendPress(const QString &combo) {
     for (const QString &token : keys) {
         quint32 vk = 0;
         bool isModifier = false;
-        if (tokenToVirtualKey(token, vk, isModifier)) {
+        if (tokenToVK(token, vk, isModifier))
             sendVirtualKey(vk, true);
-        }
     }
     m_sendEvent = false;
 #else
@@ -485,9 +472,8 @@ void InputManager::sendRelease(const QString &combo) {
     for (int i = keys.size() - 1; i >= 0; --i) {
         quint32 vk = 0;
         bool isModifier = false;
-        if (tokenToVirtualKey(keys.at(i), vk, isModifier)) {
+        if (tokenToVK(keys.at(i), vk, isModifier))
             sendVirtualKey(vk, false);
-        }
     }
     m_sendEvent = false;
 #else
@@ -558,14 +544,7 @@ bool InputManager::parseHotkey(
     QList<quint32> &requiredKeys
 ) const {
 #ifdef Q_OS_WIN
-    const QStringList rawParts = combo.toLower().split('+', Qt::SkipEmptyParts);
-    QStringList parts;
-    for (const QString &token : rawParts) {
-        const QString key = token.trimmed();
-        if (!key.isEmpty()) {
-            parts.append(key);
-        }
-    }
+    const QStringList parts = splitCombo(combo);
 
     if (parts.isEmpty()) {
         return false;
@@ -580,7 +559,7 @@ bool InputManager::parseHotkey(
 
     quint32 triggerVk = 0;
     bool triggerIsModifier = false;
-    if (!tokenToVirtualKey(parts.at(triggerIndex), triggerVk, triggerIsModifier)) {
+    if (!tokenToVK(parts.at(triggerIndex), triggerVk, triggerIsModifier)) {
         return false;
     }
     vk = triggerVk;
@@ -588,7 +567,7 @@ bool InputManager::parseHotkey(
     for (int i = 0; i < triggerIndex; ++i) {
         quint32 tokenVk = 0;
         bool isModifierToken = false;
-        if (!tokenToVirtualKey(parts.at(i), tokenVk, isModifierToken)) {
+        if (!tokenToVK(parts.at(i), tokenVk, isModifierToken)) {
             return false;
         }
 
@@ -627,18 +606,18 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode) {
         return false;
     }
 
-    const QString key = tokenFromVirtualKey(vkCode).toLower();
+    const QString key = VKToToken(vkCode).toLower();
     if (key.isEmpty()) {
         return false;
     }
 
-    if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_SYSKEYUP) {
+    const bool isKeyMessage =
+        (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_SYSKEYUP);
+    if (isKeyMessage) {
         const bool pressed = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
-        // Copy map to allow listeners to safely add/remove listeners inside the callback.
         const auto listeners = m_keyListeners;
-        for (const auto &entry : listeners) {
+        for (const auto &entry : listeners)
             entry.callback(key, pressed);
-        }
     }
 
     return false;
