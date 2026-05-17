@@ -48,7 +48,7 @@ QWidget *ColorPicker::createWidget(QWidget *parent) {
     m_pickButton = new QPushButton(m_widget);
     m_pickButton->setCheckable(true);
     if (!m_pluginRootPath.isEmpty()) {
-        m_pickButton->setIcon(QIcon(m_pluginRootPath + "/res/img/pick.svg"));
+        m_pickButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/pick.svg")));
     }
     m_gridLayout->addWidget(m_pickButton, 2, 1);
 
@@ -67,13 +67,13 @@ QWidget *ColorPicker::createWidget(QWidget *parent) {
 }
 
 // ---------------------------------------------------------------------------
-void ColorPicker::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
+void ColorPicker::initialize(const QString &pluginRootPath, const PluginConfig &pluginConfig, QuolServices *services) {
     m_pluginRootPath = pluginRootPath;
-    m_pluginConfig = pluginConfig;
+    m_cfg = pluginConfig;
     m_services = services;
 
     if (m_pickButton && !pluginRootPath.isEmpty())
-        m_pickButton->setIcon(QIcon(pluginRootPath + "/res/img/pick.svg"));
+        m_pickButton->setIcon(QIcon(pluginRootPath + QStringLiteral("/res/img/pick.svg")));
 
     if (QScreen *screen = QGuiApplication::primaryScreen())
         m_sf = screen->devicePixelRatio();
@@ -81,8 +81,8 @@ void ColorPicker::initialize(const QString &pluginRootPath, const QJsonObject &p
     applyVisualConfig();
 }
 
-void ColorPicker::onUpdateConfig(const QJsonObject &pluginConfig) {
-    m_pluginConfig = pluginConfig;
+void ColorPicker::onUpdateConfig(const PluginConfig &pluginConfig) {
+    m_cfg = pluginConfig;
     applyVisualConfig();
     updateColor();
 }
@@ -98,7 +98,7 @@ void ColorPicker::shutdown() {
 }
 
 void ColorPicker::applyVisualConfig() {
-    int sampleSize = m_pluginConfig.value("sample_size").toInt(kDefaultSampleSize);
+    int sampleSize = m_cfg.get("sample_size", kDefaultSampleSize).toInt(kDefaultSampleSize);
     sampleSize = std::clamp(sampleSize, 1, 31);
     if ((sampleSize % 2) == 0)
         sampleSize += 1;
@@ -157,7 +157,7 @@ void ColorPicker::stopPicking() {
     if (m_pickButton) {
         m_pickButton->setText(QString{});
         if (!m_pluginRootPath.isEmpty())
-            m_pickButton->setIcon(QIcon(m_pluginRootPath + "/res/img/pick.svg"));
+            m_pickButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/pick.svg")));
         m_pickButton->setStyleSheet(QString{});
         m_pickButton->setChecked(false);
     }

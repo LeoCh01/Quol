@@ -19,9 +19,9 @@
 // IQuolPlugin lifecycle
 // ---------------------------------------------------------------------------
 
-void Draw::initialize(const QString &rootPath, const QJsonObject &config, QuolServices *services) {
+void Draw::initialize(const QString &rootPath, const PluginConfig &pluginConfig, QuolServices *services) {
     m_pluginRootPath = rootPath;
-    m_pluginConfig = config;
+    m_cfg = pluginConfig;
     m_services = services;
 
     m_drawIcon = QIcon(rootPath + "/res/img/draw.svg");
@@ -60,13 +60,13 @@ QWidget *Draw::createWidget(QWidget *parent) {
     btnRow->setSpacing(4);
 
     m_clearButton = new QPushButton(m_widget);
-    m_clearButton->setIcon(QIcon(m_pluginRootPath + "/res/img/clear.svg"));
-    m_clearButton->setToolTip("Clear canvas");
+    m_clearButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/clear.svg")));
+    m_clearButton->setToolTip(QStringLiteral("Clear canvas"));
     connect(m_clearButton, &QPushButton::clicked, m_overlay, &DrawOverlay::clearCanvas);
 
     m_startButton = new QPushButton(m_widget);
     m_startButton->setIcon(m_drawIcon);
-    m_startButton->setToolTip("Start / stop drawing");
+    m_startButton->setToolTip(QStringLiteral("Start / stop drawing"));
     connect(m_startButton, &QPushButton::clicked, this, &Draw::toggleDrawing);
 
     btnRow->addWidget(m_clearButton);
@@ -75,9 +75,9 @@ QWidget *Draw::createWidget(QWidget *parent) {
 
     // Hex input (right side)
     m_hexInput = new QLineEdit(m_widget);
-    m_hexInput->setPlaceholderText("#RRGGBB");
+    m_hexInput->setPlaceholderText(QStringLiteral("#RRGGBB"));
     m_hexInput->setMaxLength(7);
-    m_hexInput->setToolTip("Hex colour");
+    m_hexInput->setToolTip(QStringLiteral("Hex colour"));
     connect(m_hexInput, &QLineEdit::editingFinished, this, &Draw::onHexInputChanged);
     controlCol->addWidget(m_hexInput);
 
@@ -112,8 +112,8 @@ QWidget *Draw::createWidget(QWidget *parent) {
     return m_widget;
 }
 
-void Draw::onUpdateConfig(const QJsonObject &config) {
-    m_pluginConfig = config;
+void Draw::onUpdateConfig(const PluginConfig &pluginConfig) {
+    m_cfg = pluginConfig;
     applyHotkeys();
 }
 
@@ -157,7 +157,7 @@ void Draw::applyHotkeys() {
         im->removeHotkey(m_toggleHotkeyId);
         m_toggleHotkeyId.clear();
     }
-    const QString toggleCombo = m_pluginConfig.value("draw_toggle").toString("ctrl+shift+d").trimmed().toLower();
+    const QString toggleCombo = m_cfg.get(QStringLiteral("draw_toggle")).toString().trimmed().toLower();
     if (!toggleCombo.isEmpty())
         m_toggleHotkeyId = im->addHotkey(toggleCombo, [this]() { toggleDrawing(); }, true);
 
@@ -174,7 +174,7 @@ void Draw::toggleDrawing() {
 
         // Register undo hotkey while drawing
         if (m_services && m_undoHotkeyId.isEmpty()) {
-            const QString undoCombo = m_pluginConfig.value("undo").toString("ctrl+z").trimmed().toLower();
+            const QString undoCombo = m_cfg.get(QStringLiteral("undo")).toString().trimmed().toLower();
             if (!undoCombo.isEmpty())
                 m_undoHotkeyId = m_services->inputManager()->addHotkey(
                     undoCombo,

@@ -44,13 +44,13 @@ QVariantList AppSettingsManager::windowGeometry(
     const QString &configKey, int defaultX, int defaultY, int defaultWidth, int defaultHeight
 ) {
     QJsonObject pluginConfig = ensurePluginConfig(configKey);
-    QJsonObject meta = pluginConfig.value("_").toObject();
-    QJsonArray geometry = meta.value("geometry").toArray();
+    QJsonObject meta = pluginConfig.value(QStringLiteral("_")).toObject();
+    QJsonArray geometry = meta.value(QStringLiteral("geometry")).toArray();
 
     if (geometry.size() < 4) {
         geometry = QJsonArray{defaultX, defaultY, defaultWidth, defaultHeight};
-        meta.insert("geometry", geometry);
-        pluginConfig.insert("_", meta);
+        meta.insert(QStringLiteral("geometry"), geometry);
+        pluginConfig.insert(QStringLiteral("_"), meta);
         setPluginConfig(configKey, pluginConfig);
         save();
     }
@@ -65,9 +65,9 @@ QVariantList AppSettingsManager::windowGeometry(
 
 void AppSettingsManager::setWindowGeometry(const QString &configKey, int x, int y, int width, int height) {
     QJsonObject pluginConfig = ensurePluginConfig(configKey);
-    QJsonObject meta = pluginConfig.value("_").toObject();
-    meta.insert("geometry", QJsonArray{x, y, width, height});
-    pluginConfig.insert("_", meta);
+    QJsonObject meta = pluginConfig.value(QStringLiteral("_")).toObject();
+    meta.insert(QStringLiteral("geometry"), QJsonArray{x, y, width, height});
+    pluginConfig.insert(QStringLiteral("_"), meta);
 
     setPluginConfig(configKey, pluginConfig);
     save();
@@ -79,12 +79,12 @@ QString AppSettingsManager::settingString(const QString &key, const QString &def
 }
 
 QJsonObject AppSettingsManager::ensurePluginConfig(const QString &configKey) {
-    const QJsonObject configs = m_data.value("configs").toObject();
+    const QJsonObject configs = m_data.value(QStringLiteral("configs")).toObject();
     return configs.value(configKey).toObject();
 }
 
 void AppSettingsManager::setPluginConfig(const QString &configKey, const QJsonObject &pluginConfig) {
-    QJsonObject configs = m_data.value("configs").toObject();
+    QJsonObject configs = m_data.value(QStringLiteral("configs")).toObject();
     configs.insert(configKey, pluginConfig);
-    m_data.insert("configs", configs);
+    m_data.insert(QStringLiteral("configs"), configs);
 }

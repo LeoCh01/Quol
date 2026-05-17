@@ -18,26 +18,26 @@ ProviderRequest buildRequest(
     req.providerName = QStringLiteral("ollama");
     req.url = QUrl(QStringLiteral("http://localhost:11434/api/chat"));
 
-    req.payload.insert("model", config.model);
-    req.payload.insert("stream", false);
+    req.payload.insert(QStringLiteral("model"), config.model);
+    req.payload.insert(QStringLiteral("stream"), false);
 
     QJsonObject user;
-    user.insert("role", "user");
-    user.insert("content", prompt);
+    user.insert(QStringLiteral("role"), QStringLiteral("user"));
+    user.insert(QStringLiteral("content"), prompt);
     if (!imageBase64.isEmpty()) {
         QJsonArray images;
         images.append(imageBase64);
-        user.insert("images", images);
+        user.insert(QStringLiteral("images"), images);
     }
 
     QJsonArray messages;
     messages.append(user);
-    req.payload.insert("messages", messages);
+    req.payload.insert(QStringLiteral("messages"), messages);
     return req;
 }
 
 QString parseResponse(const QJsonObject &response) {
-    return response.value("message").toObject().value("content").toString();
+    return response.value(QStringLiteral("message")).toObject().value(QStringLiteral("content")).toString();
 }
 
 }  // namespace chat::providers::ollama

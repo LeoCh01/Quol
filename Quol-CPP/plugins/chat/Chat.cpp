@@ -37,12 +37,12 @@ QString markdownToHtmlFragment(const QString &markdown) {
     const QString html = doc.toHtml();
     const int bodyStart = html.indexOf(QStringLiteral("<body"));
     if (bodyStart < 0)
-        return markdown.toHtmlEscaped().replace("\n", "<br/>");
+        return markdown.toHtmlEscaped().replace(QStringLiteral("\n"), QStringLiteral("<br/>"));
 
     const int start = html.indexOf('>', bodyStart);
     const int end = html.lastIndexOf(QStringLiteral("</body>"));
     if (start < 0 || end <= start)
-        return markdown.toHtmlEscaped().replace("\n", "<br/>");
+        return markdown.toHtmlEscaped().replace(QStringLiteral("\n"), QStringLiteral("<br/>"));
 
     return html.mid(start + 1, end - start - 1).trimmed();
 }
@@ -112,16 +112,16 @@ QWidget *Chat::createWidget(QWidget *parent) {
     return m_widget;
 }
 
-void Chat::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
+void Chat::initialize(const QString &pluginRootPath, const PluginConfig &pluginConfig, QuolServices *services) {
     m_pluginRootPath = pluginRootPath;
-    m_pluginConfig = pluginConfig;
+    m_cfg = pluginConfig;
     m_services = services;
 
     applyConfig();
 }
 
-void Chat::onUpdateConfig(const QJsonObject &pluginConfig) {
-    m_pluginConfig = pluginConfig;
+void Chat::onUpdateConfig(const PluginConfig &pluginConfig) {
+    m_cfg = pluginConfig;
     applyConfig();
 }
 
@@ -152,7 +152,7 @@ void Chat::shutdown() {
 }
 
 void Chat::applyConfig() {
-    const auto parsed = chat::config::parse(m_pluginConfig);
+    const auto parsed = chat::config::parse(m_cfg.root());
 
     m_providers = parsed.providers;
     m_providerIndex = parsed.providerIndex;
@@ -176,25 +176,36 @@ void Chat::applyButtonIcons() {
 
     // check issue later
     if (m_cycleButton)
-        m_cycleButton->setIcon(QIcon(m_pluginRootPath + "/res/img/cycle.svg"));
+        m_cycleButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/cycle.svg")));
     if (m_clearButton)
-        m_clearButton->setIcon(QIcon(m_pluginRootPath + "/res/img/clear.svg"));
+        m_clearButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/clear.svg")));
     if (m_includeImageButton)
-        m_includeImageButton->setIcon(QIcon(m_pluginRootPath + "/res/img/img.svg"));
+        m_includeImageButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/img.svg")));
     if (m_snipButton)
-        m_snipButton->setIcon(QIcon(m_pluginRootPath + "/res/img/snip.svg"));
+        m_snipButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/snip.svg")));
 }
 
 void Chat::cycleProvider() {
     if (m_providers.isEmpty())
         return;
     m_providerIndex = (m_providerIndex + 1) % m_providers.size();
+
+    m_cfg.set(QStringLiteral("_.provider_index"), m_providerIndex);
+    m_cfg.save();
+
     updatePromptPlaceholder();
 }
 
 void Chat::clearMessage() {
     if (m_promptEdit)
         m_promptEdit->clear();
+
+    m_history.clear();
+
+    if (m_outputWindow) {
+        m_outputWindow->close();
+        // m_outputWindow is nulled by the destroyed signal connection
+    }
 }
 
 void Chat::updateIncludeImageUi() {
@@ -376,7 +387,7 @@ QString Chat::applyCommandTemplate(const QString &rawPrompt) const {
 
     QString result = m_commands.value(cmd);
     for (int i = 1; i < tokens.size(); ++i) {
-        result.replace(QString("{%1}").arg(i - 1), tokens.at(i));
+        result.replace(QString(QStringLiteral("{%1}")).arg(i - 1), tokens.at(i));
     }
 
     QRegularExpression optionalExpr(R"(\{(\d+):([^}]+)\})");
@@ -470,14 +481,14 @@ void Chat::onRequestFinished() {
 
     if (doc.isObject()) {
         const QJsonObject obj = doc.object();
-        if (obj.contains("error")) {
-            answer = obj.value("error").toObject().value("message").toString();
+        if (obj.contains(QStringLiteral("error"))) {
+            answer = obj.value(QStringLiteral("error")).toObject().value(QStringLiteral("message")).toString();
             if (answer.isEmpty())
                 answer = QStringLiteral("Unknown provider error");
             answer = QStringLiteral("Error: ") + answer;
-        } else if (m_pendingProvider == "gemini") {
+        } else if (m_pendingProvider == QStringLiteral("gemini")) {
             answer = chat::providers::gemini::parseResponse(obj);
-        } else if (m_pendingProvider == "groq") {
+        } else if (m_pendingProvider == QStringLiteral("groq")) {
             answer = chat::providers::groq::parseResponse(obj);
         } else {
             answer = chat::providers::ollama::parseResponse(obj);
@@ -528,15 +539,15 @@ void Chat::trimHistory() {
 }
 
 void Chat::appendLog(const QString &provider, bool isUser, const QString &text) const {
-    const QString logsDir = m_pluginRootPath + "/res/logs";
+    const QString logsDir = m_pluginRootPath + QStringLiteral("/res/logs");
     QDir().mkpath(logsDir);
 
-    QFile f(logsDir + "/" + provider + ".log");
+    QFile f(logsDir + QStringLiteral("/") + provider + QStringLiteral(".log"));
     if (!f.open(QIODevice::Append | QIODevice::Text))
         return;
 
     const QString ts = QDateTime::currentDateTime().toString(Qt::ISODate);
-    const QString line = isUser ? QString("%1\nQ: %2\n").arg(ts, text) : QString("A: %1\n\n").arg(text);
+    const QString line = isUser ? QString(QStringLiteral("%1\nQ: %2\n")).arg(ts, text) : QString(QStringLiteral("A: %1\n\n")).arg(text);
     f.write(line.toUtf8());
     f.close();
 }

@@ -23,63 +23,63 @@ QString selectedArrayOption(const QJsonValue &value) {
 }
 
 QString calculateFromConfig(const QJsonObject &config) {
-    const int a = config.value("a").toInt(0);
-    const int b = config.value("b").toInt(0);
-    const QString op = selectedArrayOption(config.value("op"));
+    const int a = config.value(QStringLiteral("a")).toInt(0);
+    const int b = config.value(QStringLiteral("b")).toInt(0);
+    const QString op = selectedArrayOption(config.value(QStringLiteral("op")));
 
-    if (op == "+") {
-        return QString("%1 + %2 = %3").arg(a).arg(b).arg(a + b);
+    if (op == QStringLiteral("+")) {
+        return QString(QStringLiteral("%1 + %2 = %3")).arg(a).arg(b).arg(a + b);
     }
-    if (op == "-") {
-        return QString("%1 - %2 = %3").arg(a).arg(b).arg(a - b);
+    if (op == QStringLiteral("-")) {
+        return QString(QStringLiteral("%1 - %2 = %3")).arg(a).arg(b).arg(a - b);
     }
-    if (op == "*") {
-        return QString("%1 * %2 = %3").arg(a).arg(b).arg(a * b);
+    if (op == QStringLiteral("*")) {
+        return QString(QStringLiteral("%1 * %2 = %3")).arg(a).arg(b).arg(a * b);
     }
-    if (op == "/") {
+    if (op == QStringLiteral("/")) {
         if (b == 0) {
-            return QString("%1 / %2 = undefined").arg(a).arg(b);
+            return QString(QStringLiteral("%1 / %2 = undefined")).arg(a).arg(b);
         }
-        return QString("%1 / %2 = %3").arg(a).arg(b).arg(static_cast<double>(a) / static_cast<double>(b));
+        return QString(QStringLiteral("%1 / %2 = %3")).arg(a).arg(b).arg(static_cast<double>(a) / static_cast<double>(b));
     }
 
-    return QString("a=%1, b=%2, op=(invalid)").arg(a).arg(b);
+    return QString(QStringLiteral("a=%1, b=%2, op=(invalid)")).arg(a).arg(b);
 }
 
 QString nestedNoteLine(const QJsonObject &config) {
-    const QJsonObject nested = config.value("nested").toObject();
-    const QString note = nested.value("note").toString();
+    const QJsonObject nested = config.value(QStringLiteral("nested")).toObject();
+    const QString note = nested.value(QStringLiteral("note")).toString();
 
-    return QString("nested.note=%1").arg(note);
+    return QString(QStringLiteral("nested.note=%1")).arg(note);
 }
 
 QString nestedEnabledLine(const QJsonObject &config) {
-    const QJsonObject nested = config.value("nested").toObject();
-    const bool enabled = nested.value("enabled").toBool(false);
+    const QJsonObject nested = config.value(QStringLiteral("nested")).toObject();
+    const bool enabled = nested.value(QStringLiteral("enabled")).toBool(false);
 
-    return QString("nested.enabled=%1").arg(enabled ? "true" : "false");
+    return QString(QStringLiteral("nested.enabled=%1")).arg(enabled ? QStringLiteral("true") : QStringLiteral("false"));
 }
 
 QString nestedModeLine(const QJsonObject &config) {
-    const QJsonObject nested = config.value("nested").toObject();
-    const QString mode = selectedArrayOption(nested.value("mode"));
+    const QJsonObject nested = config.value(QStringLiteral("nested")).toObject();
+    const QString mode = selectedArrayOption(nested.value(QStringLiteral("mode")));
 
-    return QString("nested.mode=%1").arg(mode);
+    return QString(QStringLiteral("nested.mode=%1")).arg(mode);
 }
 
 QString nestedInnerLabelLine(const QJsonObject &config) {
-    const QJsonObject nested = config.value("nested").toObject();
-    const QJsonObject inner = nested.value("inner").toObject();
-    const QString label = inner.value("label").toString();
+    const QJsonObject nested = config.value(QStringLiteral("nested")).toObject();
+    const QJsonObject inner = nested.value(QStringLiteral("inner")).toObject();
+    const QString label = inner.value(QStringLiteral("label")).toString();
 
-    return QString("nested.inner.label=%1").arg(label);
+    return QString(QStringLiteral("nested.inner.label=%1")).arg(label);
 }
 
 QString nestedInnerChoiceLine(const QJsonObject &config) {
-    const QJsonObject nested = config.value("nested").toObject();
-    const QJsonObject inner = nested.value("inner").toObject();
-    const QString choice = selectedArrayOption(inner.value("choice"));
+    const QJsonObject nested = config.value(QStringLiteral("nested")).toObject();
+    const QJsonObject inner = nested.value(QStringLiteral("inner")).toObject();
+    const QString choice = selectedArrayOption(inner.value(QStringLiteral("choice")));
 
-    return QString("nested.inner.choice=%1").arg(choice);
+    return QString(QStringLiteral("nested.inner.choice=%1")).arg(choice);
 }
 }  // namespace examplelib

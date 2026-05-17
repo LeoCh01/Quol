@@ -8,7 +8,7 @@ target_include_directories(chance_plugin PRIVATE
     ${CMAKE_SOURCE_DIR}
 )
 
-target_link_libraries(chance_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(chance_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets quol_core)
 
 set_target_properties(chance_plugin PROPERTIES
     PREFIX ""

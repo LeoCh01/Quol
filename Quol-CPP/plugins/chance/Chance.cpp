@@ -39,7 +39,7 @@ QWidget *Chance::createWidget(QWidget *parent) {
     m_resultLabel = new QLabel(widget);
     m_resultLabel->setAlignment(Qt::AlignCenter);
     m_resultLabel->setCursor(Qt::PointingHandCursor);
-    m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + "/res/img/" + COIN_PLACEHOLDER));
+    m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + COIN_PLACEHOLDER));
     m_resultLabel->installEventFilter(this);
     m_gridLayout->addWidget(m_resultLabel, 0, 0, 1, 2);
 
@@ -58,14 +58,14 @@ QWidget *Chance::createWidget(QWidget *parent) {
 }
 
 // ---------------------------------------------------------------------------
-void Chance::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
+void Chance::initialize(const QString &pluginRootPath, const PluginConfig &pluginConfig, QuolServices *services) {
     Q_UNUSED(services)
     m_pluginRootPath = pluginRootPath;
-    m_pluginConfig = pluginConfig;
+    m_cfg = pluginConfig;
 }
 
-void Chance::onUpdateConfig(const QJsonObject &pluginConfig) {
-    m_pluginConfig = pluginConfig;
+void Chance::onUpdateConfig(const PluginConfig &pluginConfig) {
+    m_cfg = pluginConfig;
 }
 
 void Chance::shutdown() {
@@ -116,11 +116,11 @@ void Chance::updateModeButtons() {
     if (m_isCoinMode) {
         m_coinButton->setStyleSheet(QStringLiteral("background-color: #696;"));
         m_diceButton->setStyleSheet(QString{});
-        m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + "/res/img/" + COIN_PLACEHOLDER));
+        m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + COIN_PLACEHOLDER));
     } else {
         m_coinButton->setStyleSheet(QString{});
         m_diceButton->setStyleSheet(QStringLiteral("background-color: #696;"));
-        m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + "/res/img/" + DICE_PLACEHOLDER));
+        m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + DICE_PLACEHOLDER));
     }
 }
 
@@ -169,7 +169,7 @@ void Chance::startFlipAnimation(const QStringList &frames, int totalFlips) {
 
         if (m_flipCounter < m_totalFlips) {
             const QString &frame = m_animFrames[m_flipCounter % m_animFrames.size()];
-            m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + "/res/img/" + frame));
+            m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + frame));
             ++m_flipCounter;
             // Progressively slow down
             m_flipTimer->setInterval(10 + m_flipCounter * 20);
@@ -190,7 +190,7 @@ void Chance::showConfetti() {
     m_confettiLabel->setAlignment(Qt::AlignCenter);
     m_gridLayout->addWidget(m_confettiLabel, 0, 0, 1, 2);
 
-    m_confettiMovie = new QMovie(m_pluginRootPath + "/res/img/" + CONFETTI);
+    m_confettiMovie = new QMovie(m_pluginRootPath + QStringLiteral("/res/img/") + CONFETTI);
     m_confettiMovie->setSpeed(150);
     m_confettiLabel->setMovie(m_confettiMovie);
     m_confettiMovie->start();

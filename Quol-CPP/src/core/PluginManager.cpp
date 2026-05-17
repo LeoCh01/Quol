@@ -1,6 +1,7 @@
 #include "core/PluginManager.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "plugin_api/IQuolPlugin.hpp"
+#include "plugin_api/PluginConfig.hpp"
 #include "plugin_api/QuolServices.hpp"
 #include "ui/QuolWindow.hpp"
 #include "ui/TransitionManager.hpp"
@@ -50,15 +51,15 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         return;
 
     const QString appDir = QCoreApplication::applicationDirPath();
-    QString pluginsDirSetting = settings->settingString("plugins_dir", "plugins").trimmed();
+    QString pluginsDirSetting = settings->settingString(QStringLiteral("plugins_dir"), QStringLiteral("plugins")).trimmed();
     if (pluginsDirSetting.isEmpty()) {
-        pluginsDirSetting = "plugins";
+        pluginsDirSetting = QStringLiteral("plugins");
     }
 
     const QString pluginsDirPath =
         QDir::isRelativePath(pluginsDirSetting) ? QDir(appDir).filePath(pluginsDirSetting) : pluginsDirSetting;
     const QDir pluginsDir(pluginsDirPath);
-    const QJsonArray pluginIds = settings->data().value("plugins").toArray();
+    const QJsonArray pluginIds = settings->data().value(QStringLiteral("plugins")).toArray();
 
     for (const auto &val : pluginIds) {
         const QString id = val.toString().trimmed();
@@ -66,12 +67,13 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         QuolWindow *win = nullptr;
         QPluginLoader *loader = nullptr;
         try {
-            const QString configPath = pluginsDir.filePath(id + "/res/config.json");
-            const QJsonObject pluginConfig = readPluginConfig(configPath);
-            const QJsonArray defaultGeometry = pluginConfig.value("_").toObject().value("default_geometry").toArray();
-            const QString displayTitle = pluginConfig.value("_").toObject().value("name").toString().trimmed();
+            const QString configPath = pluginsDir.filePath(id + QStringLiteral("/res/config.json"));
+            const PluginConfig pluginConfig(readPluginConfig(configPath), configPath);
+            const QJsonArray defaultGeometry =
+                pluginConfig.root().value(QStringLiteral("_")).toObject().value(QStringLiteral("default_geometry")).toArray();
+            const QString displayTitle = pluginConfig.root().value(QStringLiteral("_")).toObject().value(QStringLiteral("name")).toString().trimmed();
 
-            const QString libPath = pluginsDir.filePath(id + "/" + id);
+            const QString libPath = pluginsDir.filePath(id + QStringLiteral("/") + id);
             loader = new QPluginLoader(libPath);
             auto *plugin = qobject_cast<IQuolPlugin *>(loader->instance());
             if (!plugin) {
@@ -93,8 +95,8 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
 
             // initialize() before createWidget() so plugins have config + services available.
             plugin->initialize(pluginsDir.filePath(id), pluginConfig, services);
-            win->setConfigSavedCallback([plugin](const QJsonObject &updatedConfig) {
-                plugin->onUpdateConfig(updatedConfig);
+            win->setConfigSavedCallback([plugin, configPath](const QJsonObject &updatedConfig) {
+                plugin->onUpdateConfig(PluginConfig(updatedConfig, configPath));
             });
             win->addContent(plugin->createWidget());
 
@@ -113,8 +115,8 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
 
             QMessageBox::critical(
                 nullptr,
-                "Plugin Load Error",
-                QString("Failed to load plugin '%1':\n%2").arg(id).arg(QString::fromStdString(e.what()))
+                QStringLiteral("Plugin Load Error"),
+                QString(QStringLiteral("Failed to load plugin '%1':\n%2")).arg(id).arg(QString::fromStdString(e.what()))
             );
         } catch (...) {
             delete win;
@@ -124,7 +126,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             }
 
             QMessageBox::critical(
-                nullptr, "Plugin Load Error", QString("Failed to load plugin '%1' with an unknown error.").arg(id)
+                nullptr, QStringLiteral("Plugin Load Error"), QString(QStringLiteral("Failed to load plugin '%1' with an unknown error.")).arg(id)
             );
         }
     }

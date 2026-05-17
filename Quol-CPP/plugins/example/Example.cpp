@@ -4,7 +4,6 @@
 #include "core/InputManager.hpp"
 #include "plugin_api/QuolServices.hpp"
 
-#include <QJsonObject>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -56,9 +55,9 @@ QWidget *Example::createWidget(QWidget *parent) {
     return widget;
 }
 
-void Example::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
+void Example::initialize(const QString &pluginRootPath, const PluginConfig &pluginConfig, QuolServices *services) {
     m_pluginRootPath = pluginRootPath;
-    m_pluginConfig = pluginConfig;
+    m_cfg = pluginConfig;
     m_services = services;
 
     if (m_services && m_services->inputManager()) {
@@ -77,8 +76,8 @@ void Example::initialize(const QString &pluginRootPath, const QJsonObject &plugi
     applyHotkeyFromConfig();
 }
 
-void Example::onUpdateConfig(const QJsonObject &pluginConfig) {
-    m_pluginConfig = pluginConfig;
+void Example::onUpdateConfig(const PluginConfig &pluginConfig) {
+    m_cfg = pluginConfig;
     refreshLabels();
     applyHotkeyFromConfig();
 }
@@ -100,7 +99,7 @@ void Example::applyHotkeyFromConfig() {
     if (!m_services || !m_services->inputManager())
         return;
 
-    const QString combo = m_pluginConfig.value("send_combo").toString().trimmed().toLower();
+    const QString combo = m_cfg.get("send_combo").toString().trimmed().toLower();
 
     if (!m_hotkeyId.isEmpty()) {
         m_services->inputManager()->removeHotkey(m_hotkeyId);
@@ -122,31 +121,31 @@ void Example::applyHotkeyFromConfig() {
 
 void Example::refreshLabels() {
     if (m_titleLabel) {
-        const QString title = m_pluginConfig.value("sss").toString();
+        const QString title = m_cfg.get("sss").toString();
         m_titleLabel->setText(title);
     }
 
     if (m_valueLabel) {
-        m_valueLabel->setText(examplelib::calculateFromConfig(m_pluginConfig));
+        m_valueLabel->setText(examplelib::calculateFromConfig(m_cfg.root()));
     }
 
     if (m_nestedNoteLabel) {
-        m_nestedNoteLabel->setText(examplelib::nestedNoteLine(m_pluginConfig));
+        m_nestedNoteLabel->setText(examplelib::nestedNoteLine(m_cfg.root()));
     }
 
     if (m_nestedEnabledLabel) {
-        m_nestedEnabledLabel->setText(examplelib::nestedEnabledLine(m_pluginConfig));
+        m_nestedEnabledLabel->setText(examplelib::nestedEnabledLine(m_cfg.root()));
     }
 
     if (m_nestedModeLabel) {
-        m_nestedModeLabel->setText(examplelib::nestedModeLine(m_pluginConfig));
+        m_nestedModeLabel->setText(examplelib::nestedModeLine(m_cfg.root()));
     }
 
     if (m_nestedInnerLabelLabel) {
-        m_nestedInnerLabelLabel->setText(examplelib::nestedInnerLabelLine(m_pluginConfig));
+        m_nestedInnerLabelLabel->setText(examplelib::nestedInnerLabelLine(m_cfg.root()));
     }
 
     if (m_nestedInnerChoiceLabel) {
-        m_nestedInnerChoiceLabel->setText(examplelib::nestedInnerChoiceLine(m_pluginConfig));
+        m_nestedInnerChoiceLabel->setText(examplelib::nestedInnerChoiceLine(m_cfg.root()));
     }
 }

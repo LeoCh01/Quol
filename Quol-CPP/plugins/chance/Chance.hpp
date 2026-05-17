@@ -19,8 +19,8 @@ class Chance final : public QObject, public IQuolPlugin {
 public:
     QWidget *createWidget(QWidget *parent = nullptr) override;
 
-    void initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) override;
-    void onUpdateConfig(const QJsonObject &pluginConfig) override;
+    void initialize(const QString &pluginRootPath, const PluginConfig &pluginConfig, QuolServices *services) override;
+    void onUpdateConfig(const PluginConfig &pluginConfig) override;
     void shutdown() override;
 
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -35,7 +35,7 @@ private:
     void updateModeButtons();
 
     QString m_pluginRootPath;
-    QJsonObject m_pluginConfig;
+    PluginConfig m_cfg;
 
     bool m_isCoinMode = true;
     bool m_isRunning = false;

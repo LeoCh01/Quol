@@ -35,12 +35,12 @@
 
 namespace {
 QJsonArray readMainDefaultGeometry() {
-    const QString path = QCoreApplication::applicationDirPath() + "/plugins/quol/res/config.json";
+    const QString path = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json");
     QFile file(path);
     bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
-    return doc.object().value("_").toObject().value("default_geometry").toArray();
+    return doc.object().value(QStringLiteral("_")).toObject().value(QStringLiteral("default_geometry")).toArray();
 }
 
 int mainDefaultGeometryValue(int index, int fallback) {
@@ -54,7 +54,7 @@ int mainDefaultGeometryValue(int index, int fallback) {
 
 QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *transitions, QWidget *parent)
     : QuolWindow(
-          "Quol",
+          QStringLiteral("Quol"),
           settings,
           mainDefaultGeometryValue(0, 20),
           mainDefaultGeometryValue(1, 20),
@@ -65,54 +65,54 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     , m_settings(settings)
     , m_transitions(transitions) {
     copySettingsToMainConfig();
-    attachConfigWindow(QCoreApplication::applicationDirPath() + "/plugins/quol/res/config.json", "Quol Config");
+    attachConfigWindow(QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"), QStringLiteral("Quol Config"));
     setConfigSavedCallback([this](const QJsonObject &config) { applyMainConfigToSettings(config); });
 
     auto *grid = new QGridLayout();
     grid->setSpacing(6);
 
-    const QString iconRoot = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/";
+    const QString iconRoot = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/img/");
     const QSize iconSize(16, 16);
 
-    auto *managePluginsBtn = new QPushButton("Manage Plugins");
-    managePluginsBtn->setToolTip("Enable or disable installed plugins");
+    auto *managePluginsBtn = new QPushButton(QStringLiteral("Manage Plugins"));
+    managePluginsBtn->setToolTip(QStringLiteral("Enable or disable installed plugins"));
     connect(managePluginsBtn, &QPushButton::clicked, this, &QuolMainWindow::openManagePluginsDialog);
     grid->addWidget(managePluginsBtn, 0, 0, 1, 3);
 
     auto *versionBtn = new QPushButton();
-    versionBtn->setIcon(QIcon(iconRoot + "code.svg"));
+    versionBtn->setIcon(QIcon(iconRoot + QStringLiteral("code.svg")));
     versionBtn->setIconSize(iconSize);
-    versionBtn->setToolTip("Check version on GitHub");
+    versionBtn->setToolTip(QStringLiteral("Check version on GitHub"));
     connect(versionBtn, &QPushButton::clicked, this, []() {
-        QDesktopServices::openUrl(QUrl("https://github.com/LeoCh01/quol"));
+        QDesktopServices::openUrl(QUrl(QStringLiteral("https://github.com/LeoCh01/quol")));
     });
     grid->addWidget(versionBtn, 1, 0, 1, 1);
 
     auto *msgBoardBtn = new QPushButton();
-    msgBoardBtn->setIcon(QIcon(iconRoot + "news.svg"));
+    msgBoardBtn->setIcon(QIcon(iconRoot + QStringLiteral("news.svg")));
     msgBoardBtn->setIconSize(iconSize);
-    msgBoardBtn->setToolTip("Message board is not implemented yet");
+    msgBoardBtn->setToolTip(QStringLiteral("Message board is not implemented yet"));
     grid->addWidget(msgBoardBtn, 1, 1, 1, 1);
 
     auto *openPluginsBtn = new QPushButton();
-    openPluginsBtn->setIcon(QIcon(iconRoot + "folder.svg"));
+    openPluginsBtn->setIcon(QIcon(iconRoot + QStringLiteral("folder.svg")));
     openPluginsBtn->setIconSize(iconSize);
-    openPluginsBtn->setToolTip("Open plugins folder");
+    openPluginsBtn->setToolTip(QStringLiteral("Open plugins folder"));
     connect(openPluginsBtn, &QPushButton::clicked, this, []() {
-        const QString pluginDir = QCoreApplication::applicationDirPath() + "/plugins";
+        const QString pluginDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
         QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(pluginDir).absolutePath()));
     });
     grid->addWidget(openPluginsBtn, 1, 2, 1, 1);
 
     auto *reloadBtn = new QPushButton();
-    reloadBtn->setIcon(QIcon(iconRoot + "reload.svg"));
+    reloadBtn->setIcon(QIcon(iconRoot + QStringLiteral("reload.svg")));
     reloadBtn->setIconSize(iconSize);
-    reloadBtn->setToolTip("Reload application");
+    reloadBtn->setToolTip(QStringLiteral("Reload application"));
     connect(reloadBtn, &QPushButton::clicked, this, &QuolMainWindow::reloadApplication);
     grid->addWidget(reloadBtn, 2, 0, 1, 1);
 
-    auto *quitBtn = new QPushButton("Quit");
-    quitBtn->setStyleSheet("background-color: #c44; color: white;");
+    auto *quitBtn = new QPushButton(QStringLiteral("Quit"));
+    quitBtn->setStyleSheet(QStringLiteral("background-color: #c44; color: white;"));
     connect(quitBtn, &QPushButton::clicked, this, []() { QApplication::quit(); });
     grid->addWidget(quitBtn, 2, 1, 1, 2);
 
@@ -121,23 +121,23 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
 
 void QuolMainWindow::updateToggleButton() {
     if (m_toggleBtn)
-        m_toggleBtn->setText(m_transitions->isHidden() ? "Toggle ON" : "Toggle OFF");
+        m_toggleBtn->setText(m_transitions->isHidden() ? QStringLiteral("Toggle ON") : QStringLiteral("Toggle OFF"));
 }
 
 QStringList QuolMainWindow::discoverInstalledPluginIds() const {
-    const QString pluginsDirPath = QCoreApplication::applicationDirPath() + "/plugins";
+    const QString pluginsDirPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
     QDir pluginsDir(pluginsDirPath);
 
     QStringList installed;
     const QStringList folderNames = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
     for (const QString &id : folderNames) {
-        if (id.compare("quol", Qt::CaseInsensitive) == 0) {
+        if (id.compare(QStringLiteral("quol"), Qt::CaseInsensitive) == 0) {
             continue;
         }
 
         const QString root = pluginsDir.filePath(id);
-        const QString configPath = root + "/res/config.json";
-        const QString dllPath = root + "/" + id + ".dll";
+        const QString configPath = root + QStringLiteral("/res/config.json");
+        const QString dllPath = root + QStringLiteral("/") + id + QStringLiteral(".dll");
 
         if (QFileInfo::exists(configPath) && QFileInfo::exists(dllPath)) {
             installed.append(id);
@@ -159,7 +159,7 @@ void QuolMainWindow::openManagePluginsDialog() {
         return;
     }
 
-    auto *popup = new QuolPopupWindow("Manage Plugins", this);
+    auto *popup = new QuolPopupWindow(QStringLiteral("Manage Plugins"), this);
     m_pluginManagerWindow = popup;
     connect(popup, &QObject::destroyed, this, [this]() { m_pluginManagerWindow = nullptr; });
     popup->resize(420, 420);
@@ -178,16 +178,16 @@ void QuolMainWindow::openManagePluginsDialog() {
     const QStringList pluginIds = discoverInstalledPluginIds();
 
     auto *topRow = new QHBoxLayout();
-    auto *selectAllCheck = new QCheckBox("Select All");
+    auto *selectAllCheck = new QCheckBox(QStringLiteral("Select All"));
     topRow->addWidget(selectAllCheck);
     topRow->addStretch(1);
-    auto *applyBtn = new QPushButton("Apply");
-    applyBtn->setToolTip("Save and reload");
+    auto *applyBtn = new QPushButton(QStringLiteral("Apply"));
+    applyBtn->setToolTip(QStringLiteral("Save and reload"));
     topRow->addWidget(applyBtn);
     installedLayout->addLayout(topRow);
 
     QSet<QString> enabledIds;
-    const QJsonArray enabledArr = m_settings->data().value("plugins").toArray();
+    const QJsonArray enabledArr = m_settings->data().value(QStringLiteral("plugins")).toArray();
     for (const QJsonValue &value : enabledArr) {
         enabledIds.insert(value.toString().trimmed());
     }
@@ -201,27 +201,27 @@ void QuolMainWindow::openManagePluginsDialog() {
             auto *row = new QHBoxLayout(itemWidget);
             row->setContentsMargins(6, 2, 6, 2);
 
-            const QString configPath = QCoreApplication::applicationDirPath() + "/plugins/" + id + "/res/config.json";
+            const QString configPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + id + QStringLiteral("/res/config.json");
             QString displayName = id;
             QFile cf(configPath);
             if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
                 cf.close();
-                const QString title = doc.object().value("_").toObject().value("name").toString().trimmed();
+                const QString title = doc.object().value(QStringLiteral("_")).toObject().value(QStringLiteral("name")).toString().trimmed();
                 displayName = title;
             }
 
             auto *nameLabel = new QLabel(displayName);
-            auto *statusLabel = new QLabel(enabledIds.contains(id) ? "Active" : "Inactive");
-            statusLabel->setObjectName(enabledIds.contains(id) ? "status-active" : "status-inactive");
+            auto *statusLabel = new QLabel(enabledIds.contains(id) ? QStringLiteral("Active") : QStringLiteral("Inactive"));
+            statusLabel->setObjectName(enabledIds.contains(id) ? QStringLiteral("status-active") : QStringLiteral("status-inactive"));
             auto *check = new QCheckBox();
             check->setProperty("pluginId", id);
             check->setChecked(enabledIds.contains(id));
 
             connect(check, &QCheckBox::checkStateChanged, popup, [statusLabel](Qt::CheckState state) {
                 const bool on = state == Qt::Checked;
-                statusLabel->setText(on ? "Active" : "Inactive");
-                statusLabel->setObjectName(on ? "status-active" : "status-inactive");
+                statusLabel->setText(on ? QStringLiteral("Active") : QStringLiteral("Inactive"));
+                statusLabel->setObjectName(on ? QStringLiteral("status-active") : QStringLiteral("status-inactive"));
                 statusLabel->style()->unpolish(statusLabel);
                 statusLabel->style()->polish(statusLabel);
             });
@@ -276,11 +276,11 @@ void QuolMainWindow::openManagePluginsDialog() {
     auto *storeTab = new QWidget();
     auto *storeLayout = new QVBoxLayout(storeTab);
     storeLayout->setContentsMargins(4, 4, 4, 4);
-    storeLayout->addWidget(new QLabel("Plugin Store (coming soon)"));
+    storeLayout->addWidget(new QLabel(QStringLiteral("Plugin Store (coming soon)")));
     storeLayout->addStretch(1);
 
-    tabs->addTab(installedTab, "Installed");
-    tabs->addTab(storeTab, "Store");
+    tabs->addTab(installedTab, QStringLiteral("Installed"));
+    tabs->addTab(storeTab, QStringLiteral("Store"));
 
     popup->addContent(tabs);
 
@@ -293,7 +293,7 @@ void QuolMainWindow::openManagePluginsDialog() {
         }
 
         QJsonObject &settings = m_settings->data();
-        settings.insert("plugins", selected);
+        settings.insert(QStringLiteral("plugins"), selected);
         m_settings->save();
 
         copySettingsToMainConfig();
@@ -307,7 +307,7 @@ void QuolMainWindow::openManagePluginsDialog() {
 }
 
 void QuolMainWindow::copySettingsToMainConfig() {
-    const QString configPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/config.json";
+    const QString configPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json");
     QFile file(configPath);
     QJsonObject config;
 
@@ -317,13 +317,13 @@ void QuolMainWindow::copySettingsToMainConfig() {
         file.close();
     }
 
-    config.insert("startup", m_settings->data().value("startup").toBool(false));
-    config.insert("reset_pos", m_settings->data().value("is_default_pos").toBool(false));
-    config.insert("toggle_key", m_settings->data().value("toggle_key").toString("backtick"));
+    config.insert(QStringLiteral("startup"), m_settings->data().value(QStringLiteral("startup")).toBool(false));
+    config.insert(QStringLiteral("reset_pos"), m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false));
+    config.insert(QStringLiteral("toggle_key"), m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick")));
 
-    QString transition = m_settings->data().value("transition").toString("none").toLower();
+    QString transition = m_settings->data().value(QStringLiteral("transition")).toString(QStringLiteral("none")).toLower();
     QJsonArray transitionOptions =
-        QJsonArray{"none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand-slide"};
+        QJsonArray{QStringLiteral("none"), QStringLiteral("fade"), QStringLiteral("slide-left"), QStringLiteral("slide-right"), QStringLiteral("slide-up"), QStringLiteral("slide-down"), QStringLiteral("rand-slide")};
     int transitionIndex = -1;
     for (int i = 0; i < transitionOptions.size(); ++i) {
         if (transitionOptions.at(i).toString() == transition) {
@@ -334,12 +334,12 @@ void QuolMainWindow::copySettingsToMainConfig() {
     if (transitionIndex < 0) {
         transitionIndex = 0;
     }
-    config.insert("transition", QJsonArray{transitionOptions, transitionIndex});
+    config.insert(QStringLiteral("transition"), QJsonArray{transitionOptions, transitionIndex});
 
-    QJsonObject underscore = config.value("_").toObject();
-    underscore.insert("name", m_settings->data().value("name").toString("Quol"));
-    underscore.insert("plugins", m_settings->data().value("plugins").toArray());
-    config.insert("_", underscore);
+    QJsonObject underscore = config.value(QStringLiteral("_")).toObject();
+    underscore.insert(QStringLiteral("name"), m_settings->data().value(QStringLiteral("name")).toString(QStringLiteral("Quol")));
+    underscore.insert(QStringLiteral("plugins"), m_settings->data().value(QStringLiteral("plugins")).toArray());
+    config.insert(QStringLiteral("_"), underscore);
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
         file.write(QJsonDocument(config).toJson(QJsonDocument::Indented));
@@ -349,13 +349,13 @@ void QuolMainWindow::copySettingsToMainConfig() {
 
 void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
     QJsonObject &settings = m_settings->data();
-    settings.insert("startup", config.value("startup").toBool());
-    settings.insert("is_default_pos", config.value("reset_pos").toBool());
+    settings.insert(QStringLiteral("startup"), config.value(QStringLiteral("startup")).toBool());
+    settings.insert(QStringLiteral("is_default_pos"), config.value(QStringLiteral("reset_pos")).toBool());
 
-    const QString toggleKey = config.value("toggle_key").toVariant().toString().trimmed().toLower();
-    settings.insert("toggle_key", toggleKey);
+    const QString toggleKey = config.value(QStringLiteral("toggle_key")).toVariant().toString().trimmed().toLower();
+    settings.insert(QStringLiteral("toggle_key"), toggleKey);
 
-    const QJsonValue transitionValue = config.value("transition");
+    const QJsonValue transitionValue = config.value(QStringLiteral("transition"));
     if (transitionValue.isArray()) {
         const QJsonArray arr = transitionValue.toArray();
         if (arr.size() == 2 && arr.at(0).isArray()) {
@@ -363,19 +363,19 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
             const int idx = arr.at(1).toInt();
             if (idx >= 0 && idx < options.size()) {
                 const QString selected = options.at(idx).toString().trimmed().toLower();
-                settings.insert("transition", selected);
+                settings.insert(QStringLiteral("transition"), selected);
             }
         }
     }
 
-    const QJsonObject underscore = config.value("_").toObject();
-    if (underscore.contains("plugins") && underscore.value("plugins").isArray()) {
-        settings.insert("plugins", underscore.value("plugins"));
+    const QJsonObject underscore = config.value(QStringLiteral("_")).toObject();
+    if (underscore.contains(QStringLiteral("plugins")) && underscore.value(QStringLiteral("plugins")).isArray()) {
+        settings.insert(QStringLiteral("plugins"), underscore.value(QStringLiteral("plugins")));
     }
 
-    const QString updatedToggleKey = settings.value("toggle_key").toString();
-    const bool updatedResetPos = settings.value("is_default_pos").toBool();
-    const QString updatedTransition = settings.value("transition").toString().toLower();
+    const QString updatedToggleKey = settings.value(QStringLiteral("toggle_key")).toString();
+    const bool updatedResetPos = settings.value(QStringLiteral("is_default_pos")).toBool();
+    const QString updatedTransition = settings.value(QStringLiteral("transition")).toString().toLower();
     m_settings->save();
     emit mainConfigApplied(updatedToggleKey, updatedResetPos, updatedTransition);
 }

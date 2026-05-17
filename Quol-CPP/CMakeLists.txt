@@ -14,6 +14,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 add_library(quol_core STATIC
     src/core/InputManager.cpp
     src/core/InputManager.hpp
+    src/plugin_api/PluginConfig.cpp
+    src/plugin_api/PluginConfig.hpp
 )
 
 target_include_directories(quol_core PUBLIC

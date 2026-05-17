@@ -13,7 +13,7 @@ ProviderRequest buildRequest(
 ) {
     ProviderRequest req;
     req.providerName = QStringLiteral("gemini");
-    req.url = QUrl(QString("https://generativelanguage.googleapis.com/v1beta/models/%1:generateContent?key=%2")
+    req.url = QUrl(QString(QStringLiteral("https://generativelanguage.googleapis.com/v1beta/models/%1:generateContent?key=%2"))
                        .arg(config.model, config.apiKey));
 
     QJsonArray contents;
@@ -21,44 +21,44 @@ ProviderRequest buildRequest(
     if (includeHistory) {
         for (const auto &item : history) {
             QJsonObject c;
-            c.insert("role", item.role == "model" ? "model" : "user");
+            c.insert(QStringLiteral("role"), item.role == QStringLiteral("model") ? QStringLiteral("model") : QStringLiteral("user"));
             QJsonArray parts;
-            parts.append(QJsonObject{{"text", item.text}});
+            parts.append(QJsonObject{{QStringLiteral("text"), item.text}});
             if (!item.imageBase64.isEmpty()) {
                 parts.append(
-                    QJsonObject{{"inline_data", QJsonObject{{"mime_type", "image/png"}, {"data", item.imageBase64}}}}
+                    QJsonObject{{QStringLiteral("inline_data"), QJsonObject{{QStringLiteral("mime_type"), QStringLiteral("image/png")}, {QStringLiteral("data"), item.imageBase64}}}}
                 );
             }
-            c.insert("parts", parts);
+            c.insert(QStringLiteral("parts"), parts);
             contents.append(c);
         }
     }
 
     QJsonObject cur;
-    cur.insert("role", "user");
+    cur.insert(QStringLiteral("role"), QStringLiteral("user"));
     QJsonArray parts;
-    parts.append(QJsonObject{{"text", prompt}});
+    parts.append(QJsonObject{{QStringLiteral("text"), prompt}});
     if (!imageBase64.isEmpty()) {
-        parts.append(QJsonObject{{"inline_data", QJsonObject{{"mime_type", "image/png"}, {"data", imageBase64}}}});
+        parts.append(QJsonObject{{QStringLiteral("inline_data"), QJsonObject{{QStringLiteral("mime_type"), QStringLiteral("image/png")}, {QStringLiteral("data"), imageBase64}}}});
     }
-    cur.insert("parts", parts);
+    cur.insert(QStringLiteral("parts"), parts);
     contents.append(cur);
 
-    req.payload.insert("contents", contents);
+    req.payload.insert(QStringLiteral("contents"), contents);
     return req;
 }
 
 QString parseResponse(const QJsonObject &response) {
-    const QJsonArray candidates = response.value("candidates").toArray();
+    const QJsonArray candidates = response.value(QStringLiteral("candidates")).toArray();
     if (candidates.isEmpty())
         return {};
 
-    const QJsonObject content = candidates.at(0).toObject().value("content").toObject();
-    const QJsonArray parts = content.value("parts").toArray();
+    const QJsonObject content = candidates.at(0).toObject().value(QStringLiteral("content")).toObject();
+    const QJsonArray parts = content.value(QStringLiteral("parts")).toArray();
     if (parts.isEmpty())
         return {};
 
-    return parts.at(0).toObject().value("text").toString();
+    return parts.at(0).toObject().value(QStringLiteral("text")).toString();
 }
 
 }  // namespace chat::providers::gemini

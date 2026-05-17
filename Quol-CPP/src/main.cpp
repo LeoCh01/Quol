@@ -13,13 +13,14 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     // Load settings
-    const QString settingsPath = QCoreApplication::applicationDirPath() + "/settings.json";
+    const QString settingsPath = QCoreApplication::applicationDirPath() + QStringLiteral("/settings.json");
     AppSettingsManager settings(settingsPath);
     settings.load();
 
     // Load stylesheet
-    const QString style = settings.settingString("style", "dark");
-    const QString qssPath = QCoreApplication::applicationDirPath() + "/res/styles/" + style + "/styles.qss";
+    const QString style = settings.settingString(QStringLiteral("style"), QStringLiteral("dark"));
+    const QString qssPath =
+        QCoreApplication::applicationDirPath() + QStringLiteral("/res/styles/") + style + QStringLiteral("/styles.qss");
     QFile qssFile(qssPath);
     if (qssFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         app.setStyleSheet(QString::fromUtf8(qssFile.readAll()));
@@ -27,7 +28,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Transitions
-    const QString transitionType = settings.settingString("transition", "none");
+    const QString transitionType = settings.settingString(QStringLiteral("transition"), QStringLiteral("none"));
     TransitionManager transitions(transitionType);
 
     // Main Quol control window
@@ -59,7 +60,7 @@ int main(int argc, char *argv[]) {
     // Global hotkey
     inputManager.start();
 
-    QString activeToggleKey = settings.settingString("toggle_key").toLower();
+    QString activeToggleKey = settings.settingString(QStringLiteral("toggle_key")).toLower();
     QString mainHotkeyId = inputManager.addHotkey(
         activeToggleKey,
         [&]() {

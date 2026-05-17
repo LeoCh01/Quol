@@ -1,6 +1,7 @@
 #pragma once
 
 #include "plugin_api/IQuolPlugin.hpp"
+#include "plugin_api/PluginConfig.hpp"
 #include "plugins/chat/lib/providers/ProviderTypes.hpp"
 
 #include <QMap>
@@ -10,7 +11,6 @@
 #include <QVector>
 
 class QHBoxLayout;
-class QJsonObject;
 class QLineEdit;
 class QNetworkAccessManager;
 class QPixmap;
@@ -28,8 +28,8 @@ class Chat final : public QObject, public IQuolPlugin {
 public:
     QWidget *createWidget(QWidget *parent = nullptr) override;
 
-    void initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) override;
-    void onUpdateConfig(const QJsonObject &pluginConfig) override;
+    void initialize(const QString &pluginRootPath, const PluginConfig &pluginConfig, QuolServices *services) override;
+    void onUpdateConfig(const PluginConfig &pluginConfig) override;
     void shutdown() override;
 
 private:
@@ -68,7 +68,7 @@ private:
     void updatePromptPlaceholder();
 
     QString m_pluginRootPath;
-    QJsonObject m_pluginConfig;
+    PluginConfig m_cfg;
     QuolServices *m_services = nullptr;
 
     QStringList m_providers = {"groq", "gemini", "ollama"};

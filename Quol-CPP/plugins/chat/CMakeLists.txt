@@ -21,7 +21,7 @@ target_include_directories(chat_plugin PRIVATE
     ${CMAKE_SOURCE_DIR}
 )
 
-target_link_libraries(chat_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(chat_plugin PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network quol_core)
 
 set_target_properties(chat_plugin PROPERTIES
     PREFIX ""

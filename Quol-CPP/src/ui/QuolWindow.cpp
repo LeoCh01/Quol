@@ -84,8 +84,8 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
             m_onConfigSaved(config);
         }
 
-        const QJsonObject underscore = config.value("_").toObject();
-        const QJsonArray geometry = underscore.value("geometry").toArray();
+        const QJsonObject underscore = config.value(QStringLiteral("_")).toObject();
+        const QJsonArray geometry = underscore.value(QStringLiteral("geometry")).toArray();
         if (geometry.size() >= 4) {
             const int gx = geometry.at(0).toInt(x());
             const int gy = geometry.at(1).toInt(y());
@@ -175,9 +175,9 @@ void QuolWindow::loadGeometry(int defaultX, int defaultY, int defaultW, int defa
         return;
     }
 
-    const QJsonObject configs = m_settings->data().value("configs").toObject();
+    const QJsonObject configs = m_settings->data().value(QStringLiteral("configs")).toObject();
     const QJsonObject windowCfg = configs.value(m_titleText).toObject();
-    const QJsonArray geometry = windowCfg.value("_").toObject().value("geometry").toArray();
+    const QJsonArray geometry = windowCfg.value(QStringLiteral("_")).toObject().value(QStringLiteral("geometry")).toArray();
 
     if (geometry.size() >= 4) {
         setGeometry(
@@ -205,27 +205,27 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
     file.close();
 
     QJsonObject root = doc.object();
-    QJsonObject underscore = root.value("_").toObject();
+    QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
     const bool hasDefaultGeometry =
-        underscore.value("default_geometry").isArray() && underscore.value("default_geometry").toArray().size() >= 4;
-    const bool useDefaultPos = m_settings && m_settings->data().value("is_default_pos").toBool(false);
-    const QJsonArray defaultGeometry = underscore.value("default_geometry").toArray();
-    QJsonArray geometry = underscore.value("geometry").toArray();
+        underscore.value(QStringLiteral("default_geometry")).isArray() && underscore.value(QStringLiteral("default_geometry")).toArray().size() >= 4;
+    const bool useDefaultPos = m_settings && m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false);
+    const QJsonArray defaultGeometry = underscore.value(QStringLiteral("default_geometry")).toArray();
+    QJsonArray geometry = underscore.value(QStringLiteral("geometry")).toArray();
 
     bool configChanged = false;
 
     if (useDefaultPos && defaultGeometry.size() >= 4) {
         geometry = defaultGeometry;
-        underscore.insert("geometry", geometry);
-        root.insert("_", underscore);
+        underscore.insert(QStringLiteral("geometry"), geometry);
+        root.insert(QStringLiteral("_"), underscore);
         configChanged = true;
     }
 
     if (geometry.size() < 4) {
         if (defaultGeometry.size() >= 4) {
             geometry = defaultGeometry;
-            underscore.insert("geometry", geometry);
-            root.insert("_", underscore);
+            underscore.insert(QStringLiteral("geometry"), geometry);
+            root.insert(QStringLiteral("_"), underscore);
             configChanged = true;
         }
     }
@@ -267,12 +267,12 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
         file.close();
     }
 
-    QJsonObject underscore = root.value("_").toObject();
-    if (!underscore.value("default_geometry").isArray() || underscore.value("default_geometry").toArray().size() < 4) {
-        underscore.insert("default_geometry", QJsonArray{x(), y(), width(), 0});
+    QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
+    if (!underscore.value(QStringLiteral("default_geometry")).isArray() || underscore.value(QStringLiteral("default_geometry")).toArray().size() < 4) {
+        underscore.insert(QStringLiteral("default_geometry"), QJsonArray{x(), y(), width(), 0});
     }
-    underscore.insert("geometry", QJsonArray{x(), y(), width(), height()});
-    root.insert("_", underscore);
+    underscore.insert(QStringLiteral("geometry"), QJsonArray{x(), y(), width(), height()});
+    root.insert(QStringLiteral("_"), underscore);
 
     bool written = file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
     file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));

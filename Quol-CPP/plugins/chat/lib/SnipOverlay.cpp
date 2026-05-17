@@ -13,6 +13,7 @@ SnipOverlay::SnipOverlay(const QPixmap &screenshot, std::function<void(const QPi
 
     m_sendButton = new QPushButton(QStringLiteral("Send"), this);
     m_sendButton->hide();
+    m_sendButton->setCursor(Qt::PointingHandCursor);
     m_sendButton->setStyleSheet(
         QStringLiteral("background-color: #4CAF50; color: white; padding: 4px 10px; border-radius: 6px;")
     );

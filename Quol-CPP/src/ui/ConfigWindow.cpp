@@ -64,15 +64,15 @@ void ConfigWindow::saveConfig() {
     QFile readFile(m_configPath);
     if (readFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QJsonDocument latestDoc = QJsonDocument::fromJson(readFile.readAll());
-        latestUnderscore = latestDoc.object().value("_").toObject();
+        latestUnderscore = latestDoc.object().value(QStringLiteral("_")).toObject();
         readFile.close();
     }
 
-    if (latestUnderscore.isEmpty() && m_config.contains("_")) {
-        latestUnderscore = m_config.value("_").toObject();
+    if (latestUnderscore.isEmpty() && m_config.contains(QStringLiteral("_"))) {
+        latestUnderscore = m_config.value(QStringLiteral("_")).toObject();
     }
 
-    updated.insert("_", latestUnderscore);
+    updated.insert(QStringLiteral("_"), latestUnderscore);
 
     QFile file(m_configPath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
