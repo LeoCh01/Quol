@@ -46,6 +46,7 @@ add_subdirectory(plugins/inputTest)
 add_subdirectory(plugins/chance)
 add_subdirectory(plugins/colorPicker)
 add_subdirectory(plugins/chat)
+add_subdirectory(plugins/draw)
 
 add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

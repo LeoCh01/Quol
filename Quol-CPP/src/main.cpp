@@ -43,6 +43,19 @@ int main(int argc, char *argv[]) {
     for (auto *win : pluginManager.windows())
         win->show();
 
+    services.setWindowVisibilityCallbacks(
+        [&]() {
+            mainWindow.hide();
+            for (auto *w : pluginManager.windows())
+                w->hide();
+        },
+        [&]() {
+            mainWindow.show();
+            for (auto *w : pluginManager.windows())
+                w->show();
+        }
+    );
+
     // Global hotkey
     inputManager.start();
 
