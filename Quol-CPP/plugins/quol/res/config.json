@@ -9,5 +9,5 @@
   "startup": false,
   "reset_pos": false,
   "toggle_key": "backtick",
-  "transition": [["none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand", "fire"], 6]
+  "transition": [["none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand-slide"], 6]
 }

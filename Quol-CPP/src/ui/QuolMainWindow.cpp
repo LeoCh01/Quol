@@ -322,9 +322,8 @@ void QuolMainWindow::copySettingsToMainConfig() {
     config.insert("toggle_key", m_settings->data().value("toggle_key").toString("backtick"));
 
     QString transition = m_settings->data().value("transition").toString("none").toLower();
-    QJsonArray transitionOptions = QJsonArray{
-        "none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand", "fire"
-    };
+    QJsonArray transitionOptions =
+        QJsonArray{"none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand-slide"};
     int transitionIndex = -1;
     for (int i = 0; i < transitionOptions.size(); ++i) {
         if (transitionOptions.at(i).toString() == transition) {

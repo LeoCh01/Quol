@@ -47,7 +47,7 @@ add_subdirectory(plugins/colorPicker)
 add_subdirectory(plugins/chat)
 add_subdirectory(plugins/draw)
 
-add_subdirectory(transitions/fire)
+
 
 add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
