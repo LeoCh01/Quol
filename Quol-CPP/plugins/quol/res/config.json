@@ -2,7 +2,9 @@
   "_": {
     "default_geometry": [10, 10, 200, 0],
     "plugins": ["example"],
-    "name": "Quol"
+    "name": "Quol",
+    "version": 1,
+    "description": "Main Quol control panel"
   },
   "startup": false,
   "reset_pos": false,

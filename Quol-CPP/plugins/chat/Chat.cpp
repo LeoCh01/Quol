@@ -25,12 +25,42 @@
 #include <QScreen>
 #include <QScrollBar>
 #include <QTextBrowser>
+#include <QTextDocument>
 #include <QUrl>
 #include <QWidget>
 
 namespace {
-QString escapeHtml(const QString &value) {
-    return value.toHtmlEscaped().replace("\n", "<br/>");
+QString markdownToHtmlFragment(const QString &markdown) {
+    QTextDocument doc;
+    doc.setMarkdown(markdown);
+
+    const QString html = doc.toHtml();
+    const int bodyStart = html.indexOf(QStringLiteral("<body"));
+    if (bodyStart < 0)
+        return markdown.toHtmlEscaped().replace("\n", "<br/>");
+
+    const int start = html.indexOf('>', bodyStart);
+    const int end = html.lastIndexOf(QStringLiteral("</body>"));
+    if (start < 0 || end <= start)
+        return markdown.toHtmlEscaped().replace("\n", "<br/>");
+
+    return html.mid(start + 1, end - start - 1).trimmed();
+}
+
+QString messageHtml(const QString &role, const QString &text, bool hasImage, bool pending = false) {
+    const bool isModel = (role == QStringLiteral("model"));
+    const QString align = isModel ? QStringLiteral("left") : QStringLiteral("right");
+    const QString cls = (isModel ? QStringLiteral("ai-block") : QStringLiteral("user-block"))
+                        + (pending ? QStringLiteral(" pending") : QString());
+    const QString attach = hasImage ? QStringLiteral("<div class='attachment'>Screenshot attached</div>") : QString();
+    const QString content = markdownToHtmlFragment(text);
+
+    return QStringLiteral(
+               "<table width='100%'><tr>"
+               "<td align='%1' class='%2'><div>%3%4</div></td>"
+               "</tr></table>"
+    )
+        .arg(align, cls, attach, content);
 }
 }  // namespace
 
@@ -83,9 +113,9 @@ QWidget *Chat::createWidget(QWidget *parent) {
 }
 
 void Chat::initialize(const QString &pluginRootPath, const QJsonObject &pluginConfig, QuolServices *services) {
-    Q_UNUSED(services)
     m_pluginRootPath = pluginRootPath;
     m_pluginConfig = pluginConfig;
+    m_services = services;
 
     applyConfig();
 }
@@ -108,6 +138,9 @@ void Chat::shutdown() {
         m_outputWindow->close();
         m_outputWindow = nullptr;
     }
+
+    m_outputBrowser = nullptr;
+    m_services = nullptr;
 
     m_layout = nullptr;
     m_cycleButton = nullptr;
@@ -212,11 +245,10 @@ void Chat::submitPrompt(bool useExistingSnipImage) {
 }
 
 void Chat::startSnipMode() {
-    QScreen *screen = QGuiApplication::primaryScreen();
-    if (!screen)
+    const QPixmap screenshot = capturePrimaryScreenPixmap();
+    if (screenshot.isNull())
         return;
 
-    const QPixmap screenshot = screen->grabWindow(0);
     cancelSnipMode();
 
     m_snipOverlay = new SnipOverlay(screenshot, [this](const QPixmap &cropped) { onSnipSelected(cropped); });
@@ -251,57 +283,83 @@ void Chat::ensureOutputWindow() {
         return;
 
     m_outputWindow = new QuolPopupWindow(QStringLiteral("Chat Output"), m_widget);
-    QObject::connect(m_outputWindow, &QObject::destroyed, this, [this]() { m_outputWindow = nullptr; });
-    m_outputWindow->resize(500, 400);
+    QObject::connect(m_outputWindow, &QObject::destroyed, this, [this]() {
+        m_outputWindow = nullptr;
+        m_outputBrowser = nullptr;
+    });
+    m_outputWindow->resize(500, 600);
+
+    m_outputBrowser = new QTextBrowser(m_outputWindow);
+    m_outputBrowser->setOpenExternalLinks(true);
+    m_outputBrowser->setStyleSheet(QStringLiteral("QTextBrowser { background:#333; color:white; border:none; }"));
+    m_outputBrowser->document()->setDocumentMargin(0);
+    m_outputWindow->addContent(m_outputBrowser);
+
+    centerOutputWindow();
+}
+
+void Chat::centerOutputWindow() {
+    if (!m_outputWindow)
+        return;
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return;
+
+    const QRect available = screen->availableGeometry();
+    const QSize size = m_outputWindow->size();
+    m_outputWindow->move(available.center().x() - size.width() / 2, available.center().y() - size.height() / 2);
 }
 
 void Chat::setOutputText(const QString &html) {
     ensureOutputWindow();
-    if (!m_outputWindow)
+    if (!m_outputWindow || !m_outputBrowser)
         return;
 
-    // Get or create the text browser in the popup
-    QWidget *content = m_outputWindow->findChild<QTextBrowser *>();
-    QTextBrowser *browser = qobject_cast<QTextBrowser *>(content);
-
-    if (!browser) {
-        browser = new QTextBrowser(m_outputWindow);
-        browser->setOpenExternalLinks(false);
-        m_outputWindow->addContent(browser);
-    }
-
-    browser->setHtml(html);
+    m_outputBrowser->setHtml(html);
+    centerOutputWindow();
 
     m_outputWindow->show();
     m_outputWindow->raise();
     m_outputWindow->activateWindow();
-    auto *sb = browser->verticalScrollBar();
+    auto *sb = m_outputBrowser->verticalScrollBar();
     sb->setValue(sb->maximum());
 }
 
 QString Chat::buildConversationHtml(const QString &pendingAssistantText) const {
-    QString html = QStringLiteral("<html><body>");
+    QString html = QStringLiteral(
+        "<html>"
+        "<head>"
+        "<style>"
+        "body { background:#333; color:white; font-size:13px; letter-spacing:0.2px; line-height:1.4;"
+        "       margin:0; padding:0; font-family:'Segoe UI',sans-serif; }"
+        "table { border-collapse:collapse; margin:0; padding:0; }"
+        ".ai-block { padding:10px 15px; background:#2d2d2d; word-wrap:break-word; white-space:pre-wrap; }"
+        ".user-block { padding:10px 15px; background:#3a3a3a; word-wrap:break-word; white-space:pre-wrap; }"
+        ".pending { opacity:0.75; }"
+        "p { margin:0.3em 0; }"
+        "p:first-child { margin-top:0; }"
+        "p:last-child  { margin-bottom:0; }"
+        "h1,h2,h3,h4 { margin:0.4em 0 0.2em 0; }"
+        "ul,ol { margin:0.3em 0 0.3em 1.4em; }"
+        "li { margin:0.15em 0; }"
+        "pre { background:#262626; line-height:1.3; word-wrap:break-word; white-space:pre-wrap;"
+        "      padding:8px 10px; margin:6px 0; border-radius:4px; font-size:12px; }"
+        "code { background:#262626; padding:1px 4px; border-radius:3px; font-size:12px; }"
+        "pre code { background:transparent; padding:0; }"
+        "blockquote { margin:0.5em 0; padding:4px 10px; border-left:3px solid #888; color:#ccc; }"
+        "a { color:#7ab8f5; }"
+        ".attachment { color:#aaa; font-size:11px; }"
+        "</style>"
+        "</head>"
+        "<body>"
+    );
 
-    for (const auto &item : m_history) {
-        const bool isModel = (item.role == QStringLiteral("model"));
-        html += QStringLiteral(
-                    "<div style='margin:8px 0; text-align:%1;'><span style='display:inline-block; padding:8px; "
-                    "border-radius:8px; background:%2;'>%3</span></div>"
-        )
-                    .arg(
-                        isModel ? QStringLiteral("left") : QStringLiteral("right"),
-                        isModel ? QStringLiteral("#2A2A2A") : QStringLiteral("#164A8A"),
-                        escapeHtml(item.text)
-                    );
-    }
+    for (const auto &item : m_history)
+        html += messageHtml(item.role, item.text, !item.imageBase64.isEmpty());
 
-    if (!pendingAssistantText.isEmpty()) {
-        html += QStringLiteral(
-                    "<div style='margin:8px 0; text-align:left;'><span style='display:inline-block; padding:8px; "
-                    "border-radius:8px; background:#2A2A2A;'>%1</span></div>"
-        )
-                    .arg(escapeHtml(pendingAssistantText));
-    }
+    if (!pendingAssistantText.isEmpty())
+        html += messageHtml(QStringLiteral("model"), pendingAssistantText, false, true);
 
     html += QStringLiteral("</body></html>");
     return html;
@@ -334,11 +392,23 @@ QString Chat::applyCommandTemplate(const QString &rawPrompt) const {
 }
 
 QString Chat::capturePrimaryScreenBase64Png() const {
+    return pixmapToBase64Png(capturePrimaryScreenPixmap());
+}
+
+QPixmap Chat::capturePrimaryScreenPixmap() const {
     QScreen *screen = QGuiApplication::primaryScreen();
     if (!screen)
         return {};
 
-    return pixmapToBase64Png(screen->grabWindow(0));
+    if (m_services)
+        m_services->hideAllPluginWindows();
+
+    const QPixmap screenshot = screen->grabWindow(0);
+
+    if (m_services)
+        m_services->showAllPluginWindows();
+
+    return screenshot;
 }
 
 QString Chat::pixmapToBase64Png(const QPixmap &pixmap) {

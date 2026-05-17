@@ -1,7 +1,9 @@
 {
   "_": {
     "name": "Draw",
-    "default_geometry": [390, 10, 210, 0]
+    "default_geometry": [390, 10, 210, 0],
+    "version": 1,
+    "description": "Screen drawing overlay"
   },
   "draw_toggle": "ctrl+shift+d",
   "undo": "ctrl+z"

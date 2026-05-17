@@ -12,9 +12,10 @@
 class QHBoxLayout;
 class QJsonObject;
 class QLineEdit;
-class QPushButton;
 class QNetworkAccessManager;
 class QPixmap;
+class QPushButton;
+class QTextBrowser;
 
 class SnipOverlay;
 class QuolPopupWindow;
@@ -48,8 +49,10 @@ private:
     void ensureOutputWindow();
     void setOutputText(const QString &html);
     QString buildConversationHtml(const QString &pendingAssistantText = QString()) const;
+    void centerOutputWindow();
 
     QString applyCommandTemplate(const QString &rawPrompt) const;
+    QPixmap capturePrimaryScreenPixmap() const;
     QString capturePrimaryScreenBase64Png() const;
     static QString pixmapToBase64Png(const QPixmap &pixmap);
 
@@ -66,6 +69,7 @@ private:
 
     QString m_pluginRootPath;
     QJsonObject m_pluginConfig;
+    QuolServices *m_services = nullptr;
 
     QStringList m_providers = {"groq", "gemini", "ollama"};
     int m_providerIndex = 0;
@@ -91,6 +95,7 @@ private:
     QPushButton *m_snipButton = nullptr;
 
     QuolPopupWindow *m_outputWindow = nullptr;
+    QTextBrowser *m_outputBrowser = nullptr;
     SnipOverlay *m_snipOverlay = nullptr;
     QNetworkAccessManager *m_network = nullptr;
     QNetworkReply *m_reply = nullptr;
