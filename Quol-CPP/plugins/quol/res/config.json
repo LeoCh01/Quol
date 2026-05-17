@@ -3,11 +3,11 @@
     "default_geometry": [10, 10, 200, 0],
     "plugins": ["example"],
     "name": "Quol",
-    "version": 1,
+    "version": "1.0.0",
     "description": "Main Quol control panel"
   },
   "startup": false,
   "reset_pos": false,
   "toggle_key": "backtick",
-  "transition": [["none", "rand"], 1]
+  "transition": [["none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand", "fire"], 6]
 }

@@ -47,7 +47,11 @@ add_subdirectory(plugins/colorPicker)
 add_subdirectory(plugins/chat)
 add_subdirectory(plugins/draw)
 
+add_subdirectory(transitions/fire)
+
 add_custom_command(TARGET Quol POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        $<TARGET_FILE_DIR:Quol>/transitions
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_CURRENT_SOURCE_DIR}/settings.default.json
         $<TARGET_FILE_DIR:Quol>/settings.json

@@ -322,7 +322,9 @@ void QuolMainWindow::copySettingsToMainConfig() {
     config.insert("toggle_key", m_settings->data().value("toggle_key").toString("backtick"));
 
     QString transition = m_settings->data().value("transition").toString("none").toLower();
-    QJsonArray transitionOptions = QJsonArray{"none", "rand"};
+    QJsonArray transitionOptions = QJsonArray{
+        "none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand", "fire"
+    };
     int transitionIndex = -1;
     for (int i = 0; i < transitionOptions.size(); ++i) {
         if (transitionOptions.at(i).toString() == transition) {
@@ -361,8 +363,8 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
             const QJsonArray options = arr.at(0).toArray();
             const int idx = arr.at(1).toInt();
             if (idx >= 0 && idx < options.size()) {
-                const QString selected = options.at(idx).toString().toLower();
-                settings.insert("transition", selected == "rand" ? "rand" : "none");
+                const QString selected = options.at(idx).toString().trimmed().toLower();
+                settings.insert("transition", selected);
             }
         }
     }
