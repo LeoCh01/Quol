@@ -10,7 +10,6 @@
 TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFrame(parent), m_window(window) {
     setObjectName("title-bar");
     setFixedHeight(36);
-    setCursor(Qt::SizeAllCursor);
 
     auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(10, 0, 8, 0);
@@ -22,6 +21,7 @@ TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFr
     m_configBtn->setToolTip("Open config");
     m_configBtn->setVisible(false);
     m_configBtn->setCursor(Qt::PointingHandCursor);
+    m_configBtn->setFixedSize(24, 24);
 
     // Load the SVG icon for the config button
     const QString iconPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/config.svg";
@@ -34,6 +34,7 @@ TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFr
     m_closeBtn->setVisible(false);
     m_closeBtn->setCursor(Qt::PointingHandCursor);
     m_closeBtn->setObjectName("close-btn");
+    m_closeBtn->setFixedSize(24, 24);
     const QString closeIconPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/close.svg";
     m_closeBtn->setIcon(QIcon(closeIconPath));
     layout->addWidget(m_closeBtn);

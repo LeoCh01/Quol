@@ -1,6 +1,6 @@
 {
   "_": {
-    "default_geometry": [320, 230, 280, 0],
+    "default_geometry": [400, 400, 280, 0],
     "name": "Example",
     "version": 1,
     "description": "Example Quol C++ plugin"

@@ -188,11 +188,13 @@ void Chance::showConfetti() {
 
     m_confettiLabel = new QLabel(m_resultLabel->parentWidget());
     m_confettiLabel->setAlignment(Qt::AlignCenter);
-    m_gridLayout->addWidget(m_confettiLabel, 0, 0, 1, 2);
+    m_confettiLabel->setGeometry(m_resultLabel->geometry());
+    m_confettiLabel->raise();
 
     m_confettiMovie = new QMovie(m_pluginRootPath + QStringLiteral("/res/img/") + CONFETTI);
     m_confettiMovie->setSpeed(150);
     m_confettiLabel->setMovie(m_confettiMovie);
+    m_confettiLabel->show();
     m_confettiMovie->start();
 
     QTimer::singleShot(1700, this, &Chance::hideConfetti);
@@ -207,8 +209,7 @@ void Chance::hideConfetti() {
         m_confettiMovie = nullptr;
     }
 
-    if (m_confettiLabel && m_gridLayout) {
-        m_gridLayout->removeWidget(m_confettiLabel);
+    if (m_confettiLabel) {
         m_confettiLabel->deleteLater();
         m_confettiLabel = nullptr;
     }

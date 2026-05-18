@@ -77,8 +77,6 @@ void ColorPicker::initialize(const QString &pluginRootPath, const PluginConfig &
 
     if (QScreen *screen = QGuiApplication::primaryScreen())
         m_sf = screen->devicePixelRatio();
-
-    applyVisualConfig();
 }
 
 void ColorPicker::onUpdateConfig(const PluginConfig &pluginConfig) {
@@ -98,7 +96,7 @@ void ColorPicker::shutdown() {
 }
 
 void ColorPicker::applyVisualConfig() {
-    int sampleSize = m_cfg.get("sample_size", kDefaultSampleSize).toInt(kDefaultSampleSize);
+    int sampleSize = m_cfg.get(QStringLiteral("sample_size")).toInt();
     sampleSize = std::clamp(sampleSize, 1, 31);
     if ((sampleSize % 2) == 0)
         sampleSize += 1;
@@ -208,8 +206,8 @@ void ColorPicker::updateColor() {
 
     if (m_rgbLabel)
         m_rgbLabel->setText(
-            QString::number(center.red()) + QStringLiteral(", ") + QString::number(center.green())
-            + QStringLiteral(", ") + QString::number(center.blue())
+            QString::number(center.red()) + QStringLiteral(",") + QString::number(center.green()) + QStringLiteral(",")
+            + QString::number(center.blue())
         );
 }
 

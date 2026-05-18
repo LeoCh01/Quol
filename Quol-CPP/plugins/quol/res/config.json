@@ -1,6 +1,6 @@
 {
   "_": {
-    "default_geometry": [10, 10, 200, 0],
+    "default_geometry": [10, 10, 180, 0],
     "plugins": ["example"],
     "name": "Quol",
     "version": "1.0.0",

@@ -23,8 +23,7 @@ public:
     void shutdown() override;
 
 private:
-    static constexpr int kPreviewSize = 60;
-    static constexpr int kDefaultSampleSize = 7;
+    static constexpr int kPreviewSize = 50;
 
     void togglePicking();
     void stopPicking();
@@ -36,7 +35,7 @@ private:
     PluginConfig m_cfg;
     QuolServices *m_services = nullptr;
     QString m_escapeHotkeyId;  // handle returned by InputManager::addHotkey
-    int m_sampleSize = kDefaultSampleSize;
+    int m_sampleSize = 7;
 
     QWidget *m_widget = nullptr;
     qreal m_sf = 1.0;
