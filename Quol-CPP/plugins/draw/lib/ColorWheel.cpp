@@ -13,7 +13,8 @@ ColorWheel::ColorWheel(int circleRadius, int squareSize, int thickness, QWidget 
     const int innerRadius = m_circleRadius - m_thickness;
     const int autoSquare = static_cast<int>(innerRadius / 1.2);
     m_squareHalf = (squareSize > 0) ? squareSize / 2 : autoSquare;
-    setMinimumSize(circleRadius * 2 + 12, circleRadius * 2 + 12);
+    const int side = circleRadius * 2 + 16;
+    setFixedSize(side, side);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setCursor(Qt::CrossCursor);
 }

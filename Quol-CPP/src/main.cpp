@@ -1,6 +1,10 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QFile>
+#include <QIcon>
+#include <QMenu>
+#include <QProcess>
+#include <QSystemTrayIcon>
 
 #include "core/AppSettingsManager.hpp"
 #include "core/InputManager.hpp"
@@ -12,15 +16,20 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QString appIconPath = appDir + QStringLiteral("/res/icon.ico");
+    if (QFile::exists(appIconPath)) {
+        app.setWindowIcon(QIcon(appIconPath));
+    }
+
     // Load settings
-    const QString settingsPath = QCoreApplication::applicationDirPath() + QStringLiteral("/settings.json");
+    const QString settingsPath = appDir + QStringLiteral("/settings.json");
     AppSettingsManager settings(settingsPath);
     settings.load();
 
     // Load stylesheet
     const QString style = settings.settingString(QStringLiteral("style"), QStringLiteral("dark"));
-    const QString qssPath =
-        QCoreApplication::applicationDirPath() + QStringLiteral("/res/styles/") + style + QStringLiteral("/styles.qss");
+    const QString qssPath = appDir + QStringLiteral("/res/styles/") + style + QStringLiteral("/styles.qss");
     QFile qssFile(qssPath);
     if (qssFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         app.setStyleSheet(QString::fromUtf8(qssFile.readAll()));
@@ -70,36 +79,104 @@ int main(int argc, char *argv[]) {
         true
     );
 
-    QObject::connect(
-        &mainWindow,
-        &QuolMainWindow::mainConfigApplied,
-        [&](const QString &toggleKey, bool resetPos, const QString &transitionType) {
-            const QString nextToggleKey = toggleKey.toLower();
-            if (nextToggleKey != activeToggleKey) {
-                if (!mainHotkeyId.isEmpty()) {
-                    inputManager.removeHotkey(mainHotkeyId);
-                }
+    // System tray icon + menu
+    // "ON" = windows visible + hotkey active. "OFF" = everything hidden + hotkey removed.
+    QSystemTrayIcon trayIcon;
+    QMenu trayMenu;
+    QAction *toggleAction = nullptr;
+    bool quolOn = true;
 
+    auto setQuolOn = [&](bool on) {
+        quolOn = on;
+
+        if (on) {
+            mainWindow.show();
+            for (auto *w : pluginManager.windows())
+                w->show();
+            if (mainHotkeyId.isEmpty())
                 mainHotkeyId = inputManager.addHotkey(
-                    nextToggleKey,
+                    activeToggleKey,
                     [&]() {
                         transitions.toggleAll();
                         mainWindow.updateToggleButton();
                     },
                     true
                 );
-                if (!mainHotkeyId.isEmpty()) {
-                    activeToggleKey = nextToggleKey;
-                }
+        } else {
+            // Ensure windows are fully shown before hiding (cancel any transition)
+            if (transitions.isHidden())
+                transitions.toggleAll();
+            mainWindow.hide();
+            for (auto *w : pluginManager.windows())
+                w->hide();
+            if (!mainHotkeyId.isEmpty()) {
+                inputManager.removeHotkey(mainHotkeyId);
+                mainHotkeyId.clear();
+            }
+        }
+
+        if (toggleAction)
+            toggleAction->setText(on ? QStringLiteral("Turn OFF") : QStringLiteral("Turn ON"));
+        trayIcon.setToolTip(on ? QStringLiteral("Quol — ON") : QStringLiteral("Quol — OFF"));
+    };
+
+    if (QSystemTrayIcon::isSystemTrayAvailable()) {
+        trayIcon.setIcon(app.windowIcon());
+        trayIcon.setToolTip(QStringLiteral("Quol — ON"));
+
+        toggleAction = trayMenu.addAction(QStringLiteral("Turn OFF"));
+        QAction *reloadAction = trayMenu.addAction(QStringLiteral("Reload"));
+        trayMenu.addSeparator();
+        QAction *quitAction = trayMenu.addAction(QStringLiteral("Quit"));
+
+        QObject::connect(toggleAction, &QAction::triggered, [&]() { setQuolOn(!quolOn); });
+
+        QObject::connect(&trayIcon, &QSystemTrayIcon::activated, [&](QSystemTrayIcon::ActivationReason reason) {
+            if (reason == QSystemTrayIcon::Trigger)
+                setQuolOn(!quolOn);
+        });
+
+        QObject::connect(reloadAction, &QAction::triggered, [&]() {
+            trayIcon.hide();
+            QProcess::startDetached(QCoreApplication::applicationFilePath());
+            QCoreApplication::quit();
+        });
+
+        QObject::connect(quitAction, &QAction::triggered, [&]() {
+            trayIcon.hide();
+            QApplication::quit();
+        });
+
+        trayIcon.setContextMenu(&trayMenu);
+        trayIcon.show();
+    }
+
+    QObject::connect(
+        &mainWindow,
+        &QuolMainWindow::mainConfigApplied,
+        [&](const QString &toggleKey, bool resetPos, const QString &newTransitionType) {
+            const QString nextKey = toggleKey.toLower();
+            if (nextKey != activeToggleKey) {
+                if (!mainHotkeyId.isEmpty())
+                    inputManager.removeHotkey(mainHotkeyId);
+                activeToggleKey = nextKey;
+                if (quolOn)
+                    mainHotkeyId = inputManager.addHotkey(
+                        activeToggleKey,
+                        [&]() {
+                            transitions.toggleAll();
+                            mainWindow.updateToggleButton();
+                        },
+                        true
+                    );
             }
 
-            transitions.setType(transitionType);
+            transitions.setType(newTransitionType);
 
             if (resetPos) {
                 mainWindow.applyGeometryFromConfig();
-                for (auto *win : pluginManager.windows()) {
+                for (auto *win : pluginManager.windows())
                     win->applyGeometryFromConfig();
-                }
             }
         }
     );

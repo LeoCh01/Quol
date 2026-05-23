@@ -23,7 +23,7 @@
 QWidget *ColorPicker::createWidget(QWidget *parent) {
     m_widget = new QWidget(parent);
     auto *gridLayout = new QGridLayout(m_widget);
-    gridLayout->setContentsMargins(4, 4, 4, 4);
+    gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(4);
 
     // Preview label (fixed size — zoom adapts to sample size)

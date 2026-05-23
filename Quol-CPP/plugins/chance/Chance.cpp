@@ -32,7 +32,7 @@ static const QStringList DICE_FRAMES = {
 QWidget *Chance::createWidget(QWidget *parent) {
     auto *widget = new QWidget(parent);
     auto *gridLayout = new QGridLayout(widget);
-    gridLayout->setContentsMargins(4, 4, 4, 4);
+    gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(4);
 
     // --- Image label (click to flip/roll) ---

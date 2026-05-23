@@ -31,7 +31,7 @@ QWidget *Keymap::createWidget(QWidget *parent) {
     // GroupBox containing the mapping group rows
     auto *groupBox = new QGroupBox("Key Mappings", m_rootWidget);
     auto *groupBoxLayout = new QVBoxLayout(groupBox);
-    groupBoxLayout->setContentsMargins(4, 6, 4, 4);
+    groupBoxLayout->setContentsMargins(4, 4, 4, 4);
     groupBoxLayout->setSpacing(2);
 
     m_rowsLayout = groupBoxLayout;

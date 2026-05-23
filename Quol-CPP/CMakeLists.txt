@@ -36,6 +36,17 @@ add_executable(Quol WIN32
     src/ui/TransitionManager.cpp
 )
 
+if (WIN32)
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/icons/icon.ico
+         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/app_icon.rc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/app_icon.rc
+        @ONLY
+    )
+    target_sources(Quol PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/app_icon.rc)
+endif()
+
 target_include_directories(Quol PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
@@ -68,6 +79,11 @@ add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/quol/res/img
         $<TARGET_FILE_DIR:Quol>/plugins/quol/res/img
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        $<TARGET_FILE_DIR:Quol>/res
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/icons/icon.ico
+        $<TARGET_FILE_DIR:Quol>/res/icon.ico
     COMMAND ${CMAKE_COMMAND} -E make_directory
         $<TARGET_FILE_DIR:Quol>/res/styles/dark
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

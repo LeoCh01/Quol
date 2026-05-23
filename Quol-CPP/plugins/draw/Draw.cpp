@@ -36,13 +36,13 @@ void Draw::initialize(const QString &rootPath, const PluginConfig &pluginConfig,
 QWidget *Draw::createWidget(QWidget *parent) {
     m_widget = new QWidget(parent);
     auto *root = new QVBoxLayout(m_widget);
-    root->setContentsMargins(4, 4, 4, 4);
+    root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(4);
     root->setAlignment(Qt::AlignTop);
 
     auto *topRow = new QHBoxLayout();
 
-    m_colorWheel = new ColorWheel(30, -1, 12, m_widget);
+    m_colorWheel = new ColorWheel(28, -1, 12, m_widget);
     m_colorWheel->setColor(m_penColor);
     connect(m_colorWheel, &ColorWheel::colorChanged, this, &Draw::onColorChanged);
 
