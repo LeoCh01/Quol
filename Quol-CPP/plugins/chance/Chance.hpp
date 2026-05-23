@@ -5,7 +5,6 @@
 #include <QObject>
 #include <QStringList>
 
-class QGridLayout;
 class QLabel;
 class QMovie;
 class QPushButton;
@@ -43,7 +42,6 @@ private:
     int m_totalFlips = 0;
     QStringList m_animFrames;
 
-    QGridLayout *m_gridLayout = nullptr;
     QLabel *m_resultLabel = nullptr;
     QPushButton *m_coinButton = nullptr;
     QPushButton *m_diceButton = nullptr;

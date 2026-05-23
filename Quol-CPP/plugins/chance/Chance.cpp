@@ -31,9 +31,9 @@ static const QStringList DICE_FRAMES = {
 // ---------------------------------------------------------------------------
 QWidget *Chance::createWidget(QWidget *parent) {
     auto *widget = new QWidget(parent);
-    m_gridLayout = new QGridLayout(widget);
-    m_gridLayout->setContentsMargins(4, 4, 4, 4);
-    m_gridLayout->setSpacing(4);
+    auto *gridLayout = new QGridLayout(widget);
+    gridLayout->setContentsMargins(4, 4, 4, 4);
+    gridLayout->setSpacing(4);
 
     // --- Image label (click to flip/roll) ---
     m_resultLabel = new QLabel(widget);
@@ -41,13 +41,13 @@ QWidget *Chance::createWidget(QWidget *parent) {
     m_resultLabel->setCursor(Qt::PointingHandCursor);
     m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + COIN_PLACEHOLDER));
     m_resultLabel->installEventFilter(this);
-    m_gridLayout->addWidget(m_resultLabel, 0, 0, 1, 2);
+    gridLayout->addWidget(m_resultLabel, 0, 0, 1, 2);
 
     // --- Mode buttons ---
     m_coinButton = new QPushButton(QStringLiteral("Coin"), widget);
     m_diceButton = new QPushButton(QStringLiteral("Dice"), widget);
-    m_gridLayout->addWidget(m_coinButton, 1, 0);
-    m_gridLayout->addWidget(m_diceButton, 1, 1);
+    gridLayout->addWidget(m_coinButton, 1, 0);
+    gridLayout->addWidget(m_diceButton, 1, 1);
 
     QObject::connect(m_coinButton, &QPushButton::clicked, this, &Chance::setCoinMode);
     QObject::connect(m_diceButton, &QPushButton::clicked, this, &Chance::setDiceMode);
@@ -81,7 +81,6 @@ void Chance::shutdown() {
     m_coinButton = nullptr;
     m_diceButton = nullptr;
     m_confettiLabel = nullptr;
-    m_gridLayout = nullptr;
     m_isRunning = false;
 }
 
@@ -183,7 +182,7 @@ void Chance::startFlipAnimation(const QStringList &frames, int totalFlips) {
 }
 
 void Chance::showConfetti() {
-    if (!m_gridLayout || !m_resultLabel)
+    if (!m_resultLabel)
         return;
 
     m_confettiLabel = new QLabel(m_resultLabel->parentWidget());

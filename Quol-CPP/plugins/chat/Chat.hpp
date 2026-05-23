@@ -10,7 +10,6 @@
 #include <QStringList>
 #include <QVector>
 
-class QHBoxLayout;
 class QLineEdit;
 class QNetworkAccessManager;
 class QPixmap;
@@ -87,7 +86,6 @@ private:
     QString m_pendingSnipImageBase64;
 
     QWidget *m_widget = nullptr;
-    QHBoxLayout *m_layout = nullptr;
     QPushButton *m_cycleButton = nullptr;
     QPushButton *m_clearButton = nullptr;
     QLineEdit *m_promptEdit = nullptr;

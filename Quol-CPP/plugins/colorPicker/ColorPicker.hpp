@@ -4,7 +4,6 @@
 
 #include <QObject>
 
-class QGridLayout;
 class QIcon;
 class QLabel;
 class QPushButton;
@@ -41,7 +40,6 @@ private:
     qreal m_sf = 1.0;
     bool m_picking = false;
 
-    QGridLayout *m_gridLayout = nullptr;
     QLabel *m_previewLabel = nullptr;
     QLabel *m_hexLabel = nullptr;
     QLabel *m_rgbLabel = nullptr;

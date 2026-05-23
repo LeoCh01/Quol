@@ -22,27 +22,27 @@
 // ---------------------------------------------------------------------------
 QWidget *ColorPicker::createWidget(QWidget *parent) {
     m_widget = new QWidget(parent);
-    m_gridLayout = new QGridLayout(m_widget);
-    m_gridLayout->setContentsMargins(4, 4, 4, 4);
-    m_gridLayout->setSpacing(4);
+    auto *gridLayout = new QGridLayout(m_widget);
+    gridLayout->setContentsMargins(4, 4, 4, 4);
+    gridLayout->setSpacing(4);
 
     // Preview label (fixed size — zoom adapts to sample size)
     m_previewLabel = new QLabel(m_widget);
     m_previewLabel->setFixedSize(kPreviewSize, kPreviewSize);
     m_previewLabel->setAlignment(Qt::AlignCenter);
-    m_gridLayout->addWidget(m_previewLabel, 0, 0, 3, 1);
+    gridLayout->addWidget(m_previewLabel, 0, 0, 3, 1);
 
     // Hex value (selectable so user can copy)
     m_hexLabel = new QLabel(QStringLiteral("#------"), m_widget);
     m_hexLabel->setAlignment(Qt::AlignCenter);
     m_hexLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    m_gridLayout->addWidget(m_hexLabel, 0, 1);
+    gridLayout->addWidget(m_hexLabel, 0, 1);
 
     // RGB value (selectable)
     m_rgbLabel = new QLabel(QStringLiteral("r, g, b"), m_widget);
     m_rgbLabel->setAlignment(Qt::AlignCenter);
     m_rgbLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    m_gridLayout->addWidget(m_rgbLabel, 1, 1);
+    gridLayout->addWidget(m_rgbLabel, 1, 1);
 
     // Pick button with eyedropper icon
     m_pickButton = new QPushButton(m_widget);
@@ -50,7 +50,7 @@ QWidget *ColorPicker::createWidget(QWidget *parent) {
     if (!m_pluginRootPath.isEmpty()) {
         m_pickButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/pick.svg")));
     }
-    m_gridLayout->addWidget(m_pickButton, 2, 1);
+    gridLayout->addWidget(m_pickButton, 2, 1);
 
     QObject::connect(m_pickButton, &QPushButton::clicked, this, &ColorPicker::togglePicking);
 
@@ -91,7 +91,6 @@ void ColorPicker::shutdown() {
     m_hexLabel = nullptr;
     m_rgbLabel = nullptr;
     m_pickButton = nullptr;
-    m_gridLayout = nullptr;
     m_widget = nullptr;
 }
 

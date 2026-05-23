@@ -66,9 +66,9 @@ QString messageHtml(const QString &role, const QString &text, bool hasImage, boo
 
 QWidget *Chat::createWidget(QWidget *parent) {
     m_widget = new QWidget(parent);
-    m_layout = new QHBoxLayout(m_widget);
-    m_layout->setContentsMargins(0, 0, 0, 0);
-    m_layout->setSpacing(4);
+    auto *layout = new QHBoxLayout(m_widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(4);
 
     m_cycleButton = new QPushButton(m_widget);
     m_clearButton = new QPushButton(m_widget);
@@ -89,11 +89,11 @@ QWidget *Chat::createWidget(QWidget *parent) {
     m_includeImageButton->setToolTip(QStringLiteral("Include screenshot"));
     m_snipButton->setToolTip(QStringLiteral("Snip mode"));
 
-    m_layout->addWidget(m_cycleButton);
-    m_layout->addWidget(m_clearButton);
-    m_layout->addWidget(m_promptEdit, 1);
-    m_layout->addWidget(m_includeImageButton);
-    m_layout->addWidget(m_snipButton);
+    layout->addWidget(m_cycleButton);
+    layout->addWidget(m_clearButton);
+    layout->addWidget(m_promptEdit, 1);
+    layout->addWidget(m_includeImageButton);
+    layout->addWidget(m_snipButton);
 
     QObject::connect(m_cycleButton, &QPushButton::clicked, this, &Chat::cycleProvider);
     QObject::connect(m_clearButton, &QPushButton::clicked, this, &Chat::clearMessage);
@@ -142,7 +142,6 @@ void Chat::shutdown() {
     m_outputBrowser = nullptr;
     m_services = nullptr;
 
-    m_layout = nullptr;
     m_cycleButton = nullptr;
     m_clearButton = nullptr;
     m_promptEdit = nullptr;

@@ -11,8 +11,8 @@ ColorWheel::ColorWheel(int circleRadius, int squareSize, int thickness, QWidget 
     : QWidget(parent), m_circleRadius(circleRadius), m_thickness(thickness) {
     // Fit the SV square inside the inner edge of the ring
     const int innerRadius = m_circleRadius - m_thickness;
-    const int autoHalf = static_cast<int>(innerRadius / std::sqrt(2.0));
-    m_squareHalf = (squareSize > 0) ? squareSize / 2 : autoHalf;
+    const int autoSquare = static_cast<int>(innerRadius / 1.2);
+    m_squareHalf = (squareSize > 0) ? squareSize / 2 : autoSquare;
     setMinimumSize(circleRadius * 2 + 12, circleRadius * 2 + 12);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setCursor(Qt::CrossCursor);

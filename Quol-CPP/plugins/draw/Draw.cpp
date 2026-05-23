@@ -41,23 +41,16 @@ QWidget *Draw::createWidget(QWidget *parent) {
     root->setAlignment(Qt::AlignTop);
 
     auto *topRow = new QHBoxLayout();
-    topRow->setContentsMargins(0, 0, 0, 0);
-    topRow->setSpacing(6);
 
-    m_colorWheel = new ColorWheel(36, -1, 12, m_widget);
-    m_colorWheel->setFixedSize(90, 90);
+    m_colorWheel = new ColorWheel(30, -1, 12, m_widget);
     m_colorWheel->setColor(m_penColor);
     connect(m_colorWheel, &ColorWheel::colorChanged, this, &Draw::onColorChanged);
 
     auto *controlCol = new QVBoxLayout();
-    controlCol->setContentsMargins(0, 0, 0, 0);
-    controlCol->setSpacing(4);
     controlCol->setAlignment(Qt::AlignTop);
 
     // Buttons row (right side)
     auto *btnRow = new QHBoxLayout();
-    btnRow->setContentsMargins(0, 0, 0, 0);
-    btnRow->setSpacing(4);
 
     m_clearButton = new QPushButton(m_widget);
     m_clearButton->setIcon(QIcon(m_pluginRootPath + QStringLiteral("/res/img/clear.svg")));
@@ -83,7 +76,6 @@ QWidget *Draw::createWidget(QWidget *parent) {
 
     // Stroke row (right side)
     auto *sizeRow = new QHBoxLayout();
-    sizeRow->setContentsMargins(0, 0, 0, 0);
     sizeRow->setSpacing(6);
 
     m_sizeLabel = new QLabel("2", m_widget);
