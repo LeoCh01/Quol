@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/InputManager.hpp"
 #include "plugin_api/IQuolPlugin.hpp"
 
 #include <QObject>
@@ -29,7 +30,12 @@ private:
     QString m_hotkeyId;
     QString m_keyListenId;
 
+public slots:
+    void onMouseEvent(InputManager::MouseEvent event);
+
+private:
     QLabel *m_titleLabel = nullptr;
+    QLabel *m_mouseLabel = nullptr;
     QLabel *m_valueLabel = nullptr;
     QLabel *m_nestedNoteLabel = nullptr;
     QLabel *m_nestedEnabledLabel = nullptr;

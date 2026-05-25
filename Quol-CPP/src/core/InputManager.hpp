@@ -40,6 +40,12 @@ public:
         int wheelDelta = 0;  // non-zero for WheelUp / WheelDown
     };
 
+signals:
+    // Emitted for every mouse event received by the low-level hook.
+    // Connect with Qt::QueuedConnection to safely update UI from the hook callback.
+    void mouseEventReceived(InputManager::MouseEvent event);
+
+public:
     explicit InputManager(QObject *parent = nullptr);
     ~InputManager() override;
 
@@ -70,10 +76,8 @@ public:
     void removeKeyRemap(const QString &id);
 
     // --- Mouse listeners ---
-    // callback is fired for mouse move / click / scroll events.
-    // Returns a handle ID.
-    QString addMouseListener(std::function<void(const MouseEvent &)> callback);
-    void removeMouseListener(const QString &id);
+    // Connect to mouseEventReceived(MouseEvent) signal instead.
+    // The signal is emitted on the main thread for every mouse hook event.
 
     // --- Key injection ---
     void sendKeys(const QString &combo);
@@ -119,17 +123,12 @@ private:
         QString dstCombo;
     };
 
-    struct MouseListenerEntry {
-        std::function<void(const MouseEvent &)> callback;
-    };
-
     int m_idCounter = 0;
     bool m_running = false;
 
     QHash<QString, HotkeyEntry> m_hotkeys;
     QHash<QString, KeyListenerEntry> m_keyListeners;
     QHash<QString, KeyRemapEntry> m_keyRemaps;
-    QHash<QString, MouseListenerEntry> m_mouseListeners;
 
 #ifdef Q_OS_WIN
     void *m_keyboardHook = nullptr;

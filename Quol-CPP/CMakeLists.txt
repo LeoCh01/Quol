@@ -60,6 +60,7 @@ add_subdirectory(plugins/colorPicker)
 add_subdirectory(plugins/chat)
 add_subdirectory(plugins/draw)
 add_subdirectory(plugins/keymap)
+add_subdirectory(plugins/macro)
 
 
 

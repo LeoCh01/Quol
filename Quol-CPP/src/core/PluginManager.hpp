@@ -17,6 +17,7 @@ public:
     explicit PluginManager(QObject *parent = nullptr);
     ~PluginManager() override;
 
+    void shutdownPlugins();
     void loadPlugins(AppSettingsManager *settings, TransitionManager *transitions, QuolServices *services);
     QList<QuolWindow *> windows() const;
 

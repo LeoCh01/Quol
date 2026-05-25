@@ -1,6 +1,7 @@
 #include "core/InputManager.hpp"
 
 #include <QCoreApplication>
+#include <QMetaObject>
 #include <algorithm>
 
 #ifdef Q_OS_WIN
@@ -276,7 +277,7 @@ InputManager::~InputManager() {
     // UnhookWindowsHookEx blocks until any in-progress hook callback finishes.
     m_hotkeys.clear();
     m_keyListeners.clear();
-    m_mouseListeners.clear();
+    m_keyRemaps.clear();
 #ifdef Q_OS_WIN
     g_inputManager = nullptr;
 #endif
@@ -294,8 +295,8 @@ void InputManager::start() {
     QCoreApplication::instance()->installNativeEventFilter(this);
 #ifdef Q_OS_WIN
     g_inputManager = this;
-    m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardHookProc, GetModuleHandle(nullptr), 0);
-    // Mouse hook is installed lazily in addMouseListener.
+    m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardHookProc, nullptr, 0);
+    m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseHookProc, nullptr, 0);
 #endif
     m_running = true;
 }
@@ -312,16 +313,23 @@ void InputManager::stop() {
 #endif
     m_hotkeys.clear();
     m_keyListeners.clear();
-    m_mouseListeners.clear();
+    m_keyRemaps.clear();
 
     QCoreApplication::instance()->removeNativeEventFilter(this);
 #ifdef Q_OS_WIN
+    // Null g_inputManager first so any in-flight hook callbacks bail immediately.
+    g_inputManager = nullptr;
+    // Discard any invokeMethod lambdas queued by handleMouseEvent/handleKeyEvent
+    // that haven't run yet, to prevent draining hundreds of stale events on exit.
+    QCoreApplication::instance()->removePostedEvents(this);
     if (m_keyboardHook) {
         UnhookWindowsHookEx(reinterpret_cast<HHOOK>(m_keyboardHook));
         m_keyboardHook = nullptr;
     }
-    // m_mouseHook is managed lazily; already removed when last listener was removed.
-    g_inputManager = nullptr;
+    if (m_mouseHook) {
+        UnhookWindowsHookEx(reinterpret_cast<HHOOK>(m_mouseHook));
+        m_mouseHook = nullptr;
+    }
 #endif
     m_running = false;
 }
@@ -437,28 +445,6 @@ QString InputManager::addKeyRemap(const QString &srcKey, const QString &dstCombo
 
 void InputManager::removeKeyRemap(const QString &id) {
     m_keyRemaps.remove(id);
-}
-
-QString InputManager::addMouseListener(std::function<void(const MouseEvent &)> callback) {
-    start();
-    const QString id = nextId();
-    m_mouseListeners.insert(id, MouseListenerEntry{std::move(callback)});
-#ifdef Q_OS_WIN
-    if (!m_mouseHook) {
-        m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseHookProc, GetModuleHandle(nullptr), 0);
-    }
-#endif
-    return id;
-}
-
-void InputManager::removeMouseListener(const QString &id) {
-    m_mouseListeners.remove(id);
-#ifdef Q_OS_WIN
-    if (m_mouseListeners.isEmpty() && m_mouseHook) {
-        UnhookWindowsHookEx(reinterpret_cast<HHOOK>(m_mouseHook));
-        m_mouseHook = nullptr;
-    }
-#endif
 }
 
 QStringList InputManager::availableKeys() const {
@@ -661,10 +647,6 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode, bool inj
 }
 
 void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wheelDelta) {
-    if (m_mouseListeners.isEmpty()) {
-        return;
-    }
-
     MouseEvent evt;
     evt.globalPos = QPoint(static_cast<int>(x), static_cast<int>(y));
     evt.wheelDelta = wheelDelta;
@@ -695,6 +677,9 @@ void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wh
         case WM_MOUSEWHEEL:
             evt.type = (wheelDelta >= 0) ? MouseEvent::Type::WheelUp : MouseEvent::Type::WheelDown;
             break;
+        case WM_MOUSEHWHEEL:
+            evt.type = (wheelDelta >= 0) ? MouseEvent::Type::WheelUp : MouseEvent::Type::WheelDown;
+            break;
         default:
             return;
     }
@@ -703,9 +688,5 @@ void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wh
     return;
 #endif
 
-    // Copy map to allow listeners to safely add/remove listeners inside the callback.
-    const auto listeners = m_mouseListeners;
-    for (const auto &entry : listeners) {
-        entry.callback(evt);
-    }
+    QMetaObject::invokeMethod(this, [this, evt]() { emit mouseEventReceived(evt); }, Qt::QueuedConnection);
 }

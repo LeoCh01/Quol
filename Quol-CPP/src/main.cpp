@@ -79,6 +79,21 @@ int main(int argc, char *argv[]) {
         true
     );
 
+    bool shutdownDone = false;
+    const auto performShutdown = [&]() {
+        if (shutdownDone)
+            return;
+        shutdownDone = true;
+
+        if (!mainHotkeyId.isEmpty()) {
+            inputManager.removeHotkey(mainHotkeyId);
+            mainHotkeyId.clear();
+        }
+
+        pluginManager.shutdownPlugins();
+        inputManager.stop();
+    };
+
     // System tray icon + menu
     // "ON" = windows visible + hotkey active. "OFF" = everything hidden + hotkey removed.
     QSystemTrayIcon trayIcon;
@@ -138,12 +153,14 @@ int main(int argc, char *argv[]) {
 
         QObject::connect(reloadAction, &QAction::triggered, [&]() {
             trayIcon.hide();
+            performShutdown();
             QProcess::startDetached(QCoreApplication::applicationFilePath());
             QCoreApplication::quit();
         });
 
         QObject::connect(quitAction, &QAction::triggered, [&]() {
             trayIcon.hide();
+            performShutdown();
             QApplication::quit();
         });
 
@@ -181,10 +198,9 @@ int main(int argc, char *argv[]) {
         }
     );
 
-    const int exitCode = app.exec();
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, [&]() { performShutdown(); });
 
-    if (!mainHotkeyId.isEmpty())
-        inputManager.removeHotkey(mainHotkeyId);
+    const int exitCode = app.exec();
 
     return exitCode;
 }

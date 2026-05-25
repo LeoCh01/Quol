@@ -34,14 +34,30 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
 }
 
 PluginManager::~PluginManager() {
-    qDeleteAll(m_windows);
-    m_windows.clear();
+    shutdownPlugins();
+}
 
+void PluginManager::shutdownPlugins() {
+    if (m_plugins.isEmpty() && m_windows.isEmpty())
+        return;
+
+    // 1) Let plugins detach hotkeys/listeners while InputManager is still alive.
     for (const auto &lp : std::as_const(m_plugins)) {
         if (lp.plugin) {
             lp.plugin->shutdown();
         }
-        delete lp.loader;
+    }
+
+    // 2) Destroy plugin-created widgets before unloading plugin DLLs.
+    qDeleteAll(m_windows);
+    m_windows.clear();
+
+    // 3) Unload plugin DLLs last.
+    for (const auto &lp : std::as_const(m_plugins)) {
+        if (lp.loader) {
+            lp.loader->unload();
+            delete lp.loader;
+        }
     }
     m_plugins.clear();
 }

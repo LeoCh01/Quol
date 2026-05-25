@@ -45,10 +45,12 @@ QWidget *Example::createWidget(QWidget *parent) {
     m_pressedLabel = new QLabel("Key down: (none)", widget);
     m_releasedLabel = new QLabel("Key up: (none)", widget);
     m_triggeredLabel = new QLabel("Triggered: (none)", widget);
+    m_mouseLabel = new QLabel("Mouse: (none)", widget);
 
     layout->addWidget(m_pressedLabel);
     layout->addWidget(m_releasedLabel);
     layout->addWidget(m_triggeredLabel);
+    layout->addWidget(m_mouseLabel);
 
     refreshLabels();
 
@@ -70,6 +72,8 @@ void Example::initialize(const QString &pluginRootPath, const PluginConfig &plug
                     m_releasedLabel->setText(QStringLiteral("Key up: ") + key);
             }
         });
+
+        connect(m_services->inputManager(), &InputManager::mouseEventReceived, this, &Example::onMouseEvent);
     }
 
     refreshLabels();
@@ -116,6 +120,38 @@ void Example::applyHotkeyFromConfig() {
                 m_triggeredLabel->setText(QStringLiteral("Triggered: ") + combo);
         },
         true
+    );
+}
+
+void Example::onMouseEvent(InputManager::MouseEvent event) {
+    if (!m_mouseLabel)
+        return;
+    const QString typeStr = [&]() -> QString {
+        switch (event.type) {
+            case InputManager::MouseEvent::Type::Move:
+                return QStringLiteral("Move");
+            case InputManager::MouseEvent::Type::LeftDown:
+                return QStringLiteral("LDown");
+            case InputManager::MouseEvent::Type::LeftUp:
+                return QStringLiteral("LUp");
+            case InputManager::MouseEvent::Type::RightDown:
+                return QStringLiteral("RDown");
+            case InputManager::MouseEvent::Type::RightUp:
+                return QStringLiteral("RUp");
+            case InputManager::MouseEvent::Type::MiddleDown:
+                return QStringLiteral("MDown");
+            case InputManager::MouseEvent::Type::MiddleUp:
+                return QStringLiteral("MUp");
+            case InputManager::MouseEvent::Type::WheelUp:
+                return QStringLiteral("WheelUp");
+            case InputManager::MouseEvent::Type::WheelDown:
+                return QStringLiteral("WheelDown");
+            default:
+                return QStringLiteral("?");
+        }
+    }();
+    m_mouseLabel->setText(
+        QStringLiteral("Mouse: %1 (%2, %3)").arg(typeStr).arg(event.globalPos.x()).arg(event.globalPos.y())
     );
 }
 
