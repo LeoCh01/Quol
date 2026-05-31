@@ -128,6 +128,7 @@ private:
 
     // ── Listener handles ───────────────────────────────────────────────────
     QString m_keyListenId;
+    QString m_mouseListenId;
     bool m_listenersAttached = false;
 
     // ── UI widgets ─────────────────────────────────────────────────────────

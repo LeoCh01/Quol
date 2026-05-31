@@ -8,10 +8,17 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC_COMPILER_PREDEFINES OFF)
 
+# MinGW windres passes include paths unquoted to cc1, breaking paths with spaces.
+# The RC file needs no autogen includes, so strip -I flags from windres entirely.
+if(MINGW)
+    set(CMAKE_RC_COMPILE_OBJECT
+        "<CMAKE_RC_COMPILER> -O coff <DEFINES> <SOURCE> <OBJECT>")
+endif()
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 
-add_library(quol_core STATIC
+add_library(quol_core SHARED
     src/core/InputManager.cpp
     src/core/InputManager.hpp
     src/plugin_api/PluginConfig.cpp
@@ -23,6 +30,10 @@ target_include_directories(quol_core PUBLIC
 )
 
 target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
+
+set_target_properties(quol_core PROPERTIES
+    AUTOMOC_COMPILER_PREDEFINES OFF
+)
 
 add_executable(Quol WIN32
     src/main.cpp

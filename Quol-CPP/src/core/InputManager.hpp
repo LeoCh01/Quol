@@ -76,8 +76,10 @@ public:
     void removeKeyRemap(const QString &id);
 
     // --- Mouse listeners ---
-    // Connect to mouseEventReceived(MouseEvent) signal instead.
-    // The signal is emitted on the main thread for every mouse hook event.
+    // callback(event) is fired for every mouse event from the low-level hook.
+    // Returns a handle ID.
+    QString addMouseListener(std::function<void(const MouseEvent &)> callback);
+    void removeMouseListener(const QString &id);
 
     // --- Key injection ---
     void sendKeys(const QString &combo);
@@ -123,12 +125,17 @@ private:
         QString dstCombo;
     };
 
+    struct MouseListenerEntry {
+        std::function<void(const MouseEvent &)> callback;
+    };
+
     int m_idCounter = 0;
     bool m_running = false;
 
     QHash<QString, HotkeyEntry> m_hotkeys;
     QHash<QString, KeyListenerEntry> m_keyListeners;
     QHash<QString, KeyRemapEntry> m_keyRemaps;
+    QHash<QString, MouseListenerEntry> m_mouseListeners;
 
 #ifdef Q_OS_WIN
     void *m_keyboardHook = nullptr;

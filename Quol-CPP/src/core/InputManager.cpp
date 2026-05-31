@@ -1,7 +1,6 @@
 #include "core/InputManager.hpp"
 
 #include <QCoreApplication>
-#include <QMetaObject>
 #include <algorithm>
 
 #ifdef Q_OS_WIN
@@ -278,6 +277,7 @@ InputManager::~InputManager() {
     m_hotkeys.clear();
     m_keyListeners.clear();
     m_keyRemaps.clear();
+    m_mouseListeners.clear();
 #ifdef Q_OS_WIN
     g_inputManager = nullptr;
 #endif
@@ -314,6 +314,7 @@ void InputManager::stop() {
     m_hotkeys.clear();
     m_keyListeners.clear();
     m_keyRemaps.clear();
+    m_mouseListeners.clear();
 
     QCoreApplication::instance()->removeNativeEventFilter(this);
 #ifdef Q_OS_WIN
@@ -445,6 +446,16 @@ QString InputManager::addKeyRemap(const QString &srcKey, const QString &dstCombo
 
 void InputManager::removeKeyRemap(const QString &id) {
     m_keyRemaps.remove(id);
+}
+
+QString InputManager::addMouseListener(std::function<void(const MouseEvent &)> callback) {
+    const QString id = nextId();
+    m_mouseListeners.insert(id, MouseListenerEntry{std::move(callback)});
+    return id;
+}
+
+void InputManager::removeMouseListener(const QString &id) {
+    m_mouseListeners.remove(id);
 }
 
 QStringList InputManager::availableKeys() const {
@@ -688,5 +699,8 @@ void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wh
     return;
 #endif
 
-    QMetaObject::invokeMethod(this, [this, evt]() { emit mouseEventReceived(evt); }, Qt::QueuedConnection);
+    // Copy map so listeners can safely add/remove listeners inside the callback.
+    const auto listeners = m_mouseListeners;
+    for (const auto &entry : listeners)
+        entry.callback(evt);
 }

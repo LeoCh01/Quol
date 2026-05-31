@@ -471,7 +471,7 @@ void Macro::attachListeners() {
         updateUi();
     });
 
-    connect(im, &InputManager::mouseEventReceived, this, [this](InputManager::MouseEvent me) {
+    m_mouseListenId = im->addMouseListener([this](const InputManager::MouseEvent &me) {
         if (m_state != MacroState::Recording || !recordingMouseEnabled())
             return;
 
@@ -540,7 +540,10 @@ void Macro::detachListeners() {
         im->removeKeyListener(m_keyListenId);
         m_keyListenId.clear();
     }
-    disconnect(im, &InputManager::mouseEventReceived, this, nullptr);
+    if (!m_mouseListenId.isEmpty()) {
+        im->removeMouseListener(m_mouseListenId);
+        m_mouseListenId.clear();
+    }
 
     m_listenersAttached = false;
 }
