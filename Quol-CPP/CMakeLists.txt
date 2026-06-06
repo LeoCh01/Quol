@@ -39,12 +39,15 @@ add_executable(Quol WIN32
     src/main.cpp
     src/core/AppSettingsManager.cpp
     src/core/PluginManager.cpp
+    src/core/QuolApplication.cpp
     src/ui/ConfigWindow.cpp
     src/ui/QuolWindow.cpp
     src/ui/TitleBar.cpp
     src/ui/QuolPopupWindow.cpp
     src/ui/QuolMainWindow.cpp
+    src/ui/SplashScreen.cpp
     src/ui/TransitionManager.cpp
+    src/ui/UpdateNotifier.cpp
 )
 
 if (WIN32)
@@ -62,7 +65,7 @@ target_include_directories(Quol PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets quol_core)
+target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network quol_core)
 
 # Build plugins
 add_subdirectory(plugins/example)
@@ -79,7 +82,7 @@ add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
         $<TARGET_FILE_DIR:Quol>/transitions
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/settings.default.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/settings.json
         $<TARGET_FILE_DIR:Quol>/settings.json
     COMMAND ${CMAKE_COMMAND} -E make_directory
         $<TARGET_FILE_DIR:Quol>/plugins/quol/res
@@ -96,6 +99,9 @@ add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_CURRENT_SOURCE_DIR}/res/icons/icon.ico
         $<TARGET_FILE_DIR:Quol>/res/icon.ico
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/icons/splash.png
+        $<TARGET_FILE_DIR:Quol>/res/icons/splash.png
     COMMAND ${CMAKE_COMMAND} -E make_directory
         $<TARGET_FILE_DIR:Quol>/res/styles/dark
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
