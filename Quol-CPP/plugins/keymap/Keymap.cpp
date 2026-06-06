@@ -1,8 +1,7 @@
 #include "plugins/keymap/Keymap.hpp"
+#include "plugins/keymap/lib/KeymapGroupDialog.hpp"
 
 #include "core/InputManager.hpp"
-#include "plugin_api/QuolServices.hpp"
-#include "ui/QuolPopupWindow.hpp"
 
 #include <QFile>
 #include <QGroupBox>
@@ -10,10 +9,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QLabel>
-#include <QLineEdit>
 #include <QPushButton>
-#include <QScrollArea>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -25,14 +22,13 @@ QWidget *Keymap::createWidget(QWidget *parent) {
     m_rootWidget = new QWidget(parent);
     auto *outerLayout = new QVBoxLayout(m_rootWidget);
     outerLayout->setContentsMargins(0, 0, 0, 0);
-    outerLayout->setAlignment(Qt::AlignTop);
-    outerLayout->setSpacing(4);
 
     // GroupBox containing the mapping group rows
     auto *groupBox = new QGroupBox("Key Mappings", m_rootWidget);
     auto *groupBoxLayout = new QVBoxLayout(groupBox);
     groupBoxLayout->setContentsMargins(4, 4, 4, 4);
-    groupBoxLayout->setSpacing(2);
+    groupBoxLayout->setSpacing(4);
+    groupBoxLayout->addStretch();
 
     m_rowsLayout = groupBoxLayout;
     outerLayout->addWidget(groupBox);
@@ -103,27 +99,26 @@ void Keymap::addGroupRow(
     auto *row = new QWidget();
     auto *hl = new QHBoxLayout(row);
     hl->setContentsMargins(0, 0, 0, 0);
-    hl->setSpacing(2);
+    hl->setSpacing(4);
 
     auto *nameBtn = new QPushButton(name, row);
     nameBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     auto *enableBtn = new QPushButton("✔", row);
-    enableBtn->setFixedWidth(24);
+    enableBtn->setObjectName("btn-toggle");
+    enableBtn->setFixedSize(24, 24);
     enableBtn->setCheckable(true);
     enableBtn->setChecked(enabled);
-    if (enabled)
-        enableBtn->setStyleSheet("background-color: #4CAF50;");
 
     auto *delBtn = new QPushButton("✖", row);
-    delBtn->setFixedWidth(24);
-    delBtn->setStyleSheet("background-color: #f44336;");
+    delBtn->setObjectName("btn-danger");
+    delBtn->setFixedSize(24, 24);
 
     hl->addWidget(nameBtn);
     hl->addWidget(enableBtn);
     hl->addWidget(delBtn);
 
-    m_rowsLayout->addWidget(row);
+    m_rowsLayout->insertWidget(m_rowsLayout->count() - 1, row);
 
     // Store pointers back into the group
     m_groups[index].rowWidget = row;
@@ -163,143 +158,30 @@ void Keymap::openGroupDialog(int groupId) {
     if (index < 0 || index >= m_groups.size())
         return;
 
-    const auto currentName = m_groups[index].name;
-    const auto currentMappings = m_groups[index].mappings;
+    auto *dialog = new KeymapGroupDialog(m_rootWidget, m_groups[index].name, m_groups[index].mappings);
 
-    auto *popup = new QuolPopupWindow("Edit Mapping Group", m_rootWidget);
-    popup->resize(420, 380);
+    connect(dialog, &KeymapGroupDialog::accepted, this, [this, dialog, groupId]() {
+        const int i = findGroupIndexById(groupId);
+        if (i < 0 || i >= m_groups.size())
+            return;
 
-    auto *panel = new QWidget(popup);
-    auto *mainLayout = new QVBoxLayout(panel);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(6);
-
-    auto *nameRow = new QHBoxLayout();
-    nameRow->addWidget(new QLabel("Group name:", panel));
-    auto *nameEdit = new QLineEdit(currentName, panel);
-    nameRow->addWidget(nameEdit, 1);
-    mainLayout->addLayout(nameRow);
-
-    auto *header = new QHBoxLayout();
-    auto *srcLbl = new QLabel("Source key", panel);
-    srcLbl->setFixedWidth(150);
-    auto *dstLbl = new QLabel("Target key", panel);
-    dstLbl->setFixedWidth(150);
-    header->addWidget(srcLbl);
-    header->addWidget(new QLabel("→", panel));
-    header->addWidget(dstLbl);
-    header->addStretch();
-    mainLayout->addLayout(header);
-
-    auto *rowsContainer = new QWidget(panel);
-
-    auto *rowsLayout = new QVBoxLayout(rowsContainer);
-    rowsLayout->setContentsMargins(0, 0, 0, 0);
-    rowsLayout->setSpacing(3);
-    rowsLayout->setAlignment(Qt::AlignTop);
-
-    auto *scroll = new QScrollArea(panel);
-    scroll->setWidget(rowsContainer);
-    scroll->setWidgetResizable(true);
-    scroll->setMinimumHeight(180);
-    mainLayout->addWidget(scroll, 1);
-
-    auto addMappingRow = [rowsContainer, rowsLayout](const QString &src, const QString &dst) {
-        auto *row = new QWidget(rowsContainer);
-        row->setObjectName("mapRow");
-
-        auto *hl = new QHBoxLayout(row);
-        hl->setContentsMargins(0, 0, 0, 0);
-        hl->setSpacing(4);
-
-        auto *srcEdit = new QLineEdit(src, row);
-        srcEdit->setObjectName("src");
-        srcEdit->setPlaceholderText("e.g. caps");
-        srcEdit->setFixedWidth(140);
-
-        auto *arrow = new QLabel("→", row);
-        arrow->setFixedWidth(14);
-
-        auto *dstEdit = new QLineEdit(dst, row);
-        dstEdit->setObjectName("dst");
-        dstEdit->setPlaceholderText("e.g. ctrl");
-        dstEdit->setFixedWidth(140);
-
-        auto *delBtn = new QPushButton("✖", row);
-        delBtn->setFixedWidth(24);
-        delBtn->setStyleSheet("background-color: #f44336;");
-        QObject::connect(delBtn, &QPushButton::clicked, row, [row, rowsLayout]() {
-            rowsLayout->removeWidget(row);
-            row->deleteLater();
-        });
-
-        hl->addWidget(srcEdit);
-        hl->addWidget(arrow);
-        hl->addWidget(dstEdit);
-        hl->addWidget(delBtn);
-        hl->addStretch();
-
-        rowsLayout->addWidget(row);
-    };
-
-    for (const auto &pair : currentMappings)
-        addMappingRow(pair.first, pair.second);
-
-    auto *addBtn = new QPushButton("+ Add Mapping", panel);
-    connect(addBtn, &QPushButton::clicked, popup, [addMappingRow]() { addMappingRow({}, {}); });
-    mainLayout->addWidget(addBtn);
-
-    auto *actions = new QHBoxLayout();
-    actions->addStretch();
-    auto *cancelBtn = new QPushButton("Cancel", panel);
-    auto *saveBtn = new QPushButton("Save", panel);
-    actions->addWidget(cancelBtn);
-    actions->addWidget(saveBtn);
-    mainLayout->addLayout(actions);
-
-    connect(cancelBtn, &QPushButton::clicked, popup, &QWidget::close);
-
-    connect(saveBtn, &QPushButton::clicked, this, [this, popup, nameEdit, rowsContainer, groupId]() {
-        const QString newName = nameEdit->text().trimmed();
+        const QString newName = dialog->groupName();
         if (newName.isEmpty())
             return;
 
-        QList<QPair<QString, QString>> newMappings;
-        const auto rows = rowsContainer->findChildren<QWidget *>("mapRow", Qt::FindDirectChildrenOnly);
-        for (auto *row : rows) {
-            auto *srcEdit = row->findChild<QLineEdit *>("src");
-            auto *dstEdit = row->findChild<QLineEdit *>("dst");
-            if (!srcEdit || !dstEdit)
-                continue;
-
-            const QString src = srcEdit->text().trimmed().toLower();
-            const QString dst = dstEdit->text().trimmed().toLower();
-            if (!src.isEmpty() && !dst.isEmpty())
-                newMappings.append({src, dst});
-        }
-
-        const int i = findGroupIndexById(groupId);
-        if (i < 0 || i >= m_groups.size()) {
-            popup->close();
-            return;
-        }
-
         auto &grp = m_groups[i];
         grp.name = newName;
-        grp.mappings = newMappings;
+        grp.mappings = dialog->mappings();
 
         if (grp.nameBtn)
             grp.nameBtn->setText(newName);
-
         if (grp.enabled)
             updateGroupHotkeys(grp);
 
         saveKeymaps();
-        popup->close();
     });
 
-    popup->addContent(panel);
-    popup->show();
+    dialog->show();
 }
 
 void Keymap::toggleGroup(int groupId) {
@@ -310,9 +192,8 @@ void Keymap::toggleGroup(int groupId) {
     auto &g = m_groups[index];
     g.enabled = !g.enabled;
 
-    if (g.enableBtn) {
-        g.enableBtn->setStyleSheet(g.enabled ? "background-color: #4CAF50;" : "");
-    }
+    if (g.enableBtn)
+        g.enableBtn->setChecked(g.enabled);
 
     if (g.enabled)
         updateGroupHotkeys(g);

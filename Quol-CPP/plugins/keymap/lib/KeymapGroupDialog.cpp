@@ -1,79 +1,87 @@
 #include "plugins/keymap/lib/KeymapGroupDialog.hpp"
 
-#include <QColor>
-#include <QDialogButtonBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QPalette>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 #include <QWidget>
 
 KeymapGroupDialog::KeymapGroupDialog(
     QWidget *parent, const QString &name, const QList<QPair<QString, QString>> &mappings
 )
-    : QDialog(parent) {
-    setWindowTitle(name.isEmpty() ? "New Mapping Group" : "Edit: " + name);
-    setMinimumWidth(340);
+    : QuolPopupWindow(name.isEmpty() ? "New Mapping Group" : "Edit: " + name, parent) {
+    resize(400, 420);
 
-    auto *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(8, 8, 8, 8);
+    auto *panel = new QWidget(this);
+    auto *mainLayout = new QVBoxLayout(panel);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(6);
 
     // --- Name row ---
     auto *nameRow = new QHBoxLayout();
-    nameRow->addWidget(new QLabel("Group name:", this));
-    m_nameEdit = new QLineEdit(name, this);
-    nameRow->addWidget(m_nameEdit);
+    nameRow->addWidget(new QLabel("Group name:", panel));
+    m_nameEdit = new QLineEdit(name, panel);
+    nameRow->addWidget(m_nameEdit, 1);
     mainLayout->addLayout(nameRow);
 
-    // --- Header ---
+    // --- Column header ---
     auto *header = new QHBoxLayout();
-    auto *srcLbl = new QLabel("Source key", this);
-    srcLbl->setFixedWidth(130);
-    auto *dstLbl = new QLabel("Target key", this);
-    dstLbl->setFixedWidth(130);
+    auto *srcLbl = new QLabel("Source key", panel);
+    srcLbl->setMinimumWidth(100);
+    srcLbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    auto *dstLbl = new QLabel("Target key", panel);
+    dstLbl->setMinimumWidth(100);
+    dstLbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     header->addWidget(srcLbl);
-    header->addWidget(new QLabel("→", this));
+    header->addWidget(new QLabel(QStringLiteral("→"), panel));
     header->addWidget(dstLbl);
-    header->addStretch();
+    header->addSpacing(30);  // align with delete button column
     mainLayout->addLayout(header);
 
     // --- Scrollable rows ---
-    m_rowsContainer = new QWidget(this);
+    m_rowsContainer = new QWidget(panel);
     m_rowsLayout = new QVBoxLayout(m_rowsContainer);
     m_rowsLayout->setContentsMargins(0, 0, 0, 0);
-    m_rowsLayout->setSpacing(3);
+    m_rowsLayout->setSpacing(4);
     m_rowsLayout->setAlignment(Qt::AlignTop);
+    m_rowsLayout->addStretch();
 
-    m_scrollArea = new QScrollArea(this);
+    m_scrollArea = new QScrollArea(panel);
     m_scrollArea->setWidget(m_rowsContainer);
     m_scrollArea->setWidgetResizable(true);
-    m_scrollArea->setMinimumHeight(160);
-    m_scrollArea->setMaximumHeight(300);
-    // Force viewport background — QSS alone doesn't reach the viewport widget
-    m_scrollArea->viewport()->setAutoFillBackground(true);
-    QPalette vp = m_scrollArea->viewport()->palette();
-    vp.setColor(QPalette::Window, QColor(0x2e, 0x2e, 0x2e));
-    m_scrollArea->viewport()->setPalette(vp);
-    mainLayout->addWidget(m_scrollArea);
+    mainLayout->addWidget(m_scrollArea, 1);
 
     // Populate existing mappings
     for (const auto &pair : mappings)
         addRow(pair.first, pair.second);
 
     // --- Add row button ---
-    auto *addBtn = new QPushButton("+ Add Mapping", this);
+    auto *addBtn = new QPushButton("+ Add Mapping", panel);
     connect(addBtn, &QPushButton::clicked, this, [this]() { addRow(); });
     mainLayout->addWidget(addBtn);
 
-    // --- OK / Cancel ---
-    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    mainLayout->addWidget(buttons);
+    // --- Save / Cancel ---
+    auto *actions = new QHBoxLayout();
+    actions->addStretch();
+    auto *cancelBtn = new QPushButton("Cancel", panel);
+    auto *saveBtn = new QPushButton("Save", panel);
+    actions->addWidget(cancelBtn);
+    actions->addWidget(saveBtn);
+    mainLayout->addLayout(actions);
+
+    connect(cancelBtn, &QPushButton::clicked, this, [this]() {
+        emit rejected();
+        close();
+    });
+    connect(saveBtn, &QPushButton::clicked, this, [this]() {
+        emit accepted();
+        close();
+    });
+
+    addContent(panel);
 }
 
 QString KeymapGroupDialog::groupName() const {
@@ -97,34 +105,37 @@ QList<QPair<QString, QString>> KeymapGroupDialog::mappings() const {
 
 void KeymapGroupDialog::addRow(const QString &src, const QString &dst) {
     auto *row = new QWidget(m_rowsContainer);
+    row->setObjectName("mapRow");
+
     auto *hl = new QHBoxLayout(row);
-    hl->setContentsMargins(0, 0, 0, 0);
-    hl->setSpacing(4);
+    hl->setContentsMargins(4, 2, 4, 2);
+    hl->setSpacing(6);
 
     auto *srcEdit = new QLineEdit(src, row);
     srcEdit->setObjectName("src");
     srcEdit->setPlaceholderText("e.g. caps");
-    srcEdit->setFixedWidth(120);
+    srcEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    auto *arrow = new QLabel("→", row);
-    arrow->setFixedWidth(16);
+    auto *arrow = new QLabel(QStringLiteral("→"), row);
+    arrow->setAlignment(Qt::AlignCenter);
 
     auto *dstEdit = new QLineEdit(dst, row);
     dstEdit->setObjectName("dst");
     dstEdit->setPlaceholderText("e.g. ctrl");
-    dstEdit->setFixedWidth(120);
+    dstEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     auto *delBtn = new QPushButton("✖", row);
-    delBtn->setFixedSize(22, 22);
+    delBtn->setObjectName("btn-danger");
+    delBtn->setToolTip("Remove mapping");
+    delBtn->setFixedSize(24, 24);
     connect(delBtn, &QPushButton::clicked, this, [this, row]() { removeRow(row); });
 
     hl->addWidget(srcEdit);
     hl->addWidget(arrow);
     hl->addWidget(dstEdit);
     hl->addWidget(delBtn);
-    hl->addStretch();
 
-    m_rowsLayout->addWidget(row);
+    m_rowsLayout->insertWidget(m_rowsLayout->count() - 1, row);
     m_rows.append(row);
     row->show();
 }

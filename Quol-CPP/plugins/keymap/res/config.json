@@ -1,7 +1,7 @@
 {
   "_": {
     "name": "Keymap",
-    "default_geometry": [360, 140, 200, 0],
+    "default_geometry": [360, 150, 200, 0],
     "version": 1,
     "description": "Key remapping plugin — map keys to other keys using toggleable profiles."
   }

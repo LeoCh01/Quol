@@ -2,7 +2,6 @@
 
 #include <QEvent>
 #include <QGridLayout>
-#include <QJsonObject>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QMovie>
@@ -33,7 +32,6 @@ QWidget *Chance::createWidget(QWidget *parent) {
     auto *widget = new QWidget(parent);
     auto *gridLayout = new QGridLayout(widget);
     gridLayout->setContentsMargins(0, 0, 0, 0);
-    gridLayout->setSpacing(4);
 
     // --- Image label (click to flip/roll) ---
     m_resultLabel = new QLabel(widget);
@@ -45,7 +43,11 @@ QWidget *Chance::createWidget(QWidget *parent) {
 
     // --- Mode buttons ---
     m_coinButton = new QPushButton(QStringLiteral("Coin"), widget);
+    m_coinButton->setObjectName("btn-toggle");
+    m_coinButton->setCheckable(true);
     m_diceButton = new QPushButton(QStringLiteral("Dice"), widget);
+    m_diceButton->setObjectName("btn-toggle");
+    m_diceButton->setCheckable(true);
     gridLayout->addWidget(m_coinButton, 1, 0);
     gridLayout->addWidget(m_diceButton, 1, 1);
 
@@ -112,15 +114,11 @@ void Chance::updateModeButtons() {
     if (!m_coinButton || !m_diceButton || !m_resultLabel)
         return;
 
-    if (m_isCoinMode) {
-        m_coinButton->setStyleSheet(QStringLiteral("background-color: #696;"));
-        m_diceButton->setStyleSheet(QString{});
-        m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + COIN_PLACEHOLDER));
-    } else {
-        m_coinButton->setStyleSheet(QString{});
-        m_diceButton->setStyleSheet(QStringLiteral("background-color: #696;"));
-        m_resultLabel->setPixmap(QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + DICE_PLACEHOLDER));
-    }
+    m_coinButton->setChecked(m_isCoinMode);
+    m_diceButton->setChecked(!m_isCoinMode);
+    m_resultLabel->setPixmap(
+        QPixmap(m_pluginRootPath + QStringLiteral("/res/img/") + (m_isCoinMode ? COIN_PLACEHOLDER : DICE_PLACEHOLDER))
+    );
 }
 
 void Chance::performAction() {

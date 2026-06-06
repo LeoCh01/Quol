@@ -29,11 +29,11 @@ private:
 
     QString m_hotkeyId;
     QString m_keyListenId;
-
-public slots:
-    void onMouseEvent(InputManager::MouseEvent event);
+    QString m_mouseListenId;
 
 private:
+    void onMouseEvent(InputManager::MouseEvent event);
+
     QLabel *m_titleLabel = nullptr;
     QLabel *m_mouseLabel = nullptr;
     QLabel *m_valueLabel = nullptr;

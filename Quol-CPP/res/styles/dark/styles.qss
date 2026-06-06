@@ -124,12 +124,6 @@ QTextBrowser {
     border: none;
 }
 
-QTextEdit {
-    background-color: #3d3d3d;
-    color: white;
-    border: 1px solid #555;
-}
-
 /* ── Close button in TitleBar ───────────────────────────────────── */
 #close-btn {
     background: transparent;
@@ -263,6 +257,35 @@ QuolPopupWindow #content QScrollArea > QWidget#qt_scrollarea_viewport > QWidget 
 
 QuolPopupWindow #content QWidget#mapRow {
     background-color: #333;
+}
+
+/* ── Generic red button (btn-danger): static red, or red↔green toggle ── */
+#content QPushButton#btn-danger {
+    background-color: #c62828;
+    border-color: #b71c1c;
+}
+
+#content QPushButton#btn-danger:hover {
+    background-color: #e53935;
+}
+
+#content QPushButton#btn-danger:checked {
+    background-color: #2e7d32;
+    border-color: #1b5e20;
+}
+
+#content QPushButton#btn-danger:checked:hover {
+    background-color: #388e3c;
+}
+
+/* ── Generic green toggle button (btn-toggle): neutral → green when checked ── */
+#content QPushButton#btn-toggle:checked {
+    background-color: #2e7d32;
+    border-color: #1b5e20;
+}
+
+#content QPushButton#btn-toggle:checked:hover {
+    background-color: #388e3c;
 }
 
 QToolTip {

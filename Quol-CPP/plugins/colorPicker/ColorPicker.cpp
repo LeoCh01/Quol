@@ -5,7 +5,6 @@
 #include <QGridLayout>
 #include <QGuiApplication>
 #include <QIcon>
-#include <QJsonObject>
 #include <QLabel>
 #include <QPainter>
 #include <QPen>
@@ -17,14 +16,12 @@
 #include <algorithm>
 
 #include "core/InputManager.hpp"
-#include "plugin_api/QuolServices.hpp"
 
 // ---------------------------------------------------------------------------
 QWidget *ColorPicker::createWidget(QWidget *parent) {
     m_widget = new QWidget(parent);
     auto *gridLayout = new QGridLayout(m_widget);
     gridLayout->setContentsMargins(0, 0, 0, 0);
-    gridLayout->setSpacing(4);
 
     // Preview label (fixed size — zoom adapts to sample size)
     m_previewLabel = new QLabel(m_widget);
@@ -71,12 +68,6 @@ void ColorPicker::initialize(const QString &pluginRootPath, const PluginConfig &
     m_pluginRootPath = pluginRootPath;
     m_cfg = pluginConfig;
     m_services = services;
-
-    if (m_pickButton && !pluginRootPath.isEmpty())
-        m_pickButton->setIcon(QIcon(pluginRootPath + QStringLiteral("/res/img/pick.svg")));
-
-    if (QScreen *screen = QGuiApplication::primaryScreen())
-        m_sf = screen->devicePixelRatio();
 }
 
 void ColorPicker::onUpdateConfig(const PluginConfig &pluginConfig) {
@@ -100,9 +91,6 @@ void ColorPicker::applyVisualConfig() {
     if ((sampleSize % 2) == 0)
         sampleSize += 1;
     m_sampleSize = sampleSize;
-
-    if (m_previewLabel)
-        m_previewLabel->setFixedSize(kPreviewSize, kPreviewSize);
 }
 
 // ---------------------------------------------------------------------------

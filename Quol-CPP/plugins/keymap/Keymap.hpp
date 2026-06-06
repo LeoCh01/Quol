@@ -3,9 +3,7 @@
 #include "plugin_api/IQuolPlugin.hpp"
 #include "plugin_api/PluginConfig.hpp"
 
-#include <QJsonObject>
 #include <QList>
-#include <QMap>
 #include <QObject>
 #include <QPair>
 #include <QString>

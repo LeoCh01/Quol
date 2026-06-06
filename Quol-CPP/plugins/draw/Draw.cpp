@@ -1,6 +1,5 @@
 #include "plugins/draw/Draw.hpp"
 #include "core/InputManager.hpp"
-#include "plugin_api/QuolServices.hpp"
 #include "plugins/draw/lib/ColorWheel.hpp"
 #include "plugins/draw/lib/DrawOverlay.hpp"
 
@@ -37,8 +36,6 @@ QWidget *Draw::createWidget(QWidget *parent) {
     m_widget = new QWidget(parent);
     auto *root = new QVBoxLayout(m_widget);
     root->setContentsMargins(0, 0, 0, 0);
-    root->setSpacing(4);
-    root->setAlignment(Qt::AlignTop);
 
     auto *topRow = new QHBoxLayout();
 
@@ -221,8 +218,4 @@ void Draw::onColorChanged(const QColor &color) {
         if (m_hexInput->text().toUpper() != hex)
             m_hexInput->setText(hex);
     }
-}
-
-void Draw::updateColorSwatch() {
-    // No swatch button anymore — colour is shown in the wheel
 }

@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -147,24 +148,19 @@ void Macro::initialize(const QString &pluginRootPath, const PluginConfig &plugin
 QWidget *Macro::createWidget(QWidget *parent) {
     m_rootWidget = new QWidget(parent);
     auto *outerLayout = new QVBoxLayout(m_rootWidget);
-    outerLayout->setContentsMargins(6, 6, 6, 6);
-    outerLayout->setSpacing(6);
-    outerLayout->setAlignment(Qt::AlignTop);
+    outerLayout->setContentsMargins(0, 0, 0, 0);
 
     // ── Top status row ───────────────────────────────────────────────────
     auto *statusRow = new QHBoxLayout();
-    statusRow->setSpacing(4);
 
     m_idleLabel = new QLabel("IDLE", m_rootWidget);
     m_idleLabel->setAlignment(Qt::AlignCenter);
-    m_idleLabel->setMinimumWidth(60);
 
     m_eventCountLabel = new QLabel("0", m_rootWidget);
     m_eventCountLabel->setAlignment(Qt::AlignCenter);
-    m_eventCountLabel->setMinimumWidth(60);
 
     m_hotkeyToggleBtn = new QPushButton("OFF", m_rootWidget);
-    m_hotkeyToggleBtn->setMinimumWidth(80);
+    m_hotkeyToggleBtn->setObjectName("btn-danger");
     m_hotkeyToggleBtn->setCheckable(true);
     connect(m_hotkeyToggleBtn, &QPushButton::clicked, this, [this]() {
         if (m_hotkeysActive)
@@ -174,16 +170,14 @@ QWidget *Macro::createWidget(QWidget *parent) {
         updateUi();
     });
 
-    statusRow->addWidget(m_idleLabel);
+    statusRow->addWidget(m_idleLabel, 1);
     statusRow->addWidget(m_eventCountLabel, 1);
-    statusRow->addWidget(m_hotkeyToggleBtn);
+    statusRow->addWidget(m_hotkeyToggleBtn, 1);
     outerLayout->addLayout(statusRow);
 
     // ── Recording inputs ──────────────────────────────────────────────────
     auto *recordBox = new QGroupBox("Recording", m_rootWidget);
     auto *recordLayout = new QHBoxLayout(recordBox);
-    recordLayout->setContentsMargins(4, 4, 4, 4);
-    recordLayout->setSpacing(4);
 
     m_recordKeysCheck = new QCheckBox("Keys", recordBox);
     m_recordMouseCheck = new QCheckBox("Mouse", recordBox);
@@ -197,8 +191,6 @@ QWidget *Macro::createWidget(QWidget *parent) {
     // ── Playback settings ─────────────────────────────────────────────────
     auto *settingsBox = new QGroupBox("Playback Settings", m_rootWidget);
     auto *settingsLayout = new QVBoxLayout(settingsBox);
-    settingsLayout->setContentsMargins(4, 4, 4, 4);
-    settingsLayout->setSpacing(4);
 
     // Speed
     auto *speedRow = new QHBoxLayout();
@@ -221,17 +213,13 @@ QWidget *Macro::createWidget(QWidget *parent) {
     outerLayout->addWidget(settingsBox);
 
     // ── Save / Load ───────────────────────────────────────────────────────
-    auto *ioBox = new QGroupBox("Macro File", m_rootWidget);
+    auto *ioBox = new QGroupBox("File", m_rootWidget);
     auto *ioLayout = new QHBoxLayout(ioBox);
-    ioLayout->setContentsMargins(4, 4, 4, 4);
-    ioLayout->setSpacing(4);
 
     m_saveBtn = new QPushButton("", ioBox);
     m_loadBtn = new QPushButton("", ioBox);
     m_saveBtn->setToolTip("Save Macro");
     m_loadBtn->setToolTip("Load Macro");
-    m_saveBtn->setMinimumHeight(28);
-    m_loadBtn->setMinimumHeight(28);
     applyActionIcons();
 
     connect(m_saveBtn, &QPushButton::clicked, this, &Macro::saveMacro);
@@ -628,15 +616,11 @@ void Macro::updateUi() {
     }
 
     if (m_eventCountLabel)
-        m_eventCountLabel->setText(QStringLiteral("Events: %1").arg(m_events.size()));
+        m_eventCountLabel->setText(QStringLiteral("%1").arg(m_events.size()));
 
     if (m_hotkeyToggleBtn) {
         m_hotkeyToggleBtn->setText(m_hotkeysActive ? "ON" : "OFF");
         m_hotkeyToggleBtn->setChecked(m_hotkeysActive);
-        m_hotkeyToggleBtn->setStyleSheet(
-            m_hotkeysActive ? "QPushButton{background:#2b8a3e;color:white;padding:4px;border-radius:4px;}"
-                            : "QPushButton{background:#b33939;color:white;padding:4px;border-radius:4px;}"
-        );
     }
 
     if (m_saveBtn)

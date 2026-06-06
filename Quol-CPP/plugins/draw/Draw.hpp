@@ -27,7 +27,6 @@ public:
 private:
     void toggleDrawing();
     void applyHotkeys();  // re-register draw_toggle + undo hotkeys
-    void updateColorSwatch();
     void onHexInputChanged();
     void onColorChanged(const QColor &color);
 

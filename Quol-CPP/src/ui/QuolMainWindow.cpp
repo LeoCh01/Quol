@@ -115,7 +115,7 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     grid->addWidget(reloadBtn, 2, 0, 1, 1);
 
     auto *quitBtn = new QPushButton(QStringLiteral("Quit"));
-    quitBtn->setStyleSheet(QStringLiteral("background-color: #c44; color: white;"));
+    quitBtn->setObjectName("btn-danger");
     connect(quitBtn, &QPushButton::clicked, this, []() { QApplication::quit(); });
     grid->addWidget(quitBtn, 2, 1, 1, 2);
 

@@ -1,6 +1,8 @@
 add_library(keymap_plugin MODULE
     Keymap.cpp
     Keymap.hpp
+    lib/KeymapGroupDialog.cpp
+    lib/KeymapGroupDialog.hpp
     ${CMAKE_SOURCE_DIR}/src/ui/QuolPopupWindow.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/TitleBar.cpp
 )

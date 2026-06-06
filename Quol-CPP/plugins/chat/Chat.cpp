@@ -68,7 +68,6 @@ QWidget *Chat::createWidget(QWidget *parent) {
     m_widget = new QWidget(parent);
     auto *layout = new QHBoxLayout(m_widget);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(4);
 
     m_cycleButton = new QPushButton(m_widget);
     m_clearButton = new QPushButton(m_widget);
@@ -301,7 +300,6 @@ void Chat::ensureOutputWindow() {
 
     m_outputBrowser = new QTextBrowser(m_outputWindow);
     m_outputBrowser->setOpenExternalLinks(true);
-    m_outputBrowser->setStyleSheet(QStringLiteral("QTextBrowser { background:#333; color:white; border:none; }"));
     m_outputBrowser->document()->setDocumentMargin(0);
     m_outputWindow->addContent(m_outputBrowser);
 

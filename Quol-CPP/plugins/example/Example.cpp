@@ -4,7 +4,10 @@
 #include "core/InputManager.hpp"
 #include "plugin_api/QuolServices.hpp"
 
+#include <QGroupBox>
+#include <QHBoxLayout>
 #include <QLabel>
+#include <QMetaObject>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -12,43 +15,62 @@ QWidget *Example::createWidget(QWidget *parent) {
     auto *widget = new QWidget(parent);
     auto *layout = new QVBoxLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setAlignment(Qt::AlignTop);
 
     m_titleLabel = new QLabel(widget);
     m_titleLabel->setWordWrap(true);
-    layout->addWidget(m_titleLabel);
+    m_titleLabel->setAlignment(Qt::AlignCenter);
 
     m_valueLabel = new QLabel(widget);
     m_valueLabel->setWordWrap(true);
-    layout->addWidget(m_valueLabel);
+    m_valueLabel->setAlignment(Qt::AlignCenter);
 
-    m_nestedNoteLabel = new QLabel(widget);
+    auto *headlineRow = new QHBoxLayout();
+    headlineRow->addWidget(m_titleLabel, 1);
+    headlineRow->addWidget(m_valueLabel, 1);
+    layout->addLayout(headlineRow);
+
+    auto *configGroup = new QGroupBox(QStringLiteral("Config Preview"), widget);
+    auto *configLayout = new QVBoxLayout(configGroup);
+
+    m_nestedNoteLabel = new QLabel(configGroup);
     m_nestedNoteLabel->setWordWrap(true);
-    layout->addWidget(m_nestedNoteLabel);
+    configLayout->addWidget(m_nestedNoteLabel);
 
-    m_nestedEnabledLabel = new QLabel(widget);
+    m_nestedEnabledLabel = new QLabel(configGroup);
     m_nestedEnabledLabel->setWordWrap(true);
-    layout->addWidget(m_nestedEnabledLabel);
 
-    m_nestedModeLabel = new QLabel(widget);
+    m_nestedModeLabel = new QLabel(configGroup);
     m_nestedModeLabel->setWordWrap(true);
-    layout->addWidget(m_nestedModeLabel);
 
-    m_nestedInnerLabelLabel = new QLabel(widget);
+    auto *modeRow = new QHBoxLayout();
+    modeRow->addWidget(m_nestedEnabledLabel, 1);
+    modeRow->addWidget(m_nestedModeLabel, 1);
+    configLayout->addLayout(modeRow);
+
+    auto *innerGroup = new QGroupBox(QStringLiteral("Nested Inner"), configGroup);
+    auto *innerLayout = new QVBoxLayout(innerGroup);
+
+    m_nestedInnerLabelLabel = new QLabel(innerGroup);
     m_nestedInnerLabelLabel->setWordWrap(true);
-    layout->addWidget(m_nestedInnerLabelLabel);
+    innerLayout->addWidget(m_nestedInnerLabelLabel);
 
-    m_nestedInnerChoiceLabel = new QLabel(widget);
+    m_nestedInnerChoiceLabel = new QLabel(innerGroup);
     m_nestedInnerChoiceLabel->setWordWrap(true);
-    layout->addWidget(m_nestedInnerChoiceLabel);
+    innerLayout->addWidget(m_nestedInnerChoiceLabel);
+
+    configLayout->addWidget(innerGroup);
+    layout->addWidget(configGroup);
 
     m_pressedLabel = new QLabel("Key down: (none)", widget);
     m_releasedLabel = new QLabel("Key up: (none)", widget);
     m_triggeredLabel = new QLabel("Triggered: (none)", widget);
     m_mouseLabel = new QLabel("Mouse: (none)", widget);
 
-    layout->addWidget(m_pressedLabel);
-    layout->addWidget(m_releasedLabel);
+    auto *eventRow = new QHBoxLayout();
+    eventRow->addWidget(m_pressedLabel, 1);
+    eventRow->addWidget(m_releasedLabel, 1);
+    layout->addLayout(eventRow);
+
     layout->addWidget(m_triggeredLabel);
     layout->addWidget(m_mouseLabel);
 
@@ -73,7 +95,9 @@ void Example::initialize(const QString &pluginRootPath, const PluginConfig &plug
             }
         });
 
-        connect(m_services->inputManager(), &InputManager::mouseEventReceived, this, &Example::onMouseEvent);
+        m_mouseListenId = m_services->inputManager()->addMouseListener([this](const InputManager::MouseEvent &event) {
+            QMetaObject::invokeMethod(this, [this, event]() { onMouseEvent(event); }, Qt::QueuedConnection);
+        });
     }
 
     refreshLabels();
@@ -95,6 +119,10 @@ void Example::shutdown() {
         if (!m_keyListenId.isEmpty()) {
             m_services->inputManager()->removeKeyListener(m_keyListenId);
             m_keyListenId.clear();
+        }
+        if (!m_mouseListenId.isEmpty()) {
+            m_services->inputManager()->removeMouseListener(m_mouseListenId);
+            m_mouseListenId.clear();
         }
     }
 }
