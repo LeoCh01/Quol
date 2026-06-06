@@ -28,6 +28,11 @@ int main(int argc, char *argv[]) {
     if (QFile qss(qssPath); qss.open(QIODevice::ReadOnly | QIODevice::Text))
         app.setStyleSheet(QString::fromUtf8(qss.readAll()));
 
+    // Block startup until update prompt is handled.
+    UpdateNotifier updater(&settings);
+    if (!updater.checkForUpdateBlocking())
+        return 0;
+
     // Splash screen — shown while the app and plugins load
     SplashScreen splash(appDir + QStringLiteral("/res/icons/splash.png"));
     splash.show();
@@ -38,10 +43,6 @@ int main(int argc, char *argv[]) {
     quolApp.start();
 
     splash.close();
-
-    // Async update check — shows a popup if a newer version is available
-    UpdateNotifier updater(&settings);
-    updater.checkForUpdate();
 
     return app.exec();
 }

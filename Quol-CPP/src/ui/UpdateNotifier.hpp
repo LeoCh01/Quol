@@ -13,14 +13,13 @@ class UpdateNotifier : public QObject {
 public:
     explicit UpdateNotifier(AppSettingsManager *settings, QObject *parent = nullptr);
 
-    // Fires off an async network request; shows a popup if a newer version is found.
-    void checkForUpdate();
+    // Blocking check used at startup before showing app windows.
+    // Returns true only when user explicitly chooses to continue.
+    bool checkForUpdateBlocking();
 
 private:
-    void onReplyFinished(QNetworkReply *reply, const QString &currentVersion);
-    void showUpdatePopup(const QString &title, const QString &body);
+    bool showUpdatePopup(const QString &currentVersion, const QString &latestVersion);
 
     AppSettingsManager *m_settings;
     QNetworkAccessManager *m_network;
-    bool m_popupShown = false;
 };

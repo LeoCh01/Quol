@@ -1,106 +1,79 @@
 #include "ui/UpdateNotifier.hpp"
 #include "core/AppSettingsManager.hpp"
-#include "ui/QuolPopupWindow.hpp"
 
+#include <QAbstractButton>
 #include <QDesktopServices>
-#include <QGuiApplication>
+#include <QEventLoop>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QLabel>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPushButton>
-#include <QScreen>
 #include <QUrl>
-#include <QVBoxLayout>
 
-static constexpr auto kRemoteSettingsUrl = "https://raw.githubusercontent.com/LeoCh01/Quol/main/Quol-CPP/settings.json";
+static constexpr auto kRemoteSettingsUrl =
+    "https://raw.githubusercontent.com/LeoCh01/Quol/CPP-migration/Quol-CPP/settings.json";
 static constexpr auto kRepoUrl = "https://github.com/LeoCh01/Quol";
+static constexpr auto kUnknownVersion = "N/A";
 
 UpdateNotifier::UpdateNotifier(AppSettingsManager *settings, QObject *parent)
     : QObject(parent), m_settings(settings), m_network(new QNetworkAccessManager(this)) {
 }
 
-void UpdateNotifier::checkForUpdate() {
+bool UpdateNotifier::checkForUpdateBlocking() {
     if (!m_settings->data().value(QStringLiteral("show_updates")).toBool(true))
-        return;
+        return true;
 
     const QString currentVersion = m_settings->settingString(QStringLiteral("version"));
-    QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(kRemoteSettingsUrl)));
-    connect(reply, &QNetworkReply::finished, this, [this, reply, currentVersion]() {
-        onReplyFinished(reply, currentVersion);
-    });
-}
+    QString latestVersion = QString::fromLatin1(kUnknownVersion);
 
-void UpdateNotifier::onReplyFinished(QNetworkReply *reply, const QString &currentVersion) {
+    QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(kRemoteSettingsUrl)));
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    if (reply->error() == QNetworkReply::NoError) {
+        const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        if (doc.isObject()) {
+            const QString parsedVersion = doc.object().value(QStringLiteral("version")).toString();
+            if (!parsedVersion.isEmpty())
+                latestVersion = parsedVersion;
+        }
+    }
     reply->deleteLater();
 
-    if (m_popupShown)
-        return;
-
-    if (reply->error() != QNetworkReply::NoError) {
-        showUpdatePopup(
-            QStringLiteral("Update Check Failed"),
-            QStringLiteral("Could not verify the latest version. Open the repository to check updates manually?")
-        );
-        return;
+    // Show popup on mismatch, or when update check failed (latest = N/A).
+    if (latestVersion != currentVersion || latestVersion == QString::fromLatin1(kUnknownVersion)) {
+        return showUpdatePopup(currentVersion, latestVersion);
     }
 
-    const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
-    if (doc.isNull() || !doc.isObject()) {
-        showUpdatePopup(
-            QStringLiteral("Update Check Failed"),
-            QStringLiteral("Received an invalid update response. Open the repository to check updates manually?")
-        );
-        return;
-    }
-
-    const QString remoteVersion = doc.object().value(QStringLiteral("version")).toString();
-    if (remoteVersion.isEmpty()) {
-        showUpdatePopup(
-            QStringLiteral("Update Check Failed"),
-            QStringLiteral("Update version is missing. Open the repository to check updates manually?")
-        );
-        return;
-    }
-
-    if (remoteVersion != currentVersion) {
-        showUpdatePopup(
-            QStringLiteral("Update Available"),
-            QStringLiteral("Detected version mismatch.\nCurrent: %1\nLatest: %2").arg(currentVersion, remoteVersion)
-        );
-    }
+    return true;
 }
 
-void UpdateNotifier::showUpdatePopup(const QString &title, const QString &body) {
-    if (m_popupShown)
-        return;
-    m_popupShown = true;
+bool UpdateNotifier::showUpdatePopup(const QString &currentVersion, const QString &latestVersion) {
+    QMessageBox box;
+    box.setWindowTitle(QStringLiteral("Update Available"));
+    box.setIcon(QMessageBox::Information);
+    box.setText(QStringLiteral("Current: %1\nLatest: %2").arg(currentVersion, latestVersion));
+    box.setWindowFlag(Qt::WindowCloseButtonHint, true);
 
-    auto *popup = new QuolPopupWindow(title);
+    box.addButton(QStringLiteral("Continue to App"), QMessageBox::AcceptRole);
+    box.addButton(QStringLiteral("Open Repository"), QMessageBox::ActionRole);
+    QAbstractButton *closeBtn = box.addButton(QMessageBox::Close);
+    closeBtn->hide();
+    box.setEscapeButton(closeBtn);
 
-    auto *label = new QLabel(body);
-    label->setWordWrap(true);
-    label->setAlignment(Qt::AlignCenter);
+    box.exec();
 
-    auto *repoBtn = new QPushButton(QStringLiteral("Open Repository"));
-    auto *continueBtn = new QPushButton(QStringLiteral("Continue to App"));
+    const QAbstractButton *clicked = box.clickedButton();
+    if (clicked && clicked->text() == QStringLiteral("Continue to App"))
+        return true;
 
-    connect(repoBtn, &QPushButton::clicked, popup, [popup]() {
-        QDesktopServices::openUrl(QUrl(kRepoUrl));
-        popup->close();
-    });
-    connect(continueBtn, &QPushButton::clicked, popup, &QWidget::close);
+    if (clicked && clicked->text() == QStringLiteral("Open Repository"))
+        QDesktopServices::openUrl(QUrl(QString::fromLatin1(kRepoUrl)));
 
-    popup->addContent(label);
-    popup->addContent(repoBtn);
-    popup->addContent(continueBtn);
-
-    popup->adjustSize();
-    const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
-    popup->move(screen.center() - QPoint(popup->width() / 2, popup->height() / 2));
-    popup->show();
-    popup->raise();
-    popup->activateWindow();
+    // Close/X or Open Repository => do not continue into app.
+    return false;
 }
