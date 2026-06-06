@@ -6,7 +6,7 @@ TODO
 - toggle key dropdown
 
 
-******* C++ MIGRATION (under Quol-CPP folder), will slowly start to move to Qt C++ *******
+******* C++ MIGRATION (under Quol-CPP folder), python app will be deprecated *******
 
 4.2.0 (CURRENT)
 - code consistency cleanup
