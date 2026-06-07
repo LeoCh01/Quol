@@ -137,8 +137,6 @@ private:
     QHash<QString, KeyRemapEntry> m_keyRemaps;
     QHash<QString, MouseListenerEntry> m_mouseListeners;
 
-#ifdef Q_OS_WIN
     void *m_keyboardHook = nullptr;
     void *m_mouseHook = nullptr;
-#endif
 };

@@ -3,16 +3,13 @@
 #include <QCoreApplication>
 #include <algorithm>
 
-#ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
 
 namespace {
 InputManager *g_inputManager = nullptr;
 
 const QHash<QString, quint32> &modifierFlagMap() {
-#ifdef Q_OS_WIN
     static const QHash<QString, quint32> map = {
         {QStringLiteral("ctrl"), MOD_CONTROL},
         {QStringLiteral("control"), MOD_CONTROL},
@@ -21,14 +18,11 @@ const QHash<QString, quint32> &modifierFlagMap() {
         {QStringLiteral("win"), MOD_WIN},
         {QStringLiteral("meta"), MOD_WIN}
     };
-#else
-    static const QHash<QString, quint32> map;
-#endif
+
     return map;
 }
 
 const QHash<QString, quint32> &keyMap() {
-#ifdef Q_OS_WIN
     static const QHash<QString, quint32> map = []() {
         QHash<QString, quint32> m = {
             {QStringLiteral("ctrl"), VK_CONTROL},
@@ -89,9 +83,7 @@ const QHash<QString, quint32> &keyMap() {
 
         return m;
     }();
-#else
-    static const QHash<QString, quint32> map;
-#endif
+
     return map;
 }
 
@@ -102,7 +94,6 @@ bool tokenToVK(const QString &key, quint32 &vk, bool &isModifierToken) {
 }
 
 QString VKToToken(quint32 vk) {
-#ifdef Q_OS_WIN
     if (vk >= 'A' && vk <= 'Z') {
         return QString(QChar(static_cast<ushort>(vk))).toLower();
     }
@@ -172,10 +163,6 @@ QString VKToToken(quint32 vk) {
     };
 
     return map.value(vk);
-#else
-    Q_UNUSED(vk)
-    return {};
-#endif
 }
 
 QStringList splitCombo(const QString &combo) {
@@ -191,7 +178,6 @@ QStringList splitCombo(const QString &combo) {
 }
 
 bool isModifierDown(quint32 modifier) {
-#ifdef Q_OS_WIN
     if ((modifier & MOD_CONTROL) && !(GetAsyncKeyState(VK_CONTROL) & 0x8000))
         return false;
 
@@ -205,22 +191,12 @@ bool isModifierDown(quint32 modifier) {
         return false;
 
     return true;
-#else
-    Q_UNUSED(modifier)
-    return false;
-#endif
 }
 
 bool isVirtualKeyDown(quint32 vk) {
-#ifdef Q_OS_WIN
     return (GetAsyncKeyState(static_cast<int>(vk)) & 0x8000) != 0;
-#else
-    Q_UNUSED(vk)
-    return false;
-#endif
 }
 
-#ifdef Q_OS_WIN
 LRESULT CALLBACK keyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (!g_inputManager || nCode < 0) {
         return CallNextHookEx(nullptr, nCode, wParam, lParam);
@@ -263,7 +239,7 @@ void sendVirtualKey(quint32 vk, bool isDown) {
     input.ki.dwFlags = isDown ? 0 : KEYEVENTF_KEYUP;
     SendInput(1, &input, sizeof(INPUT));
 }
-#endif
+
 }  // namespace
 
 InputManager::InputManager(QObject *parent) : QObject(parent) {
@@ -278,9 +254,7 @@ InputManager::~InputManager() {
     m_keyListeners.clear();
     m_keyRemaps.clear();
     m_mouseListeners.clear();
-#ifdef Q_OS_WIN
     g_inputManager = nullptr;
-#endif
 }
 
 QString InputManager::nextId() {
@@ -293,11 +267,9 @@ void InputManager::start() {
     }
 
     QCoreApplication::instance()->installNativeEventFilter(this);
-#ifdef Q_OS_WIN
     g_inputManager = this;
     m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardHookProc, nullptr, 0);
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseHookProc, nullptr, 0);
-#endif
     m_running = true;
 }
 
@@ -306,18 +278,17 @@ void InputManager::stop() {
         return;
     }
 
-#ifdef Q_OS_WIN
     for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
         UnregisterHotKey(nullptr, it.value().nativeId);
     }
-#endif
+
     m_hotkeys.clear();
     m_keyListeners.clear();
     m_keyRemaps.clear();
     m_mouseListeners.clear();
 
     QCoreApplication::instance()->removeNativeEventFilter(this);
-#ifdef Q_OS_WIN
+
     // Null g_inputManager first so any in-flight hook callbacks bail immediately.
     g_inputManager = nullptr;
     // Discard any invokeMethod lambdas queued by handleMouseEvent/handleKeyEvent
@@ -331,12 +302,11 @@ void InputManager::stop() {
         UnhookWindowsHookEx(reinterpret_cast<HHOOK>(m_mouseHook));
         m_mouseHook = nullptr;
     }
-#endif
+
     m_running = false;
 }
 
 QString InputManager::addHotkey(const QString &combo, std::function<void()> callback, bool suppressed) {
-#ifdef Q_OS_WIN
     quint32 registerModifiers = 0;
     quint32 vk = 0;
     quint32 requiredModifiers = 0;
@@ -395,24 +365,14 @@ QString InputManager::addHotkey(const QString &combo, std::function<void()> call
         }
     );
     return id;
-#else
-    Q_UNUSED(combo)
-    Q_UNUSED(callback)
-    Q_UNUSED(suppressed)
-    return {};
-#endif
 }
 
 void InputManager::removeHotkey(const QString &id) {
-#ifdef Q_OS_WIN
     if (m_hotkeys.contains(id)) {
         const int nativeId = m_hotkeys.value(id).nativeId;
         UnregisterHotKey(nullptr, nativeId);
         m_hotkeys.remove(id);
     }
-#else
-    Q_UNUSED(id)
-#endif
 }
 
 QString InputManager::addKeyListener(std::function<void(const QString &, bool)> callback) {
@@ -427,7 +387,6 @@ void InputManager::removeKeyListener(const QString &id) {
 }
 
 QString InputManager::addKeyRemap(const QString &srcKey, const QString &dstCombo) {
-#ifdef Q_OS_WIN
     quint32 vk = 0;
     bool isModifier = false;
     if (!tokenToVK(srcKey.trimmed().toLower(), vk, isModifier))
@@ -437,11 +396,6 @@ QString InputManager::addKeyRemap(const QString &srcKey, const QString &dstCombo
     const QString id = nextId();
     m_keyRemaps.insert(id, KeyRemapEntry{vk, dstCombo.trimmed().toLower()});
     return id;
-#else
-    Q_UNUSED(srcKey)
-    Q_UNUSED(dstCombo)
-    return {};
-#endif
 }
 
 void InputManager::removeKeyRemap(const QString &id) {
@@ -470,7 +424,6 @@ void InputManager::sendKeys(const QString &combo) {
 }
 
 void InputManager::sendPress(const QString &combo) {
-#ifdef Q_OS_WIN
     const QStringList keys = splitCombo(combo);
     for (const QString &token : keys) {
         quint32 vk = 0;
@@ -478,13 +431,9 @@ void InputManager::sendPress(const QString &combo) {
         if (tokenToVK(token, vk, isModifier))
             sendVirtualKey(vk, true);
     }
-#else
-    Q_UNUSED(combo)
-#endif
 }
 
 void InputManager::sendRelease(const QString &combo) {
-#ifdef Q_OS_WIN
     const QStringList keys = splitCombo(combo);
     for (int i = keys.size() - 1; i >= 0; --i) {
         quint32 vk = 0;
@@ -492,13 +441,9 @@ void InputManager::sendRelease(const QString &combo) {
         if (tokenToVK(keys.at(i), vk, isModifier))
             sendVirtualKey(vk, false);
     }
-#else
-    Q_UNUSED(combo)
-#endif
 }
 
 bool InputManager::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) {
-#ifdef Q_OS_WIN
     Q_UNUSED(eventType)
 
     MSG *msg = static_cast<MSG *>(message);
@@ -544,12 +489,6 @@ bool InputManager::nativeEventFilter(const QByteArray &eventType, void *message,
     }
 
     return false;
-#else
-    Q_UNUSED(eventType)
-    Q_UNUSED(message)
-    Q_UNUSED(result)
-    return false;
-#endif
 }
 
 bool InputManager::parseHotkey(
@@ -559,7 +498,6 @@ bool InputManager::parseHotkey(
     quint32 &requiredModifiers,
     QList<quint32> &requiredKeys
 ) const {
-#ifdef Q_OS_WIN
     const QStringList parts = splitCombo(combo);
 
     if (parts.isEmpty()) {
@@ -606,18 +544,9 @@ bool InputManager::parseHotkey(
     requiredKeys.erase(std::unique(requiredKeys.begin(), requiredKeys.end()), requiredKeys.end());
 
     return vk != 0;
-#else
-    Q_UNUSED(combo)
-    Q_UNUSED(registerModifiers)
-    Q_UNUSED(vk)
-    Q_UNUSED(requiredModifiers)
-    Q_UNUSED(requiredKeys)
-    return false;
-#endif
 }
 
 bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode, bool injected) {
-#ifdef Q_OS_WIN
     // Skip injected key events (produced by sendKeys/sendPress/sendRelease)
     // so they don't re-trigger remaps or key listeners.
     if (injected)
@@ -649,12 +578,6 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode, bool inj
     }
 
     return false;
-#else
-    Q_UNUSED(wParam)
-    Q_UNUSED(vkCode)
-    Q_UNUSED(injected)
-    return false;
-#endif
 }
 
 void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wheelDelta) {
@@ -662,7 +585,6 @@ void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wh
     evt.globalPos = QPoint(static_cast<int>(x), static_cast<int>(y));
     evt.wheelDelta = wheelDelta;
 
-#ifdef Q_OS_WIN
     switch (wParam) {
         case WM_MOUSEMOVE:
             evt.type = MouseEvent::Type::Move;
@@ -694,10 +616,6 @@ void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wh
         default:
             return;
     }
-#else
-    Q_UNUSED(wParam)
-    return;
-#endif
 
     // Copy map so listeners can safely add/remove listeners inside the callback.
     const auto listeners = m_mouseListeners;
