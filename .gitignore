@@ -7,3 +7,4 @@ build/
 dist/
 stuff.txt
 reset.py
+Quol-CPP/CMakeUserPresets.json

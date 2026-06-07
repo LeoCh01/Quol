@@ -67,16 +67,6 @@ target_include_directories(Quol PRIVATE
 
 target_link_libraries(Quol PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network quol_core)
 
-# Build plugins
-add_subdirectory(plugins/example)
-add_subdirectory(plugins/chance)
-add_subdirectory(plugins/colorPicker)
-add_subdirectory(plugins/chat)
-add_subdirectory(plugins/draw)
-add_subdirectory(plugins/keymap)
-add_subdirectory(plugins/macro)
-
-
 
 add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory

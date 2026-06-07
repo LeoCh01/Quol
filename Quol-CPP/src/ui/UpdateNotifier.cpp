@@ -73,7 +73,5 @@ bool UpdateNotifier::showUpdatePopup(const QString &currentVersion, const QStrin
 
     if (clicked && clicked->text() == QStringLiteral("Open Repository"))
         QDesktopServices::openUrl(QUrl(QString::fromLatin1(kRepoUrl)));
-
-    // Close/X or Open Repository => do not continue into app.
     return false;
 }
