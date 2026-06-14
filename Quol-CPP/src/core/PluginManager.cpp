@@ -66,6 +66,21 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
     if (!settings)
         return;
 
+    auto removePluginFromSettings = [settings](const QString &pluginId) {
+        QJsonArray plugins = settings->data().value(QStringLiteral("plugins")).toArray();
+        QJsonArray filtered;
+
+        for (const QJsonValue &value : plugins) {
+            const QString currentId = value.toString().trimmed();
+            if (!currentId.isEmpty() && currentId != pluginId) {
+                filtered.append(currentId);
+            }
+        }
+
+        settings->data().insert(QStringLiteral("plugins"), filtered);
+        settings->save();
+    };
+
     const QString appDir = QCoreApplication::applicationDirPath();
     QString pluginsDirSetting =
         settings->settingString(QStringLiteral("plugins_dir"), QStringLiteral("plugins")).trimmed();
@@ -138,6 +153,8 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
                 delete loader;
             }
 
+            removePluginFromSettings(id);
+
             QMessageBox::critical(
                 nullptr,
                 QStringLiteral("Plugin Load Error"),
@@ -149,6 +166,8 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
                 loader->unload();
                 delete loader;
             }
+
+            removePluginFromSettings(id);
 
             QMessageBox::critical(
                 nullptr,

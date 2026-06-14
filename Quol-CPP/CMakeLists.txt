@@ -39,6 +39,7 @@ add_executable(Quol WIN32
     src/main.cpp
     src/core/AppSettingsManager.cpp
     src/core/PluginManager.cpp
+    src/core/PluginStoreManager.cpp
     src/core/QuolApplication.cpp
     src/ui/ConfigWindow.cpp
     src/ui/QuolWindow.cpp

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Quol (Quick-Tool) is an overlay desktop application built with **Qt 6 / C++**, designed as a plugin toolbox for Windows. Quol provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity. (Migrated from Pyside6)
+Quol (Quick-Tool) is an overlay desktop application built with ~~Pyside6~~ **Qt 6 / C++** , designed as a plugin toolbox for Windows. Quol provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity. (Migrated from Pyside6)
 
 ## Features
 
@@ -46,12 +46,10 @@ Example plugin folder structure:
 myPlugin/
 ├── myPlugin.dll
 ├── res/config.json
-└── lib/ (optional)
 ```
 
 - `myPlugin.dll`: plugin binary. The DLL name must match the folder name.
 - `res/config.json`: plugin-specific config passed to the plugin at runtime.
-- `lib/`: optional extra files used by the plugin.
 
 Plugins within the path can be loaded with the built-in `Manage Plugins` window.
 

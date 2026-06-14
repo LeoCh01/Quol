@@ -2,12 +2,14 @@
 
 #include "ui/QuolWindow.hpp"
 
+#include <QMap>
 #include <QStringList>
 
 class AppSettingsManager;
 class TransitionManager;
 class QPushButton;
 class QuolPopupWindow;
+class PluginStoreManager;
 
 class QuolMainWindow : public QuolWindow {
     Q_OBJECT
@@ -23,6 +25,7 @@ signals:
 private:
     void openManagePluginsDialog();
     QStringList discoverInstalledPluginIds() const;
+    QMap<QString, int> getInstalledPluginVersions() const;
     void reloadApplication() const;
 
     void copySettingsToMainConfig();
@@ -32,4 +35,5 @@ private:
     TransitionManager *m_transitions;
     QPushButton *m_toggleBtn = nullptr;
     QuolPopupWindow *m_pluginManagerWindow = nullptr;
+    PluginStoreManager *m_pluginStore = nullptr;
 };

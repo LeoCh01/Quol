@@ -1,5 +1,6 @@
 #include "ui/QuolMainWindow.hpp"
 #include "core/AppSettingsManager.hpp"
+#include "core/PluginStoreManager.hpp"
 #include "ui/QuolPopupWindow.hpp"
 #include "ui/TransitionManager.hpp"
 
@@ -21,6 +22,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QListWidget>
+#include <QMap>
 #include <QMessageBox>
 #include <QProcess>
 #include <QPushButton>
@@ -30,8 +32,11 @@
 #include <QSize>
 #include <QStyle>
 #include <QTabWidget>
+#include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
+
+#include <algorithm>
 
 namespace {
 QJsonArray readMainDefaultGeometry() {
@@ -63,7 +68,8 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
           parent
       )
     , m_settings(settings)
-    , m_transitions(transitions) {
+    , m_transitions(transitions)
+    , m_pluginStore(new PluginStoreManager(this)) {
     copySettingsToMainConfig();
     attachConfigWindow(
         QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"),
@@ -148,6 +154,27 @@ QStringList QuolMainWindow::discoverInstalledPluginIds() const {
     }
 
     return installed;
+}
+
+QMap<QString, int> QuolMainWindow::getInstalledPluginVersions() const {
+    QMap<QString, int> versions;
+    const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+    QDir dir(pluginsDir);
+    const QStringList folderNames = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    for (const QString &id : folderNames) {
+        if (id.compare(QStringLiteral("quol"), Qt::CaseInsensitive) == 0)
+            continue;
+        const QString configPath = pluginsDir + QStringLiteral("/") + id + QStringLiteral("/res/config.json");
+        QFile cf(configPath);
+        if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
+            cf.close();
+            const int ver =
+                doc.object().value(QStringLiteral("_")).toObject().value(QStringLiteral("version")).toInt(-1);
+            versions[id] = ver;
+        }
+    }
+    return versions;
 }
 
 void QuolMainWindow::reloadApplication() const {
@@ -288,8 +315,140 @@ void QuolMainWindow::openManagePluginsDialog() {
     auto *storeTab = new QWidget();
     auto *storeLayout = new QVBoxLayout(storeTab);
     storeLayout->setContentsMargins(4, 4, 4, 4);
-    storeLayout->addWidget(new QLabel(QStringLiteral("Plugin Store (coming soon)")));
-    storeLayout->addStretch(1);
+    storeLayout->setSpacing(4);
+
+    auto *storeTopRow = new QHBoxLayout();
+    auto *storeStatusLabel = new QLabel(QStringLiteral("Loading..."));
+    storeStatusLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    auto *storeRefreshBtn = new QPushButton(QStringLiteral("Refresh"));
+    storeRefreshBtn->setFixedWidth(80);
+    storeTopRow->addWidget(storeStatusLabel, 1);
+    storeTopRow->addWidget(storeRefreshBtn);
+    storeLayout->addLayout(storeTopRow);
+
+    auto *storeListWidget = new QListWidget();
+    storeListWidget->setSelectionMode(QAbstractItemView::NoSelection);
+    storeLayout->addWidget(storeListWidget);
+
+    // Lambda to populate the store list from a fetched GitHub API response
+    auto populateStoreList = [this, popup, storeListWidget, storeStatusLabel](const QJsonArray &items) {
+        storeListWidget->clear();
+
+        const QMap<QString, int> installedVersions = getInstalledPluginVersions();
+
+        struct StoreEntry {
+            QString pluginName;
+            int version;
+            QString itemName;  // base name without .zip, e.g. "example--v2"
+        };
+        QList<StoreEntry> entries;
+
+        for (const QJsonValue &val : items) {
+            const QString name = val.toObject().value(QStringLiteral("name")).toString();
+            if (!name.endsWith(QStringLiteral(".zip")))
+                continue;
+            const QString base = name.left(name.size() - 4);
+            const int sep = base.lastIndexOf(QStringLiteral("--v"));
+            if (sep != -1) {
+                entries.append({base.left(sep), base.mid(sep + 3).toInt(), base});
+            } else {
+                entries.append({base, 0, base});
+            }
+        }
+
+        std::sort(entries.begin(), entries.end(), [](const StoreEntry &a, const StoreEntry &b) {
+            return a.pluginName < b.pluginName;
+        });
+
+        if (entries.isEmpty()) {
+            storeStatusLabel->setText(QStringLiteral("No plugins available in the store."));
+            return;
+        }
+        storeStatusLabel->clear();
+
+        for (const auto &entry : entries) {
+            const bool isInstalled = installedVersions.contains(entry.pluginName);
+            const bool isCurrent = isInstalled && installedVersions.value(entry.pluginName) == entry.version;
+            const QString displayName = entry.version > 0
+                                            ? QStringLiteral("%1 (v%2)").arg(entry.pluginName).arg(entry.version)
+                                            : entry.pluginName;
+
+            auto *itemWidget = new QWidget();
+            auto *row = new QHBoxLayout(itemWidget);
+            row->setContentsMargins(6, 2, 6, 2);
+            row->addWidget(new QLabel(displayName));
+            row->addStretch(1);
+
+            if (isCurrent) {
+                auto *lbl = new QLabel(QStringLiteral("Installed"));
+                lbl->setObjectName(QStringLiteral("status-active"));
+                lbl->setStyleSheet(
+                    QStringLiteral("padding: 4px 10px; border: 1px solid #2e7d32; border-radius: 6px; color: #2e7d32;")
+                );
+                row->addWidget(lbl);
+            } else if (isInstalled) {
+                auto *btn = new QPushButton(QStringLiteral("Update"));
+                btn->setFixedWidth(80);
+                btn->setStyleSheet(
+                    QStringLiteral("padding: 5px 10px; border: 1px solid #b58900; border-radius: 6px; color: #b58900;")
+                );
+                const QString capturedItemName = entry.itemName;
+                connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName]() {
+                    btn->setEnabled(false);
+                    btn->setText(QStringLiteral("Updating..."));
+                    m_pluginStore->downloadPlugin(capturedItemName, true);
+                });
+                row->addWidget(btn);
+            } else {
+                auto *btn = new QPushButton(QStringLiteral("Install"));
+                btn->setFixedWidth(80);
+                btn->setStyleSheet(
+                    QStringLiteral("padding: 5px 10px; border: 1px solid #2d6cdf; border-radius: 6px; color: #2d6cdf;")
+                );
+                const QString capturedItemName = entry.itemName;
+                connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName]() {
+                    btn->setEnabled(false);
+                    btn->setText(QStringLiteral("Installing..."));
+                    m_pluginStore->downloadPlugin(capturedItemName, false);
+                });
+                row->addWidget(btn);
+            }
+
+            auto *item = new QListWidgetItem(storeListWidget);
+            item->setSizeHint(QSize(0, 34));
+            storeListWidget->addItem(item);
+            storeListWidget->setItemWidget(item, itemWidget);
+        }
+    };
+
+    connect(m_pluginStore, &PluginStoreManager::storeItemsFetched, popup, populateStoreList);
+    connect(m_pluginStore, &PluginStoreManager::storeItemsFetchFailed, popup, [storeStatusLabel](const QString &error) {
+        storeStatusLabel->setText(QStringLiteral("Failed to fetch store: ") + error);
+    });
+    connect(
+        m_pluginStore,
+        &PluginStoreManager::pluginDownloadFinished,
+        popup,
+        [this, popup, storeStatusLabel](const QString &pluginName, bool success) {
+            if (success) {
+                storeStatusLabel->setText(
+                    QStringLiteral("\"%1\" installed. Reopen Manage Plugins to enable it.").arg(pluginName)
+                );
+                popup->close();
+                QTimer::singleShot(0, this, [this]() { openManagePluginsDialog(); });
+            } else {
+                storeStatusLabel->setText(
+                    QStringLiteral("Failed to download \"%1\". Please try again.").arg(pluginName)
+                );
+                // Refetch to restore button states
+                m_pluginStore->fetchStoreItems();
+            }
+        }
+    );
+    connect(storeRefreshBtn, &QPushButton::clicked, popup, [this, storeStatusLabel]() {
+        storeStatusLabel->setText(QStringLiteral("Loading..."));
+        m_pluginStore->fetchStoreItems();
+    });
 
     tabs->addTab(installedTab, QStringLiteral("Installed"));
     tabs->addTab(storeTab, QStringLiteral("Store"));
@@ -316,6 +475,9 @@ void QuolMainWindow::openManagePluginsDialog() {
     popup->show();
     popup->raise();
     popup->activateWindow();
+
+    // Start fetching store items (async — populates store tab when ready)
+    m_pluginStore->fetchStoreItems();
 }
 
 void QuolMainWindow::copySettingsToMainConfig() {
