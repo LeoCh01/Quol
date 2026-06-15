@@ -32,7 +32,6 @@
 #include <QSize>
 #include <QStyle>
 #include <QTabWidget>
-#include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -320,10 +319,7 @@ void QuolMainWindow::openManagePluginsDialog() {
     auto *storeTopRow = new QHBoxLayout();
     auto *storeStatusLabel = new QLabel(QStringLiteral("Loading..."));
     storeStatusLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    auto *storeRefreshBtn = new QPushButton(QStringLiteral("Refresh"));
-    storeRefreshBtn->setFixedWidth(80);
     storeTopRow->addWidget(storeStatusLabel, 1);
-    storeTopRow->addWidget(storeRefreshBtn);
     storeLayout->addLayout(storeTopRow);
 
     auto *storeListWidget = new QListWidget();
@@ -429,13 +425,10 @@ void QuolMainWindow::openManagePluginsDialog() {
         m_pluginStore,
         &PluginStoreManager::pluginDownloadFinished,
         popup,
-        [this, popup, storeStatusLabel](const QString &pluginName, bool success) {
+        [this, storeStatusLabel](const QString &pluginName, bool success) {
             if (success) {
-                storeStatusLabel->setText(
-                    QStringLiteral("\"%1\" installed. Reopen Manage Plugins to enable it.").arg(pluginName)
-                );
-                popup->close();
-                QTimer::singleShot(0, this, [this]() { openManagePluginsDialog(); });
+                storeStatusLabel->setText(QStringLiteral("\"%1\" installed. Refreshing store list...").arg(pluginName));
+                m_pluginStore->fetchStoreItems();
             } else {
                 storeStatusLabel->setText(
                     QStringLiteral("Failed to download \"%1\". Please try again.").arg(pluginName)
@@ -445,10 +438,6 @@ void QuolMainWindow::openManagePluginsDialog() {
             }
         }
     );
-    connect(storeRefreshBtn, &QPushButton::clicked, popup, [this, storeStatusLabel]() {
-        storeStatusLabel->setText(QStringLiteral("Loading..."));
-        m_pluginStore->fetchStoreItems();
-    });
 
     tabs->addTab(installedTab, QStringLiteral("Installed"));
     tabs->addTab(storeTab, QStringLiteral("Store"));
