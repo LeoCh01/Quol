@@ -11,7 +11,6 @@
 // -- helpers
 // -------------------------------------------------------------------------
 static QPoint offScreenPos(QWidget *w, const QPoint &from, int dir) {
-    // dir: 0=left 1=right 2=up 3=down
     QScreen *screen = QGuiApplication::primaryScreen();
     const QRect r = screen ? screen->availableGeometry() : QRect(0, 0, 1920, 1080);
     switch (dir) {
@@ -34,9 +33,31 @@ TransitionManager::TransitionManager(const QString &type, QObject *parent) : QOb
 
 TransitionManager::~TransitionManager() = default;
 
-void TransitionManager::setType(const QString &type) {
+TransitionManager::Type TransitionManager::parseType(const QString &type) {
     const QString n = type.trimmed().toLower();
-    m_type = n.isEmpty() ? QStringLiteral("none") : n;
+    if (n.isEmpty() || n == QStringLiteral("none"))
+        return Type::None;
+    if (n == QStringLiteral("fade"))
+        return Type::Fade;
+    if (n == QStringLiteral("slide-left"))
+        return Type::SlideLeft;
+    if (n == QStringLiteral("slide-right"))
+        return Type::SlideRight;
+    if (n == QStringLiteral("slide-up"))
+        return Type::SlideUp;
+    if (n == QStringLiteral("slide-down"))
+        return Type::SlideDown;
+    if (n == QStringLiteral("rand-slide"))
+        return Type::RandSlide;
+    return Type::None;
+}
+
+int TransitionManager::randomSlideDir() {
+    return QRandomGenerator::global()->bounded(4);
+}
+
+void TransitionManager::setType(const QString &type) {
+    m_type = parseType(type);
 }
 
 void TransitionManager::addWindow(QWidget *window) {
@@ -60,8 +81,6 @@ void TransitionManager::toggleAll() {
 
 void TransitionManager::hideAll() {
     for (int i = 0; i < m_windows.size(); ++i) {
-        // Only update saved position when the window is not mid-animation
-        // (during a slide the window is at an offscreen/intermediate position)
         if (!m_activeAnimations.contains(m_windows[i]))
             m_savedPositions[i] = m_windows[i]->pos();
         doHide(m_windows[i], i);
@@ -73,103 +92,78 @@ void TransitionManager::showAll() {
         doShow(m_windows[i], i);
 }
 
-// -- doHide
-// -------------------------------------------------------------------------
+QAbstractAnimation *TransitionManager::createSlideAnimation(QWidget *w, const QPoint &target, int dir, bool isHide) {
+    if (isHide) {
+        auto *posA = new QPropertyAnimation(w, "pos");
+        posA->setDuration(200);
+        posA->setStartValue(target);
+        posA->setEndValue(offScreenPos(w, target, dir));
+        auto *opA = new QPropertyAnimation(w, "windowOpacity");
+        opA->setDuration(200);
+        opA->setStartValue(1.0);
+        opA->setEndValue(0.0);
+        auto *grp = new QParallelAnimationGroup;
+        grp->addAnimation(posA);
+        grp->addAnimation(opA);
+        QObject::connect(grp, &QAbstractAnimation::finished, w, [w, target]() {
+            w->hide();
+            w->move(target);
+            w->setWindowOpacity(1.0);
+        });
+        return grp;
+    }
+
+    w->move(offScreenPos(w, target, dir));
+    w->setWindowOpacity(0.0);
+    w->show();
+    auto *posA = new QPropertyAnimation(w, "pos");
+    posA->setDuration(200);
+    posA->setStartValue(w->pos());
+    posA->setEndValue(target);
+    auto *opA = new QPropertyAnimation(w, "windowOpacity");
+    opA->setDuration(200);
+    opA->setStartValue(0.0);
+    opA->setEndValue(1.0);
+    auto *grp = new QParallelAnimationGroup;
+    grp->addAnimation(posA);
+    grp->addAnimation(opA);
+    return grp;
+}
+
 void TransitionManager::doHide(QWidget *w, int idx) {
     stopAnimation(w);
 
-    QString type = m_type;
-    if (type == QLatin1String("rand-slide")) {
-        static const char *const kRandTypes[] = {"slide-left", "slide-right", "slide-up", "slide-down"};
-        type = QLatin1String(kRandTypes[QRandomGenerator::global()->bounded(4)]);
+    Type type = m_type;
+    int dir = 0;
+    if (type == Type::RandSlide) {
+        dir = randomSlideDir();
     }
 
     const QPoint from = m_savedPositions[idx];
     QAbstractAnimation *anim = nullptr;
 
-    if (type == QLatin1String("fade")) {
-        w->setWindowOpacity(1.0);
-        auto *a = new QPropertyAnimation(w, "windowOpacity");
-        a->setDuration(200);
-        a->setStartValue(1.0);
-        a->setEndValue(0.0);
-        QObject::connect(a, &QAbstractAnimation::finished, w, &QWidget::hide);
-        anim = a;
-    } else if (type == QLatin1String("slide-left")) {
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(from);
-        posA->setEndValue(offScreenPos(w, from, 0));
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(1.0);
-        opA->setEndValue(0.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        QObject::connect(grp, &QAbstractAnimation::finished, w, [w, from]() {
+    switch (type) {
+        case Type::Fade: {
+            auto *fade = new QPropertyAnimation(w, "windowOpacity");
+            fade->setDuration(200);
+            fade->setStartValue(1.0);
+            fade->setEndValue(0.0);
+            QObject::connect(fade, &QAbstractAnimation::finished, w, &QWidget::hide);
+            anim = fade;
+            break;
+        }
+        case Type::SlideLeft:
+        case Type::SlideRight:
+        case Type::SlideUp:
+        case Type::SlideDown:
+            anim = createSlideAnimation(w, from, static_cast<int>(type) - static_cast<int>(Type::SlideLeft), true);
+            break;
+        case Type::RandSlide:
+            anim = createSlideAnimation(w, from, dir, true);
+            break;
+        default:
             w->hide();
-            w->move(from);
-            w->setWindowOpacity(1.0);
-        });
-        anim = grp;
-    } else if (type == QLatin1String("slide-right")) {
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(from);
-        posA->setEndValue(offScreenPos(w, from, 1));
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(1.0);
-        opA->setEndValue(0.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        QObject::connect(grp, &QAbstractAnimation::finished, w, [w, from]() {
-            w->hide();
-            w->move(from);
-            w->setWindowOpacity(1.0);
-        });
-        anim = grp;
-    } else if (type == QLatin1String("slide-up")) {
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(from);
-        posA->setEndValue(offScreenPos(w, from, 2));
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(1.0);
-        opA->setEndValue(0.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        QObject::connect(grp, &QAbstractAnimation::finished, w, [w, from]() {
-            w->hide();
-            w->move(from);
-            w->setWindowOpacity(1.0);
-        });
-        anim = grp;
-    } else if (type == QLatin1String("slide-down")) {
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(from);
-        posA->setEndValue(offScreenPos(w, from, 3));
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(1.0);
-        opA->setEndValue(0.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        QObject::connect(grp, &QAbstractAnimation::finished, w, [w, from]() {
-            w->hide();
-            w->move(from);
-            w->setWindowOpacity(1.0);
-        });
-        anim = grp;
-    } else {
-        w->hide();
-        return;
+            return;
     }
 
     trackAnimation(w, anim);
@@ -182,97 +176,43 @@ void TransitionManager::doHide(QWidget *w, int idx) {
     anim->start();
 }
 
-// -- doShow
-// -------------------------------------------------------------------------
 void TransitionManager::doShow(QWidget *w, int idx) {
     stopAnimation(w);
 
-    QString type = m_type;
-    if (type == QLatin1String("rand-slide")) {
-        static const char *const kRandTypes[] = {"slide-left", "slide-right", "slide-up", "slide-down"};
-        type = QLatin1String(kRandTypes[QRandomGenerator::global()->bounded(4)]);
+    Type type = m_type;
+    int dir = 0;
+    if (type == Type::RandSlide) {
+        dir = randomSlideDir();
     }
 
     const QPoint saved = m_savedPositions[idx];
     QAbstractAnimation *anim = nullptr;
 
-    if (type == QLatin1String("fade")) {
-        w->setWindowOpacity(0.0);
-        w->move(saved);
-        w->show();
-        auto *a = new QPropertyAnimation(w, "windowOpacity");
-        a->setDuration(200);
-        a->setStartValue(0.0);
-        a->setEndValue(1.0);
-        anim = a;
-    } else if (type == QLatin1String("slide-left")) {
-        w->move(offScreenPos(w, saved, 0));
-        w->setWindowOpacity(0.0);
-        w->show();
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(w->pos());
-        posA->setEndValue(saved);
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(0.0);
-        opA->setEndValue(1.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        anim = grp;
-    } else if (type == QLatin1String("slide-right")) {
-        w->move(offScreenPos(w, saved, 1));
-        w->setWindowOpacity(0.0);
-        w->show();
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(w->pos());
-        posA->setEndValue(saved);
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(0.0);
-        opA->setEndValue(1.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        anim = grp;
-    } else if (type == QLatin1String("slide-up")) {
-        w->move(offScreenPos(w, saved, 2));
-        w->setWindowOpacity(0.0);
-        w->show();
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(w->pos());
-        posA->setEndValue(saved);
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(0.0);
-        opA->setEndValue(1.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        anim = grp;
-    } else if (type == QLatin1String("slide-down")) {
-        w->move(offScreenPos(w, saved, 3));
-        w->setWindowOpacity(0.0);
-        w->show();
-        auto *posA = new QPropertyAnimation(w, "pos");
-        posA->setDuration(200);
-        posA->setStartValue(w->pos());
-        posA->setEndValue(saved);
-        auto *opA = new QPropertyAnimation(w, "windowOpacity");
-        opA->setDuration(200);
-        opA->setStartValue(0.0);
-        opA->setEndValue(1.0);
-        auto *grp = new QParallelAnimationGroup;
-        grp->addAnimation(posA);
-        grp->addAnimation(opA);
-        anim = grp;
-    } else {
-        w->move(saved);
-        w->show();
-        return;
+    switch (type) {
+        case Type::Fade: {
+            w->setWindowOpacity(0.0);
+            w->move(saved);
+            w->show();
+            auto *fade = new QPropertyAnimation(w, "windowOpacity");
+            fade->setDuration(200);
+            fade->setStartValue(0.0);
+            fade->setEndValue(1.0);
+            anim = fade;
+            break;
+        }
+        case Type::SlideLeft:
+        case Type::SlideRight:
+        case Type::SlideUp:
+        case Type::SlideDown:
+            anim = createSlideAnimation(w, saved, static_cast<int>(type) - static_cast<int>(Type::SlideLeft), false);
+            break;
+        case Type::RandSlide:
+            anim = createSlideAnimation(w, saved, dir, false);
+            break;
+        default:
+            w->move(saved);
+            w->show();
+            return;
     }
 
     trackAnimation(w, anim);

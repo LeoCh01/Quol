@@ -27,30 +27,34 @@ QuolWindow::QuolWindow(
 )
     : QWidget(parent), m_titleText(title), m_settings(settings) {
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
+    initBaseLayout(this, title, m_titleBar, m_bodyLayout);
+    m_titleBar->setDragReleaseAction([this]() { snapToGrid(); });
+    loadGeometry(defaultX, defaultY, defaultW, defaultH);
+    updateMask();
+}
 
-    auto *rootLayout = new QVBoxLayout(this);
+void QuolWindow::initBaseLayout(
+    QWidget *widget, const QString &title, TitleBar *&m_titleBarOut, QVBoxLayout *&m_bodyLayoutOut
+) {
+    auto *rootLayout = new QVBoxLayout(widget);
     rootLayout->setContentsMargins(0, 0, 0, 0);
     rootLayout->setSpacing(0);
 
-    m_titleBar = new TitleBar(this, title, this);
-    m_titleBar->setDragReleaseAction([this]() { snapToGrid(); });
-    rootLayout->addWidget(m_titleBar);
+    m_titleBarOut = new TitleBar(widget, title, widget);
+    rootLayout->addWidget(m_titleBarOut);
 
-    auto *sep = new QWidget(this);
+    auto *sep = new QWidget(widget);
     sep->setFixedHeight(1);
     sep->setStyleSheet("background-color: #2F2F2F;");
     rootLayout->addWidget(sep);
 
-    auto *body = new QWidget(this);
+    auto *body = new QWidget(widget);
     body->setObjectName("content");
-    m_bodyLayout = new QVBoxLayout(body);
-    m_bodyLayout->setContentsMargins(8, 8, 8, 8);
-    m_bodyLayout->setSpacing(6);
-    m_bodyLayout->setAlignment(Qt::AlignTop);
+    m_bodyLayoutOut = new QVBoxLayout(body);
+    m_bodyLayoutOut->setContentsMargins(8, 8, 8, 8);
+    m_bodyLayoutOut->setSpacing(6);
+    m_bodyLayoutOut->setAlignment(Qt::AlignTop);
     rootLayout->addWidget(body, 1);
-
-    loadGeometry(defaultX, defaultY, defaultW, defaultH);
-    updateMask();
 }
 
 TitleBar *QuolWindow::titleBar() const {

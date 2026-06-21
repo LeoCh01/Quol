@@ -14,8 +14,8 @@ TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFr
     auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(10, 0, 8, 0);
 
-    auto *label = new QLabel(title, this);
-    layout->addWidget(label, 1);
+    m_titleLabel = new QLabel(title, this);
+    layout->addWidget(m_titleLabel, 1);
 
     m_configBtn = new QPushButton(this);
     m_configBtn->setToolTip("Open config");
@@ -38,6 +38,11 @@ TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFr
     const QString closeIconPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/close.svg";
     m_closeBtn->setIcon(QIcon(closeIconPath));
     layout->addWidget(m_closeBtn);
+}
+
+void TitleBar::setTitle(const QString &title) {
+    if (m_titleLabel)
+        m_titleLabel->setText(title);
 }
 
 void TitleBar::setConfigAction(const std::function<void()> &onClick) {

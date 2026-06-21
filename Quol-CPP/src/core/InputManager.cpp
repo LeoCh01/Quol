@@ -453,35 +453,29 @@ bool InputManager::nativeEventFilter(const QByteArray &eventType, void *message,
 
     const int nativeId = static_cast<int>(msg->wParam);
 
-    HotkeyEntry hotkey{};
-    bool found = false;
+    const HotkeyEntry *hotkey = nullptr;
     for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
         if (it.value().nativeId == nativeId) {
-            hotkey = it.value();
-            found = true;
+            hotkey = &it.value();
             break;
         }
     }
 
-    if (!found) {
+    if (!hotkey)
         return false;
-    }
 
-    if (!isModifierDown(hotkey.requiredModifiers)) {
+    if (!isModifierDown(hotkey->requiredModifiers))
         return false;
-    }
 
-    for (quint32 requiredVk : hotkey.requiredKeys) {
-        if (!isVirtualKeyDown(requiredVk)) {
+    for (quint32 requiredVk : hotkey->requiredKeys) {
+        if (!isVirtualKeyDown(requiredVk))
             return false;
-        }
     }
 
-    if (hotkey.callback) {
-        hotkey.callback();
-    }
+    if (hotkey->callback)
+        hotkey->callback();
 
-    if (hotkey.suppressed) {
+    if (hotkey->suppressed) {
         if (result) {
             *result = 0;
         }

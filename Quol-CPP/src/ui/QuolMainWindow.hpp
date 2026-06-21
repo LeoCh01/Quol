@@ -2,11 +2,15 @@
 
 #include "ui/QuolWindow.hpp"
 
+#include <QList>
 #include <QMap>
 #include <QStringList>
 
 class AppSettingsManager;
 class TransitionManager;
+class QCheckBox;
+class QLabel;
+class QListWidget;
 class QPushButton;
 class QuolPopupWindow;
 class PluginStoreManager;
@@ -24,6 +28,8 @@ signals:
 
 private:
     void openManagePluginsDialog();
+    QWidget *buildInstalledTab(QWidget *popup, QList<QCheckBox *> &pluginChecks);
+    QWidget *buildStoreTab(QWidget *popup, QListWidget *&storeListOut, QLabel *&storeStatusOut);
     QStringList discoverInstalledPluginIds() const;
     QMap<QString, int> getInstalledPluginVersions() const;
     void reloadApplication() const;

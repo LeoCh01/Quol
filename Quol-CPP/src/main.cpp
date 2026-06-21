@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QCoreApplication>
 #include <QFile>
 #include <QIcon>
 

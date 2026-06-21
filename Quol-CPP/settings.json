@@ -8,7 +8,7 @@
   "transition": "rand",
   "is_default_pos": true,
   "plugins_dir": "plugins",
-  "plugins": ["chance", "colorPicker", "chat", "draw", "keymap", "macro"],
+  "plugins": ["chance", "colorPicker", "chat", "draw", "keymap", "macro", "api"],
   "show_updates": true,
   "admin_key": ""
 }

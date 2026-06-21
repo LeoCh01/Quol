@@ -18,7 +18,7 @@ endif()
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 
-add_library(quol_core SHARED
+add_library(quol_core STATIC
     src/core/InputManager.cpp
     src/core/InputManager.hpp
     src/plugin_api/PluginConfig.cpp

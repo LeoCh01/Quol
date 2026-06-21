@@ -4,6 +4,7 @@
 #include <QPoint>
 #include <functional>
 
+class QLabel;
 class QuolWindow;
 class QPushButton;
 
@@ -12,6 +13,7 @@ class TitleBar : public QFrame {
 
 public:
     explicit TitleBar(QWidget *window, const QString &title, QWidget *parent = nullptr);
+    void setTitle(const QString &title);
     void setConfigAction(const std::function<void()> &onClick);
     void setCloseAction(const std::function<void()> &onClick);
     void setDragReleaseAction(const std::function<void()> &onRelease);
@@ -22,6 +24,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
+    QLabel *m_titleLabel = nullptr;
     QWidget *m_window;
     QPoint m_dragOffset;
     bool m_dragging = false;

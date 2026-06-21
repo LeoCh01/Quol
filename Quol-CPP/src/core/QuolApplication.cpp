@@ -8,7 +8,6 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QCoreApplication>
 #include <QMenu>
 #include <QProcess>
 #include <QSystemTrayIcon>
@@ -81,6 +80,9 @@ void QuolApplication::performShutdown() {
 
     m_pluginManager->shutdownPlugins();
     m_inputManager->stop();
+
+    delete m_mainWindow;
+    m_mainWindow = nullptr;
 }
 
 void QuolApplication::setQuolOn(bool on) {

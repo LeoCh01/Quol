@@ -15,7 +15,8 @@ public:
     bool save() const;
 
     const QJsonObject &data() const;
-    QJsonObject &data();
+
+    void setValue(const QString &key, const QJsonValue &value);
 
     QVariantList windowGeometry(
         const QString &configKey, int defaultX, int defaultY, int defaultWidth, int defaultHeight
@@ -24,7 +25,7 @@ public:
     QString settingString(const QString &key, const QString &defaultValue = QString()) const;
 
 private:
-    QJsonObject ensurePluginConfig(const QString &configKey);
+    QJsonObject readPluginConfig(const QString &configKey);
     void setPluginConfig(const QString &configKey, const QJsonObject &pluginConfig);
 
     QString m_settingsPath;

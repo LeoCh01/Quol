@@ -1,35 +1,21 @@
 #include "ui/QuolPopupWindow.hpp"
+#include "ui/QuolWindow.hpp"
 #include "ui/TitleBar.hpp"
 
+#include <QGuiApplication>
 #include <QPainterPath>
 #include <QRegion>
 #include <QResizeEvent>
+#include <QScreen>
+#include <QTimer>
 #include <QVBoxLayout>
 
 QuolPopupWindow::QuolPopupWindow(const QString &title, QWidget *parent) : QWidget(parent) {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    auto *rootLayout = new QVBoxLayout(this);
-    rootLayout->setContentsMargins(0, 0, 0, 0);
-    rootLayout->setSpacing(0);
-
-    m_titleBar = new TitleBar(this, title, this);
+    QuolWindow::initBaseLayout(this, title, m_titleBar, m_bodyLayout);
     m_titleBar->setCloseAction([this]() { close(); });
-    rootLayout->addWidget(m_titleBar);
-
-    auto *sep = new QWidget(this);
-    sep->setFixedHeight(1);
-    sep->setStyleSheet("background-color: #2F2F2F;");
-    rootLayout->addWidget(sep);
-
-    auto *body = new QWidget(this);
-    body->setObjectName("content");
-    m_bodyLayout = new QVBoxLayout(body);
-    m_bodyLayout->setContentsMargins(8, 8, 8, 8);
-    m_bodyLayout->setSpacing(6);
-    m_bodyLayout->setAlignment(Qt::AlignTop);
-    rootLayout->addWidget(body, 1);
 
     updateMask();
 }
@@ -44,6 +30,21 @@ void QuolPopupWindow::addContent(QWidget *widget) {
 
 void QuolPopupWindow::addContent(QLayout *layout) {
     m_bodyLayout->addLayout(layout);
+}
+
+void QuolPopupWindow::showEvent(QShowEvent *event) {
+    QWidget::showEvent(event);
+    if (!m_centered) {
+        m_centered = true;
+        QTimer::singleShot(0, this, &QuolPopupWindow::centerOnScreen);
+    }
+}
+
+void QuolPopupWindow::centerOnScreen() {
+    if (QScreen *screen = QGuiApplication::primaryScreen()) {
+        const QRect g = screen->availableGeometry();
+        move(g.center().x() - width() / 2, g.center().y() - height() / 2);
+    }
 }
 
 void QuolPopupWindow::resizeEvent(QResizeEvent *event) {

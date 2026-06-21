@@ -12,7 +12,6 @@
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QLabel>
 #include <QMessageBox>
 #include <QPluginLoader>
 
@@ -77,7 +76,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             }
         }
 
-        settings->data().insert(QStringLiteral("plugins"), filtered);
+        settings->setValue(QStringLiteral("plugins"), filtered);
         settings->save();
     };
 
@@ -146,20 +145,6 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             m_plugins.append(LoadedPlugin{loader, plugin});
             win = nullptr;
             loader = nullptr;
-        } catch (const std::exception &e) {
-            delete win;
-            if (loader) {
-                loader->unload();
-                delete loader;
-            }
-
-            removePluginFromSettings(id);
-
-            QMessageBox::critical(
-                nullptr,
-                QStringLiteral("Plugin Load Error"),
-                QString(QStringLiteral("Failed to load plugin '%1':\n%2")).arg(id).arg(QString::fromStdString(e.what()))
-            );
         } catch (...) {
             delete win;
             if (loader) {
@@ -169,11 +154,17 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
 
             removePluginFromSettings(id);
 
-            QMessageBox::critical(
-                nullptr,
-                QStringLiteral("Plugin Load Error"),
-                QString(QStringLiteral("Failed to load plugin '%1' with an unknown error.")).arg(id)
-            );
+            QString msg = QStringLiteral("Failed to load plugin '%1' with an unknown error.").arg(id);
+            try {
+                std::rethrow_exception(std::current_exception());
+            } catch (const std::exception &e) {
+                msg = QString(QStringLiteral("Failed to load plugin '%1':\n%2"))
+                          .arg(id)
+                          .arg(QString::fromStdString(e.what()));
+            } catch (...) {
+            }
+
+            QMessageBox::critical(nullptr, QStringLiteral("Plugin Load Error"), msg);
         }
     }
 }

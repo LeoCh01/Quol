@@ -1,9 +1,10 @@
 #pragma once
 
+#include "ui/TitleBar.hpp"
+
 #include <QWidget>
 #include <functional>
 
-class TitleBar;
 class QVBoxLayout;
 class QJsonObject;
 
@@ -19,10 +20,13 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
 private:
+    void centerOnScreen();
     void updateMask();
 
+    bool m_centered = false;
     TitleBar *m_titleBar = nullptr;
     QVBoxLayout *m_bodyLayout = nullptr;
 };
