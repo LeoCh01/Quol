@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     const QString appDir = QCoreApplication::applicationDirPath();
 
     // App icon
-    const QString iconPath = appDir + QStringLiteral("/res/icon.ico");
+    const QString iconPath = appDir + QStringLiteral("/res/icons/icon.ico");
     if (QFile::exists(iconPath))
         app.setWindowIcon(QIcon(iconPath));
 

@@ -229,6 +229,7 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
     auto *layout = new QVBoxLayout(tab);
     layout->setContentsMargins(4, 4, 4, 4);
     layout->setSpacing(4);
+    layout->setAlignment(Qt::AlignTop);
 
     const QStringList pluginIds = discoverInstalledPluginIds();
 

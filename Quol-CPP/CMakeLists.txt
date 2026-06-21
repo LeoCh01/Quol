@@ -18,7 +18,7 @@ endif()
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 
-add_library(quol_core STATIC
+add_library(quol_core SHARED
     src/core/InputManager.cpp
     src/core/InputManager.hpp
     src/plugin_api/PluginConfig.cpp
@@ -52,7 +52,7 @@ add_executable(Quol WIN32
 )
 
 if (WIN32)
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/icons/icon.ico
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res
          DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/res/app_icon.rc.in
@@ -85,17 +85,7 @@ add_custom_command(TARGET Quol POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/quol/res/img
         $<TARGET_FILE_DIR:Quol>/plugins/quol/res/img
-    COMMAND ${CMAKE_COMMAND} -E make_directory
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/res
         $<TARGET_FILE_DIR:Quol>/res
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/icons/icon.ico
-        $<TARGET_FILE_DIR:Quol>/res/icon.ico
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/icons/splash.png
-        $<TARGET_FILE_DIR:Quol>/res/icons/splash.png
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        $<TARGET_FILE_DIR:Quol>/res/styles/dark
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/styles/dark/styles.qss
-        $<TARGET_FILE_DIR:Quol>/res/styles/dark/styles.qss
 )

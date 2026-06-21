@@ -16,6 +16,10 @@
 #include <QShowEvent>
 #include <QVBoxLayout>
 
+namespace {
+void quolInitBaseLayout(QWidget *widget, const QString &title, TitleBar *&titleBarOut, QVBoxLayout *&bodyLayoutOut);
+}
+
 QuolWindow::QuolWindow(
     const QString &title,
     AppSettingsManager *settings,
@@ -27,21 +31,20 @@ QuolWindow::QuolWindow(
 )
     : QWidget(parent), m_titleText(title), m_settings(settings) {
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
-    initBaseLayout(this, title, m_titleBar, m_bodyLayout);
+    quolInitBaseLayout(this, title, m_titleBar, m_bodyLayout);
     m_titleBar->setDragReleaseAction([this]() { snapToGrid(); });
     loadGeometry(defaultX, defaultY, defaultW, defaultH);
     updateMask();
 }
 
-void QuolWindow::initBaseLayout(
-    QWidget *widget, const QString &title, TitleBar *&m_titleBarOut, QVBoxLayout *&m_bodyLayoutOut
-) {
+namespace {
+void quolInitBaseLayout(QWidget *widget, const QString &title, TitleBar *&titleBarOut, QVBoxLayout *&bodyLayoutOut) {
     auto *rootLayout = new QVBoxLayout(widget);
     rootLayout->setContentsMargins(0, 0, 0, 0);
     rootLayout->setSpacing(0);
 
-    m_titleBarOut = new TitleBar(widget, title, widget);
-    rootLayout->addWidget(m_titleBarOut);
+    titleBarOut = new TitleBar(widget, title, widget);
+    rootLayout->addWidget(titleBarOut);
 
     auto *sep = new QWidget(widget);
     sep->setFixedHeight(1);
@@ -50,12 +53,13 @@ void QuolWindow::initBaseLayout(
 
     auto *body = new QWidget(widget);
     body->setObjectName("content");
-    m_bodyLayoutOut = new QVBoxLayout(body);
-    m_bodyLayoutOut->setContentsMargins(8, 8, 8, 8);
-    m_bodyLayoutOut->setSpacing(6);
-    m_bodyLayoutOut->setAlignment(Qt::AlignTop);
+    bodyLayoutOut = new QVBoxLayout(body);
+    bodyLayoutOut->setContentsMargins(8, 8, 8, 8);
+    bodyLayoutOut->setSpacing(6);
+    bodyLayoutOut->setAlignment(Qt::AlignTop);
     rootLayout->addWidget(body, 1);
 }
+}  // namespace
 
 TitleBar *QuolWindow::titleBar() const {
     return m_titleBar;

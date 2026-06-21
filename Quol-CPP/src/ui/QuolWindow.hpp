@@ -26,10 +26,6 @@ public:
     TitleBar *titleBar() const;
     const QString &titleText() const;
 
-    static void initBaseLayout(
-        QWidget *widget, const QString &title, TitleBar *&m_titleBarOut, QVBoxLayout *&m_bodyLayoutOut
-    );
-
     void addContent(QWidget *widget);
     void addContent(QLayout *layout);
 
