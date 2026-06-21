@@ -87,9 +87,11 @@ void ConfigWindow::saveConfig() {
 
 void ConfigWindow::buildUi() {
     m_rootContentLayout = new QVBoxLayout();
+    m_rootContentLayout->setContentsMargins(0, 0, 0, 0);
     m_rootContentLayout->setSpacing(6);
 
     m_configLayout = new QVBoxLayout();
+    m_configLayout->setContentsMargins(0, 0, 0, 0);
     m_configLayout->setSpacing(6);
     m_rootContentLayout->addLayout(m_configLayout);
 
@@ -130,7 +132,7 @@ void ConfigWindow::generateSettings() {
     const int buttonHeight = 40;
     const int verticalSpacing = 12;
     const int totalHeight = contentHeight + buttonHeight + verticalSpacing;
-    resize(width(), totalHeight + 40);
+    resize(width(), totalHeight);
 }
 
 void ConfigWindow::addItemToLayout(QLayout *layout, QLayout *itemLayout) {
