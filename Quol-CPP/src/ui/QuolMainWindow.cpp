@@ -8,10 +8,12 @@
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QCheckBox>
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QSettings>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -524,7 +526,21 @@ void QuolMainWindow::copySettingsToMainConfig() {
 }
 
 void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
-    m_settings->setValue(QStringLiteral("startup"), config.value(QStringLiteral("startup")).toBool());
+    const bool startup = config.value(QStringLiteral("startup")).toBool();
+    m_settings->setValue(QStringLiteral("startup"), startup);
+
+    {
+        QSettings runSettings(
+            QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"),
+            QSettings::NativeFormat
+        );
+        const QString appName = m_settings->data().value(QStringLiteral("name")).toString(QStringLiteral("Quol"));
+        if (startup)
+            runSettings.setValue(appName, QCoreApplication::applicationFilePath());
+        else
+            runSettings.remove(appName);
+    }
+
     m_settings->setValue(QStringLiteral("is_default_pos"), config.value(QStringLiteral("reset_pos")).toBool());
 
     const QString toggleKey = config.value(QStringLiteral("toggle_key")).toVariant().toString().trimmed().toLower();
