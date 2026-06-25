@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QDir>
 #include <QFile>
 #include <QIcon>
 
@@ -10,20 +11,20 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    const QString appDir = QCoreApplication::applicationDirPath();
+    const QString baseDir = QDir::currentPath();
 
     // App icon
-    const QString iconPath = appDir + QStringLiteral("/res/icons/icon.ico");
+    const QString iconPath = baseDir + QStringLiteral("/res/icons/icon.ico");
     if (QFile::exists(iconPath))
         app.setWindowIcon(QIcon(iconPath));
 
     // Settings
-    AppSettingsManager settings(appDir + QStringLiteral("/settings.json"));
+    AppSettingsManager settings(baseDir + QStringLiteral("/settings.json"));
     settings.load();
 
     // Stylesheet
     const QString style = settings.settingString(QStringLiteral("style"), QStringLiteral("dark"));
-    const QString qssPath = appDir + QStringLiteral("/res/styles/") + style + QStringLiteral("/styles.qss");
+    const QString qssPath = baseDir + QStringLiteral("/res/styles/") + style + QStringLiteral("/styles.qss");
     if (QFile qss(qssPath); qss.open(QIODevice::ReadOnly | QIODevice::Text))
         app.setStyleSheet(QString::fromUtf8(qss.readAll()));
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
         return 0;
 
     // Splash screen — shown while the app and plugins load
-    SplashScreen splash(appDir + QStringLiteral("/res/icons/splash.png"));
+    SplashScreen splash(baseDir + QStringLiteral("/res/icons/splash.png"));
     splash.show();
     app.processEvents();
 

@@ -61,7 +61,7 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate) 
         }
 
         const QByteArray data = reply->readAll();
-        const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+        const QString pluginsDir = QDir::currentPath() + QStringLiteral("/plugins");
         const QString pluginDir = pluginsDir + QStringLiteral("/") + pluginName;
         const QString backupDir = pluginsDir + QStringLiteral("/") + pluginName + QStringLiteral("_backup");
         const QString configPath = pluginDir + QStringLiteral("/res/config.json");

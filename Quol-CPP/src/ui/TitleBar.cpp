@@ -1,6 +1,7 @@
 #include "ui/TitleBar.hpp"
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
@@ -24,7 +25,7 @@ TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFr
     m_configBtn->setFixedSize(24, 24);
 
     // Load the SVG icon for the config button
-    const QString iconPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/config.svg";
+    const QString iconPath = QDir::currentPath() + "/plugins/quol/res/img/config.svg";
     QIcon configIcon(iconPath);
     m_configBtn->setIcon(configIcon);
     layout->addWidget(m_configBtn);
@@ -35,7 +36,7 @@ TitleBar::TitleBar(QWidget *window, const QString &title, QWidget *parent) : QFr
     m_closeBtn->setCursor(Qt::PointingHandCursor);
     m_closeBtn->setObjectName("close-btn");
     m_closeBtn->setFixedSize(24, 24);
-    const QString closeIconPath = QCoreApplication::applicationDirPath() + "/plugins/quol/res/img/close.svg";
+    const QString closeIconPath = QDir::currentPath() + "/plugins/quol/res/img/close.svg";
     m_closeBtn->setIcon(QIcon(closeIconPath));
     layout->addWidget(m_closeBtn);
 }

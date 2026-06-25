@@ -80,7 +80,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         settings->save();
     };
 
-    const QString appDir = QCoreApplication::applicationDirPath();
+    const QString appDir = QDir::currentPath();
     QString pluginsDirSetting =
         settings->settingString(QStringLiteral("plugins_dir"), QStringLiteral("plugins")).trimmed();
     if (pluginsDirSetting.isEmpty()) {

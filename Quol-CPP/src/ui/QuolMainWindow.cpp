@@ -8,12 +8,10 @@
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QCheckBox>
-#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QSettings>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -27,6 +25,7 @@
 #include <QProcess>
 #include <QPushButton>
 #include <QSet>
+#include <QSettings>
 #include <QSignalBlocker>
 #include <QSize>
 #include <QStyle>
@@ -38,7 +37,7 @@
 
 namespace {
 QJsonArray readMainDefaultGeometry() {
-    const QString path = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json");
+    const QString path = QDir::currentPath() + QStringLiteral("/plugins/quol/res/config.json");
     QFile file(path);
     bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
@@ -70,7 +69,7 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     , m_pluginStore(new PluginStoreManager(this)) {
     copySettingsToMainConfig();
     attachConfigWindow(
-        QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"),
+        QDir::currentPath() + QStringLiteral("/plugins/quol/res/config.json"),
         QStringLiteral("Quol Config")
     );
     setConfigSavedCallback([this](const QJsonObject &config) { applyMainConfigToSettings(config); });
@@ -78,7 +77,7 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     auto *grid = new QGridLayout();
     grid->setSpacing(6);
 
-    const QString iconRoot = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/img/");
+    const QString iconRoot = QDir::currentPath() + QStringLiteral("/plugins/quol/res/img/");
     const QSize iconSize(16, 16);
 
     auto *managePluginsBtn = new QPushButton(QStringLiteral("Manage Plugins"));
@@ -106,7 +105,7 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     openPluginsBtn->setIconSize(iconSize);
     openPluginsBtn->setToolTip(QStringLiteral("Open plugins folder"));
     connect(openPluginsBtn, &QPushButton::clicked, this, []() {
-        const QString pluginDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+        const QString pluginDir = QDir::currentPath() + QStringLiteral("/plugins");
         QDesktopServices::openUrl(QUrl::fromLocalFile(QDir(pluginDir).absolutePath()));
     });
     grid->addWidget(openPluginsBtn, 1, 2, 1, 1);
@@ -132,7 +131,7 @@ void QuolMainWindow::updateToggleButton() {
 }
 
 QStringList QuolMainWindow::discoverInstalledPluginIds() const {
-    const QString pluginsDirPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+    const QString pluginsDirPath = QDir::currentPath() + QStringLiteral("/plugins");
     QDir pluginsDir(pluginsDirPath);
 
     QStringList installed;
@@ -156,7 +155,7 @@ QStringList QuolMainWindow::discoverInstalledPluginIds() const {
 
 QMap<QString, int> QuolMainWindow::getInstalledPluginVersions() const {
     QMap<QString, int> versions;
-    const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+    const QString pluginsDir = QDir::currentPath() + QStringLiteral("/plugins");
     QDir dir(pluginsDir);
     const QStringList folderNames = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
     for (const QString &id : folderNames) {
@@ -259,7 +258,7 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
             auto *row = new QHBoxLayout(itemWidget);
             row->setContentsMargins(6, 2, 6, 2);
 
-            const QString configPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + id
+            const QString configPath = QDir::currentPath() + QStringLiteral("/plugins/") + id
                                        + QStringLiteral("/res/config.json");
             QString displayName = id;
             QFile cf(configPath);
@@ -470,7 +469,7 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
 }
 
 void QuolMainWindow::copySettingsToMainConfig() {
-    const QString configPath = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json");
+    const QString configPath = QDir::currentPath() + QStringLiteral("/plugins/quol/res/config.json");
     QFile file(configPath);
     QJsonObject config;
 
@@ -536,7 +535,7 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
         );
         const QString appName = m_settings->data().value(QStringLiteral("name")).toString(QStringLiteral("Quol"));
         if (startup)
-            runSettings.setValue(appName, QCoreApplication::applicationFilePath());
+            runSettings.setValue(appName, QStringLiteral("\"%1\"").arg(QCoreApplication::applicationFilePath()));
         else
             runSettings.remove(appName);
     }
