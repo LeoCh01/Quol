@@ -7,6 +7,7 @@
 #include "ui/TransitionManager.hpp"
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -80,7 +81,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
         settings->save();
     };
 
-    const QString appDir = QDir::currentPath();
+    const QString appDir = QCoreApplication::applicationDirPath();
     QString pluginsDirSetting =
         settings->settingString(QStringLiteral("plugins_dir"), QStringLiteral("plugins")).trimmed();
     if (pluginsDirSetting.isEmpty()) {
@@ -92,7 +93,10 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
     const QDir pluginsDir(pluginsDirPath);
     const QJsonArray pluginIds = settings->data().value(QStringLiteral("plugins")).toArray();
 
+    qInfo() << "Loading" << pluginIds.size() << "plugins from" << pluginsDirPath;
+
     for (const auto &val : pluginIds) {
+        qInfo() << "Loading plugin:" << val.toString();
         const QString id = val.toString().trimmed();
 
         QuolWindow *win = nullptr;
@@ -113,9 +117,11 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
                                              .trimmed();
 
             const QString libPath = pluginsDir.filePath(id + QStringLiteral("/") + id);
+            qInfo() << "Loading library:" << libPath;
             loader = new QPluginLoader(libPath);
             auto *plugin = qobject_cast<IQuolPlugin *>(loader->instance());
             if (!plugin) {
+                qWarning() << "Failed to load plugin library:" << libPath << loader->errorString();
                 throw std::runtime_error(
                     QString("Failed to load plugin library: %1 — %2").arg(libPath, loader->errorString()).toStdString()
                 );
@@ -141,11 +147,13 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
 
             transitions->addWindow(win);
 
+            qInfo() << "Plugin loaded:" << id;
             m_windows.append(win);
             m_plugins.append(LoadedPlugin{loader, plugin});
             win = nullptr;
             loader = nullptr;
         } catch (...) {
+            qWarning() << "Plugin failed to load:" << id;
             delete win;
             if (loader) {
                 loader->unload();

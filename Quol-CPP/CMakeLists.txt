@@ -38,6 +38,7 @@ set_target_properties(quol_core PROPERTIES
 add_executable(Quol WIN32
     src/main.cpp
     src/core/AppSettingsManager.cpp
+    src/core/LogManager.cpp
     src/core/PluginManager.cpp
     src/core/PluginStoreManager.cpp
     src/core/QuolApplication.cpp

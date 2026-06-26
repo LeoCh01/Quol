@@ -1,9 +1,9 @@
 #include <QApplication>
-#include <QDir>
 #include <QFile>
 #include <QIcon>
 
 #include "core/AppSettingsManager.hpp"
+#include "core/LogManager.hpp"
 #include "core/QuolApplication.hpp"
 #include "ui/SplashScreen.hpp"
 #include "ui/UpdateNotifier.hpp"
@@ -11,7 +11,10 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    const QString baseDir = QDir::currentPath();
+    const QString baseDir = QApplication::applicationDirPath();
+
+    LogManager logManager("C:\\Users\\leoch\\Documents\\- Python Code\\Quol Project\\Quol\\Quol-CPP\\logs\\quol.log");
+    qInfo() << "Base directory:" << baseDir;
 
     // App icon
     const QString iconPath = baseDir + QStringLiteral("/res/icons/icon.ico");

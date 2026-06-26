@@ -1,0 +1,42 @@
+[2026-06-26 19:48:18.788] [INFO] Log started: "C:\\Users\\leoch\\Documents\\- Python Code\\Quol Project\\Quol\\Quol-CPP\\logs\\quol.log"
+[2026-06-26 19:48:18.792] [INFO] Base directory: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b"
+[2026-06-26 19:48:18.987] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.005] [INFO] Starting QuolApplication
+[2026-06-26 19:48:19.009] [INFO] Loading 9 plugins from "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins"
+[2026-06-26 19:48:19.009] [INFO] Loading plugin: "api"
+[2026-06-26 19:48:19.015] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/api/api"
+[2026-06-26 19:48:19.034] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.034] [INFO] Plugin loaded: "api"
+[2026-06-26 19:48:19.034] [INFO] Loading plugin: "chance"
+[2026-06-26 19:48:19.040] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/chance/chance"
+[2026-06-26 19:48:19.057] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.060] [INFO] Plugin loaded: "chance"
+[2026-06-26 19:48:19.060] [INFO] Loading plugin: "chat"
+[2026-06-26 19:48:19.065] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/chat/chat"
+[2026-06-26 19:48:19.090] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.104] [INFO] Plugin loaded: "chat"
+[2026-06-26 19:48:19.104] [INFO] Loading plugin: "cmd"
+[2026-06-26 19:48:19.104] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/cmd/cmd"
+[2026-06-26 19:48:19.128] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.140] [INFO] Plugin loaded: "cmd"
+[2026-06-26 19:48:19.140] [INFO] Loading plugin: "colorPicker"
+[2026-06-26 19:48:19.143] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/colorPicker/colorPicker"
+[2026-06-26 19:48:19.152] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.182] [INFO] Plugin loaded: "colorPicker"
+[2026-06-26 19:48:19.182] [INFO] Loading plugin: "draw"
+[2026-06-26 19:48:19.186] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/draw/draw"
+[2026-06-26 19:48:19.204] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.216] [INFO] Plugin loaded: "draw"
+[2026-06-26 19:48:19.216] [INFO] Loading plugin: "keymap"
+[2026-06-26 19:48:19.216] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/keymap/keymap"
+[2026-06-26 19:48:19.236] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.236] [INFO] Plugin loaded: "keymap"
+[2026-06-26 19:48:19.236] [INFO] Loading plugin: "macro"
+[2026-06-26 19:48:19.243] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/macro/macro"
+[2026-06-26 19:48:19.256] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:19.265] [INFO] Plugin loaded: "macro"
+[2026-06-26 19:48:19.265] [INFO] Loading plugin: "misc"
+[2026-06-26 19:48:19.265] [INFO] Loading library: "C:/Users/leoch/Documents/winhelp/Quol-v5.0.0b/plugins/misc/misc"
+[2026-06-26 19:48:19.279] [WARNING] QObject::disconnect: wildcard call disconnects from destroyed signal of QPushButton::unnamed
+[2026-06-26 19:48:20.393] [INFO] Plugin loaded: "misc"
+[2026-06-26 19:49:24.250] [INFO] Shutting down QuolApplication

@@ -8,6 +8,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QDebug>
 #include <QMenu>
 #include <QProcess>
 #include <QSystemTrayIcon>
@@ -27,6 +28,7 @@ QuolApplication::~QuolApplication() {
 }
 
 void QuolApplication::start() {
+    qInfo() << "Starting QuolApplication";
     m_transitions->addWindow(m_mainWindow);
     m_mainWindow->show();
 
@@ -72,6 +74,7 @@ void QuolApplication::performShutdown() {
     if (m_shutdownDone)
         return;
     m_shutdownDone = true;
+    qInfo() << "Shutting down QuolApplication";
 
     if (!m_mainHotkeyId.isEmpty()) {
         m_inputManager->removeHotkey(m_mainHotkeyId);
