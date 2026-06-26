@@ -93,8 +93,6 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
     const QDir pluginsDir(pluginsDirPath);
     const QJsonArray pluginIds = settings->data().value(QStringLiteral("plugins")).toArray();
 
-    qInfo() << "Loading" << pluginIds.size() << "plugins from" << pluginsDirPath;
-
     for (const auto &val : pluginIds) {
         qInfo() << "Loading plugin:" << val.toString();
         const QString id = val.toString().trimmed();
@@ -117,7 +115,6 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
                                              .trimmed();
 
             const QString libPath = pluginsDir.filePath(id + QStringLiteral("/") + id);
-            qInfo() << "Loading library:" << libPath;
             loader = new QPluginLoader(libPath);
             auto *plugin = qobject_cast<IQuolPlugin *>(loader->instance());
             if (!plugin) {

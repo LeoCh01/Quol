@@ -16,8 +16,6 @@ LogManager::LogManager(const QString &filePath, QObject *parent) : QObject(paren
 
     s_instance = this;
     qInstallMessageHandler(messageHandler);
-
-    qInfo() << "Log started:" << filePath;
 }
 
 LogManager::~LogManager() {

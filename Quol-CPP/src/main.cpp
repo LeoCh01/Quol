@@ -12,9 +12,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     const QString baseDir = QApplication::applicationDirPath();
-
-    LogManager logManager("C:\\Users\\leoch\\Documents\\- Python Code\\Quol Project\\Quol\\Quol-CPP\\logs\\quol.log");
-    qInfo() << "Base directory:" << baseDir;
+    LogManager logManager(baseDir);
 
     // App icon
     const QString iconPath = baseDir + QStringLiteral("/res/icons/icon.ico");
