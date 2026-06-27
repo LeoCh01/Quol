@@ -11,8 +11,8 @@
 #include <QTemporaryFile>
 #include <QUrl>
 
-static const char *kStoreApiUrl = "https://api.github.com/repos/LeoCh01/Quol-Tools/contents/plugins?ref=cpp-migration";
-static const char *kRawBaseUrl = "https://raw.githubusercontent.com/LeoCh01/Quol-Tools/cpp-migration/plugins/";
+static const char *kStoreApiUrl = "https://api.github.com/repos/LeoCh01/Quol-Tools/contents/plugins?ref=main";
+static const char *kRawBaseUrl = "https://raw.githubusercontent.com/LeoCh01/Quol-Tools/main/plugins/";
 
 PluginStoreManager::PluginStoreManager(QObject *parent) : QObject(parent), m_network(new QNetworkAccessManager(this)) {
 }

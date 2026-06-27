@@ -13,8 +13,7 @@
 #include <QPushButton>
 #include <QUrl>
 
-static constexpr auto kRemoteSettingsUrl =
-    "https://raw.githubusercontent.com/LeoCh01/Quol/CPP-migration/Quol-CPP/settings.json";
+static constexpr auto kRemoteSettingsUrl = "https://raw.githubusercontent.com/LeoCh01/Quol/main/Quol-CPP/settings.json";
 static constexpr auto kRepoUrl = "https://github.com/LeoCh01/Quol";
 static constexpr auto kUnknownVersion = "N/A";
 

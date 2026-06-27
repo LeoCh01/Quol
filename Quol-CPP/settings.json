@@ -1,6 +1,6 @@
 {
   "name": "Quol",
-  "version": "0.1.0",
+  "version": "5.0.0",
   "description": "Versatile toolbox for windows.",
   "startup": false,
   "toggle_key": "backtick",
