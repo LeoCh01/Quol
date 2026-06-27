@@ -1,0 +1,13 @@
+{
+  "_": {
+    "default_geometry": [10, 10, 180, 0],
+    "description": "Main Quol control panel",
+    "name": "Quol",
+    "plugins": [],
+    "version": "1.0.0"
+  },
+  "reset_pos": true,
+  "startup": false,
+  "toggle_key": "backtick",
+  "transition": [["none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand-slide"], 0]
+}

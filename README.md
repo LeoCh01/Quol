@@ -1,12 +1,15 @@
-# PySide6 Quick Tools for Windows
+# Quol - Plugin Toolbox for Windows
 
 ## Overview
 
-Quol (Quick-Tool) is an overlay desktop application built using **PySide6**, designed to serve as a versatile toolbox for Windows. The toolbox provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
+Quol (Quick-Tool) is an overlay desktop application built with ~~Pyside6~~ **Qt 6 / C++** , designed as a plugin toolbox for Windows. Quol provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity. (Migrated from Pyside6)
 
 ## Features
 
-This application Runs at the top layer and is toggleable through a hotkey. Layouts are adjustable to fit your preferences. All Features can be found in the built-in tool manager or at the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repository.
+- Always-on-top window, toggleable through hotkeys
+- Adjustable layout and plugin window positioning
+- Dynamically loaded plugin system
+- Plugin collection maintained in [Quol-Tools](https://github.com/LeoCh01/Quol-Tools)
 
 [//]: # '<img src="demo/snip.png" width="500">'
 
@@ -23,8 +26,6 @@ This application Runs at the top layer and is toggleable through a hotkey. Layou
 
 ## Installation
 
-### Option 1: Installing from ZIP and Running the Executable
-
 Click [here](https://github.com/LeoCh01/Quol/releases) for the latest release of Quol.
 
 1. **Download and Extract the ZIP file:**
@@ -35,53 +36,126 @@ Click [here](https://github.com/LeoCh01/Quol/releases) for the latest release of
    - Navigate to the extracted folder.
    - Double-click on `Quol.exe` to launch the application.
 
-### Option 2: Running Locally
+## Adding Custom Plugins
 
-To run the application locally or build it as a standalone executable, follow these steps:
+Plugins are located under the path specified in the `settings.json` `plugins_dir` field. (default `./plugins`)
 
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/LeoCh01/quol.git
-   ```
-
-2. **Set up the Python environment (Python 3.12 or greater recommended):**
-
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
-
-3. **Install the required dependencies:**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Run the application locally:**
-   - Once the environment is set up, you can run the app by executing:
-
-   ```bash
-   python app/main.py
-   ```
-
-## Adding Custom Tools
-
-To create a new tool, you can add a folder to the `tools` directory and add the folder name in the `settings.json` file. You can use the template provided in `tools/example` folder as a starting point.
+Example plugin folder structure:
 
 ```
-example/
-├── windows.py
+myPlugin/
+├── myPlugin.dll
+├── res/config.json
+```
+
+- `myPlugin.dll`: plugin binary. The DLL name must match the folder name.
+- `res/config.json`: plugin-specific config passed to the plugin at runtime.
+
+Plugins within the path can be loaded with the built-in `Manage Plugins` window.
+
+## Creating and Building a Plugin
+
+Plugin source layout:
+
+```
+plugins/myPlugin/
+├── CMakeLists.txt
+├── MyPlugin.cpp
+├── MyPlugin.hpp
 ├── res/config.json
 └── lib/ (optional)
 ```
 
-- `windows.py`: main window script.
-- `res/`: images and other miscellaneous items.
-- `res/config.json`: configurations linked to window script.
-- `lib/`: additional libraries/scripts to be dynamically loaded.
+A Quol plugin needs a class that inherits both `QObject` and `IQuolPlugin`, and implements `createWidget(...)`, `initialize(...)`, `onUpdateConfig(...)` and `shutdown()`.
 
-By following these steps, you can easily add custom tools without rebuilding the application.
+Example `MyPlugin.hpp`:
+
+```cpp
+#pragma once
+
+#include "plugin_api/IQuolPlugin.hpp"
+#include <QObject>
+
+class QLabel;
+
+class MyPlugin final : public QObject, public IQuolPlugin {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID IQuolPlugin_iid)
+    Q_INTERFACES(IQuolPlugin)
+
+public:
+    QWidget *createWidget(QWidget *parent = nullptr) override;
+    void initialize(const QString &pluginRootPath,
+                    const PluginConfig &pluginConfig,
+                    QuolServices *services) override;
+    void onUpdateConfig(const PluginConfig &pluginConfig) override;
+    void shutdown() override;
+
+private:
+    PluginConfig m_cfg;
+
+    QLabel *m_label = nullptr;
+};
+```
+
+Example `MyPlugin.cpp`:
+
+```cpp
+#include "plugins/myPlugin/MyPlugin.hpp"
+
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QWidget>
+
+QWidget *MyPlugin::createWidget(QWidget *parent) {
+    auto *widget = new QWidget(parent);
+    auto *layout = new QVBoxLayout(widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    const int number = m_cfg.get("number", 0).toInt();
+
+    m_label = new QLabel(QString("Hello %1").arg(number), widget);
+    layout->addWidget(m_label);
+    return widget;
+}
+
+void MyPlugin::initialize(const QString &pluginRootPath,
+                          const PluginConfig &pluginConfig,
+                          QuolServices *services) {
+    Q_UNUSED(pluginRootPath)
+    Q_UNUSED(services)
+    m_cfg = pluginConfig;
+}
+
+void MyPlugin::onUpdateConfig(const PluginConfig &pluginConfig) {
+    m_cfg = pluginConfig;
+    if (!m_label)
+        return;
+
+    const int number = m_cfg.get("number", 0).toInt();
+    m_label->setText(QString("Hello %1").arg(number));
+}
+
+void MyPlugin::shutdown() {}
+```
+
+Example `res/config.json`:
+
+```json
+{
+  "_": {
+    "default_geometry": [400, 400, 280, 0],
+    "name": "Example",
+    "version": 1,
+    "description": "Example Quol C++ plugin"
+  },
+  "number": 123
+}
+```
+
+The `_` object is reserved for plugin metadata.
+
+For `CMakeLists.txt`, use one of the plugin examples in the [Quol-Tools](https://github.com/LeoCh01/Quol-Tools) repo as the template.
 
 ## Contact
 

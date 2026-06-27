@@ -1,11 +1,18 @@
 TODO
 - add better tooltips
-- hide on toggle optimization
 - opencv maybe
-- C# migration
+
+- transition easing
+- toggle key dropdown
 
 
-4.1.0 (CURRENT)
+******* C++ MIGRATION (under Quol-CPP folder), python app will be deprecated *******
+
+4.2.0 (CURRENT)
+- code consistency cleanup
+- qlib lazy load
+
+4.1.0
 - fix custom geometry on reload (occurs on multi monitor setups)
 - add tool toggle transition dropdown
 - logging standardization

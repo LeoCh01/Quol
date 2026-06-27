@@ -1,0 +1,14 @@
+{
+  "name": "Quol",
+  "version": "5.0.0",
+  "description": "Versatile toolbox for windows.",
+  "startup": false,
+  "toggle_key": "backtick",
+  "style": "dark",
+  "transition": "rand",
+  "is_default_pos": true,
+  "plugins_dir": "plugins",
+  "plugins": [],
+  "show_updates": true,
+  "admin_key": ""
+}

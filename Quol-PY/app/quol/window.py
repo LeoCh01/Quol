@@ -191,7 +191,7 @@ class ManageWindow(QuolSubWindow):
         self.checkbox_list = []
 
         for tool in sorted(installed):
-            config = read_json(os.path.join(self.tools_dir, tool, 'res/config.json'))
+            config = read_json(os.path.join(self.tools_dir, tool, 'res', 'config.json'))
             version = config['_'].get('version', 0)
             display_name = f"{tool} (v{version})"
 
@@ -257,7 +257,7 @@ class ManageWindow(QuolSubWindow):
                 is_matching_installed = False
 
                 if is_installed:
-                    config = read_json(os.path.join(self.tools_dir, str(tool_name), 'res/config.json'))
+                    config = read_json(os.path.join(self.tools_dir, str(tool_name), 'res', 'config.json'))
                     is_matching_installed = bool(version == config['_'].get('version', -1))
 
                 item_widget = QWidget()
@@ -293,8 +293,15 @@ class ManageWindow(QuolSubWindow):
                 self.store_list_widget.addItem(item)
                 self.store_list_widget.setItemWidget(item, item_widget)
 
+        def _cleanup(_=None, w=worker):
+            if w in self.workers:
+                self.workers.remove(w)
+            w.deleteLater()
+
         worker.finished.connect(on_finished)
+        worker.finished.connect(_cleanup)
         worker.error.connect(lambda e: logger.error(f"Error fetching store items: {e}"))
+        worker.error.connect(_cleanup)
         worker.start()
 
     def on_install(self, name, button):
@@ -308,12 +315,18 @@ class ManageWindow(QuolSubWindow):
             self.refresh_list()
             self.refresh_store_list()
 
+        def _cleanup(_=None, w=worker):
+            if w in self.workers:
+                self.workers.remove(w)
+            w.deleteLater()
+
         worker.finished.connect(on_finished)
+        worker.finished.connect(_cleanup)
         worker.error.connect(lambda e: logger.error(f"Error installing {name}: {e}"))
+        worker.error.connect(_cleanup)
         worker.start()
 
     def on_update(self, name, ver, button):
-
         button.setDisabled(True)
         button.setText("Updating...")
 
@@ -323,8 +336,14 @@ class ManageWindow(QuolSubWindow):
         def on_finished(result):
             self.refresh_list()
             self.refresh_store_list()
-            self.workers.remove(worker)
+
+        def _cleanup(_=None, w=worker):
+            if w in self.workers:
+                self.workers.remove(w)
+            w.deleteLater()
 
         worker.finished.connect(on_finished)
+        worker.finished.connect(_cleanup)
         worker.error.connect(lambda e: logger.error(f"Error updating {name}: {e}"))
+        worker.error.connect(_cleanup)
         worker.start()

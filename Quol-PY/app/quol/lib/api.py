@@ -59,7 +59,7 @@ def is_compatible(version: str) -> bool:
             parts.append('0')
         return int(parts[0]) * 1000000 + int(parts[1]) * 1000 + int(parts[2])
 
-    settings = read_json(BASE_DIR + '/settings.json')
+    settings = read_json(os.path.join(BASE_DIR, 'settings.json'))
     return version == "x" or v_to_int(version) <= v_to_int(settings['version'])
 
 
@@ -82,8 +82,8 @@ async def update_item(item_name: str, item_ver: int, path: str) -> bool:
             return False
 
         # Check compatibility
-        if os.path.exists(item_path + '/res/config.json'):
-            config = read_json(item_path + '/res/config.json')
+        if os.path.exists(os.path.join(item_path, 'res', 'config.json')):
+            config = read_json(os.path.join(item_path, 'res', 'config.json'))
             v = config['_'].get('dependency', 'x')
             if not is_compatible(v):
                 logger.error(f"Item {item_name} requires app version {v} or higher.")

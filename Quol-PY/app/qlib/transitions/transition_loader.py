@@ -18,7 +18,7 @@ class TransitionLoader:
     def __init__(self, name):
         self.name = name
         self.module = None
-        self.path = f'{BASE_DIR}\\transitions\\{self.name}'
+        self.path = os.path.join(BASE_DIR, 'transitions', self.name)
 
     def __enter__(self):
         return self
@@ -29,10 +29,10 @@ class TransitionLoader:
         return False
 
     def load(self):
-        module_path = self.path + '\\transition.py'
+        module_path = os.path.join(self.path, 'transition.py')
         if not os.path.exists(module_path):
             logger.error(f'Script {self.name} does not exist at {module_path}.')
-            module_path = f'{BASE_DIR}\\transitions\\rand\\transition.py'
+            module_path = os.path.join(BASE_DIR, 'transitions', 'rand', 'transition.py')
 
         spec = importlib.util.spec_from_file_location(self.name, module_path)
         self.module = importlib.util.module_from_spec(spec)
