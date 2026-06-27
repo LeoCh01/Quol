@@ -1,10 +1,6 @@
 TODO
-- add better tooltips
-- opencv maybe
-
-- transition easing
-- toggle key dropdown
-
+- key select dropdown
+- 
 
 ******* C++ MIGRATION (under Quol-CPP folder), python app will be deprecated *******
 

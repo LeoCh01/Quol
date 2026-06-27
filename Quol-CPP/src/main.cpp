@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     const QString baseDir = QApplication::applicationDirPath();
-    LogManager logManager(baseDir);
+    LogManager logManager(baseDir + QStringLiteral("/logs/quol.log"));
 
     // App icon
     const QString iconPath = baseDir + QStringLiteral("/res/icons/icon.ico");
