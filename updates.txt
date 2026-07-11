@@ -1,10 +1,15 @@
 TODO
 - key select dropdown
-- 
+- update installed tab after installing
+- fix message board
+- add update popup dont show again checkbox
+
+5.1.0 (CURRENT)
+- move QuolPopupWindow to shared core library
 
 ******* C++ MIGRATION (under Quol-CPP folder), python app will be deprecated *******
 
-4.2.0 (CURRENT)
+4.2.0
 - code consistency cleanup
 - qlib lazy load
 

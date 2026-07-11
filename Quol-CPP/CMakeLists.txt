@@ -15,21 +15,25 @@ if(MINGW)
         "<CMAKE_RC_COMPILER> -O coff <DEFINES> <SOURCE> <OBJECT>")
 endif()
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network OpenGLWidgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network OpenGLWidgets)
 
 add_library(quol_core SHARED
     src/core/InputManager.cpp
     src/core/InputManager.hpp
     src/plugin_api/PluginConfig.cpp
     src/plugin_api/PluginConfig.hpp
+    src/ui/TitleBar.cpp
+    src/ui/TitleBar.hpp
+    src/ui/QuolPopupWindow.cpp
+    src/ui/QuolPopupWindow.hpp
 )
 
 target_include_directories(quol_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
 
 set_target_properties(quol_core PROPERTIES
     AUTOMOC_COMPILER_PREDEFINES OFF
@@ -44,8 +48,6 @@ add_executable(Quol WIN32
     src/core/QuolApplication.cpp
     src/ui/ConfigWindow.cpp
     src/ui/QuolWindow.cpp
-    src/ui/TitleBar.cpp
-    src/ui/QuolPopupWindow.cpp
     src/ui/QuolMainWindow.cpp
     src/ui/SplashScreen.cpp
     src/ui/TransitionManager.cpp
