@@ -15,8 +15,8 @@ if(MINGW)
         "<CMAKE_RC_COMPILER> -O coff <DEFINES> <SOURCE> <OBJECT>")
 endif()
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network OpenGLWidgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network OpenGLWidgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 
 add_library(quol_core SHARED
     src/core/InputManager.cpp
@@ -33,7 +33,7 @@ target_include_directories(quol_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
 
 set_target_properties(quol_core PROPERTIES
     AUTOMOC_COMPILER_PREDEFINES OFF

@@ -241,11 +241,7 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
             if (auto *checkbox = qobject_cast<QCheckBox *>(valueWidget)) {
                 result.insert(key, checkbox->isChecked());
             } else if (auto *lineEdit = qobject_cast<QLineEdit *>(valueWidget)) {
-                if (key == "toggle_key") {
-                    result.insert(key, lineEdit->text().trimmed().toLower());
-                } else {
-                    result.insert(key, parseLineEditValue(lineEdit->text()));
-                }
+                result.insert(key, parseLineEditValue(lineEdit->text()));
             } else if (auto *combo = qobject_cast<QComboBox *>(valueWidget)) {
                 QJsonArray options;
                 for (int j = 0; j < combo->count(); ++j) {

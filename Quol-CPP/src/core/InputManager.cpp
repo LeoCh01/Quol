@@ -77,7 +77,7 @@ const QHash<QString, quint32> &keyMap() {
             m.insert(QString(ch), static_cast<quint32>(ch.unicode()));
         }
 
-        for (int i = 1; i <= 24; ++i) {
+        for (int i = 1; i <= 12; ++i) {
             m.insert(QString("f%1").arg(i), static_cast<quint32>(VK_F1 + (i - 1)));
         }
 
@@ -102,7 +102,7 @@ QString VKToToken(quint32 vk) {
         return QString(QChar(static_cast<ushort>(vk)));
     }
 
-    if (vk >= VK_F1 && vk <= VK_F24) {
+    if (vk >= VK_F1 && vk <= VK_F12) {
         return QString(QStringLiteral("f%1")).arg(static_cast<int>(vk - VK_F1 + 1));
     }
 

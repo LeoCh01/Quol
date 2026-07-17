@@ -482,10 +482,22 @@ void QuolMainWindow::copySettingsToMainConfig() {
     config.insert(
         QStringLiteral("reset_pos"), m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false)
     );
-    config.insert(
-        QStringLiteral("toggle_key"),
-        m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick"))
-    );
+    {
+        const QString currentToggle =
+            m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick")).toLower();
+        QJsonArray toggleOptions = QJsonArray{ QStringLiteral("backtick") };
+        const QJsonArray arr = config.value(QStringLiteral("toggle_key")).toArray();
+        if (arr.size() == 2)
+            toggleOptions = arr.at(0).toArray();
+        int toggleIndex = 0;
+        for (int i = 0; i < toggleOptions.size(); ++i) {
+            if (toggleOptions.at(i).toString().toLower() == currentToggle) {
+                toggleIndex = i;
+                break;
+            }
+        }
+        config.insert(QStringLiteral("toggle_key"), QJsonArray{toggleOptions, toggleIndex});
+    }
 
     QString transition =
         m_settings->data().value(QStringLiteral("transition")).toString(QStringLiteral("none")).toLower();
@@ -543,8 +555,21 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
 
     m_settings->setValue(QStringLiteral("is_default_pos"), config.value(QStringLiteral("reset_pos")).toBool());
 
-    const QString toggleKey = config.value(QStringLiteral("toggle_key")).toVariant().toString().trimmed().toLower();
-    m_settings->setValue(QStringLiteral("toggle_key"), toggleKey);
+    {
+        const QJsonValue toggleValue = config.value(QStringLiteral("toggle_key"));
+        if (toggleValue.isArray()) {
+            const QJsonArray arr = toggleValue.toArray();
+            if (arr.size() == 2 && arr.at(0).isArray()) {
+                const QJsonArray options = arr.at(0).toArray();
+                const int idx = arr.at(1).toInt();
+                if (idx >= 0 && idx < options.size()) {
+                    m_settings->setValue(
+                        QStringLiteral("toggle_key"), options.at(idx).toString().trimmed().toLower()
+                    );
+                }
+            }
+        }
+    }
 
     const QJsonValue transitionValue = config.value(QStringLiteral("transition"));
     if (transitionValue.isArray()) {

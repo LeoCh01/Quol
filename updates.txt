@@ -3,8 +3,12 @@ TODO
 - update installed tab after installing
 - fix message board
 - add update popup dont show again checkbox
+- update popup dont show on compare error
+- plugin dependency check
 
 5.1.0 (CURRENT)
+- toggle key dropdown
+- fix close popup btns 
 - move QuolPopupWindow to shared core library
 
 ******* C++ MIGRATION (under Quol-CPP folder), python app will be deprecated *******
