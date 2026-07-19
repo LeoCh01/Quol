@@ -2,6 +2,7 @@
 #include "core/AppSettingsManager.hpp"
 
 #include <QAbstractButton>
+#include <QCheckBox>
 #include <QDesktopServices>
 #include <QEventLoop>
 #include <QJsonDocument>
@@ -43,8 +44,9 @@ bool UpdateNotifier::checkForUpdateBlocking() {
     }
     reply->deleteLater();
 
-    // Show popup on mismatch, or when update check failed (latest = N/A).
-    if (latestVersion != currentVersion || latestVersion == QString::fromLatin1(kUnknownVersion)) {
+    if (latestVersion != currentVersion && latestVersion != QString::fromLatin1(kUnknownVersion)) {
+        if (m_settings->data().value(QStringLiteral("suppress_update_popup")).toBool(false))
+            return true;
         return showUpdatePopup(currentVersion, latestVersion);
     }
 
@@ -58,6 +60,9 @@ bool UpdateNotifier::showUpdatePopup(const QString &currentVersion, const QStrin
     box.setText(QStringLiteral("Current: %1\nLatest: %2").arg(currentVersion, latestVersion));
     box.setWindowFlag(Qt::WindowCloseButtonHint, true);
 
+    auto *dontShowAgain = new QCheckBox(QStringLiteral("Don't show again"));
+    box.setCheckBox(dontShowAgain);
+
     box.addButton(QStringLiteral("Continue to App"), QMessageBox::AcceptRole);
     box.addButton(QStringLiteral("Open Repository"), QMessageBox::ActionRole);
     QAbstractButton *closeBtn = box.addButton(QMessageBox::Close);
@@ -65,6 +70,11 @@ bool UpdateNotifier::showUpdatePopup(const QString &currentVersion, const QStrin
     box.setEscapeButton(closeBtn);
 
     box.exec();
+
+    if (dontShowAgain->isChecked()) {
+        m_settings->setValue(QStringLiteral("suppress_update_popup"), true);
+        m_settings->save();
+    }
 
     const QAbstractButton *clicked = box.clickedButton();
     if (clicked && clicked->text() == QStringLiteral("Continue to App"))

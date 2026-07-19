@@ -10,5 +10,6 @@
   "plugins_dir": "plugins",
   "plugins": [],
   "show_updates": true,
+  "suppress_update_popup": false,
   "admin_key": ""
 }
