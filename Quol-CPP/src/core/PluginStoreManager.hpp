@@ -14,7 +14,9 @@ public:
 
     void fetchStoreItems();
     // itemName is the zip base name without extension, e.g. "example--v2"
-    void downloadPlugin(const QString &itemName, bool isUpdate);
+    void downloadPlugin(const QString &itemName, bool isUpdate, const QString &appVersion = QString());
+
+    static int compareVersions(const QString &a, const QString &b);
 
 signals:
     void storeItemsFetched(const QJsonArray &items);

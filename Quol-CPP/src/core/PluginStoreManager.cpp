@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -39,14 +40,29 @@ void PluginStoreManager::fetchStoreItems() {
     });
 }
 
-void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate) {
+int PluginStoreManager::compareVersions(const QString &a, const QString &b) {
+    const QStringList aParts = a.split('.');
+    const QStringList bParts = b.split('.');
+    const int maxLen = qMax(aParts.size(), bParts.size());
+    for (int i = 0; i < maxLen; ++i) {
+        const int aNum = i < aParts.size() ? aParts[i].toInt() : 0;
+        const int bNum = i < bParts.size() ? bParts[i].toInt() : 0;
+        if (aNum < bNum)
+            return -1;
+        if (aNum > bNum)
+            return 1;
+    }
+    return 0;
+}
+
+void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, const QString &appVersion) {
     const QString url = QLatin1String(kRawBaseUrl) + itemName + QStringLiteral(".zip");
     QNetworkRequest request;
     request.setUrl(QUrl(url));
     request.setRawHeader("User-Agent", "Quol-App");
 
     QNetworkReply *reply = m_network->get(request);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, itemName, isUpdate]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, itemName, isUpdate, appVersion]() {
         reply->deleteLater();
 
         // Derive folder name by stripping "--v<version>" suffix
@@ -100,23 +116,41 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate) 
             proc,
             qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             this,
-            [this, proc, pluginName, isUpdate, zipPath, pluginDir, backupDir](int exitCode, QProcess::ExitStatus) {
+            [this, proc, pluginName, isUpdate, zipPath, pluginDir, backupDir, appVersion](
+                int exitCode, QProcess::ExitStatus
+            ) {
                 proc->deleteLater();
                 QFile::remove(zipPath);
 
                 const QString configPath = pluginDir + QStringLiteral("/res/config.json");
                 const QString dllPath = pluginDir + QStringLiteral("/") + pluginName + QStringLiteral(".dll");
-                const bool ok = exitCode == 0 && QFile::exists(configPath) && QFile::exists(dllPath);
+                bool ok = exitCode == 0 && QFile::exists(configPath) && QFile::exists(dllPath);
+
+                if (ok && !appVersion.isEmpty()) {
+                    QFile cf(configPath);
+                    if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                        const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
+                        cf.close();
+                        const QString dependency = doc.object()
+                                                       .value(QStringLiteral("_"))
+                                                       .toObject()
+                                                       .value(QStringLiteral("dependency"))
+                                                       .toString();
+                        if (!dependency.isEmpty() && compareVersions(appVersion, dependency) < 0) {
+                            ok = false;
+                        }
+                    }
+                }
 
                 if (!ok) {
-                    // Restore backup on failure
                     if (isUpdate && QDir(backupDir).exists()) {
                         if (QDir(pluginDir).exists())
                             QDir(pluginDir).removeRecursively();
                         QDir().rename(backupDir, pluginDir);
+                    } else if (QDir(pluginDir).exists()) {
+                        QDir(pluginDir).removeRecursively();
                     }
                 } else {
-                    // Remove backup on success
                     if (isUpdate && QDir(backupDir).exists())
                         QDir(backupDir).removeRecursively();
                 }

@@ -1,13 +1,10 @@
 TODO
-- key select dropdown
-- update installed tab after installing
 - fix message board
-- update popup dont show on compare error
-- plugin dependency check
 
 5.1.0 (CURRENT)
-- add update popup dont show again checkbox
-- toggle key dropdown
+- plugin dependency check
+- fix installed tab after installing plugin
+- "update popup" bugfixes
 - fix close popup btns 
 - move QuolPopupWindow to shared core library
 

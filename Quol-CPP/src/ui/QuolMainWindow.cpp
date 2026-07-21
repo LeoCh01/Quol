@@ -207,9 +207,14 @@ void QuolMainWindow::openManagePluginsDialog() {
         m_pluginStore,
         &PluginStoreManager::pluginDownloadFinished,
         popup,
-        [this, storeStatus](const QString &pluginName, bool success) {
+        [this, popup, tabs, storeStatus](const QString &pluginName, bool success) {
             if (success) {
-                storeStatus->setText(QStringLiteral("\"%1\" installed. Refreshing store list...").arg(pluginName));
+                storeStatus->setText(QStringLiteral("\"%1\" installed. Refreshing...").arg(pluginName));
+                QWidget *oldInstalled = tabs->widget(0);
+                tabs->removeTab(0);
+                delete oldInstalled;
+                QList<QCheckBox *> newChecks;
+                tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
                 m_pluginStore->fetchStoreItems();
             } else {
                 storeStatus->setText(QStringLiteral("Failed to download \"%1\". Please try again.").arg(pluginName));
@@ -435,10 +440,11 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
                         "padding: 5px 10px; border: 1px solid #b58900; border-radius: 6px; color: #b58900;"
                     ));
                     const QString capturedItemName = entry.itemName;
-                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName]() {
+                    const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
+                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName, appVer]() {
                         btn->setEnabled(false);
                         btn->setText(QStringLiteral("Updating..."));
-                        m_pluginStore->downloadPlugin(capturedItemName, true);
+                        m_pluginStore->downloadPlugin(capturedItemName, true, appVer);
                     });
                     row->addWidget(btn);
                 } else {
@@ -448,10 +454,11 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
                         "padding: 5px 10px; border: 1px solid #2d6cdf; border-radius: 6px; color: #2d6cdf;"
                     ));
                     const QString capturedItemName = entry.itemName;
-                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName]() {
+                    const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
+                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName, appVer]() {
                         btn->setEnabled(false);
                         btn->setText(QStringLiteral("Installing..."));
-                        m_pluginStore->downloadPlugin(capturedItemName, false);
+                        m_pluginStore->downloadPlugin(capturedItemName, false, appVer);
                     });
                     row->addWidget(btn);
                 }
@@ -482,22 +489,10 @@ void QuolMainWindow::copySettingsToMainConfig() {
     config.insert(
         QStringLiteral("reset_pos"), m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false)
     );
-    {
-        const QString currentToggle =
-            m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick")).toLower();
-        QJsonArray toggleOptions = QJsonArray{ QStringLiteral("backtick") };
-        const QJsonArray arr = config.value(QStringLiteral("toggle_key")).toArray();
-        if (arr.size() == 2)
-            toggleOptions = arr.at(0).toArray();
-        int toggleIndex = 0;
-        for (int i = 0; i < toggleOptions.size(); ++i) {
-            if (toggleOptions.at(i).toString().toLower() == currentToggle) {
-                toggleIndex = i;
-                break;
-            }
-        }
-        config.insert(QStringLiteral("toggle_key"), QJsonArray{toggleOptions, toggleIndex});
-    }
+    config.insert(
+        QStringLiteral("toggle_key"),
+        m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick")).toLower()
+    );
 
     QString transition =
         m_settings->data().value(QStringLiteral("transition")).toString(QStringLiteral("none")).toLower();
@@ -557,7 +552,9 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
 
     {
         const QJsonValue toggleValue = config.value(QStringLiteral("toggle_key"));
-        if (toggleValue.isArray()) {
+        if (toggleValue.isString()) {
+            m_settings->setValue(QStringLiteral("toggle_key"), toggleValue.toString().trimmed().toLower());
+        } else if (toggleValue.isArray()) {
             const QJsonArray arr = toggleValue.toArray();
             if (arr.size() == 2 && arr.at(0).isArray()) {
                 const QJsonArray options = arr.at(0).toArray();

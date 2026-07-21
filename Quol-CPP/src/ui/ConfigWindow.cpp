@@ -183,6 +183,16 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
             auto *row = new QHBoxLayout();
             row->addWidget(new QLabel(key));
 
+            if (key == QStringLiteral("toggle_key")) {
+                auto *edit = new QLineEdit();
+                const QJsonArray options = arr.at(0).toArray();
+                const int idx = arr.at(1).toInt();
+                if (idx >= 0 && idx < options.size())
+                    edit->setText(options.at(idx).toString());
+                row->addWidget(edit, 1);
+                return row;
+            }
+
             auto *combo = new QComboBox();
             const QJsonArray options = arr.at(0).toArray();
             for (const auto &option : options) {
