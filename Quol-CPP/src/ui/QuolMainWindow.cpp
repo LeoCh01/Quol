@@ -1,6 +1,7 @@
 #include "ui/QuolMainWindow.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "core/PluginStoreManager.hpp"
+#include "ui/MessageBoard.hpp"
 #include "ui/QuolPopupWindow.hpp"
 #include "ui/TransitionManager.hpp"
 
@@ -69,7 +70,8 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     , m_pluginStore(new PluginStoreManager(this)) {
     copySettingsToMainConfig();
     attachConfigWindow(
-        QApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"), QStringLiteral("Quol Config")
+        QApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"),
+        QStringLiteral("Quol Config")
     );
     setConfigSavedCallback([this](const QJsonObject &config) { applyMainConfigToSettings(config); });
 
@@ -96,7 +98,8 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     auto *msgBoardBtn = new QPushButton();
     msgBoardBtn->setIcon(QIcon(iconRoot + QStringLiteral("news.svg")));
     msgBoardBtn->setIconSize(iconSize);
-    msgBoardBtn->setToolTip(QStringLiteral("Message board is not implemented yet"));
+    msgBoardBtn->setToolTip(QStringLiteral("View message board"));
+    connect(msgBoardBtn, &QPushButton::clicked, this, &QuolMainWindow::openMessageBoard);
     grid->addWidget(msgBoardBtn, 1, 1, 1, 1);
 
     auto *openPluginsBtn = new QPushButton();
@@ -262,8 +265,8 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
             auto *row = new QHBoxLayout(itemWidget);
             row->setContentsMargins(6, 2, 6, 2);
 
-            const QString configPath =
-                QApplication::applicationDirPath() + QStringLiteral("/plugins/") + id + QStringLiteral("/res/config.json");
+            const QString configPath = QApplication::applicationDirPath() + QStringLiteral("/plugins/") + id
+                                       + QStringLiteral("/res/config.json");
             QString displayName = id;
             QFile cf(configPath);
             if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -474,6 +477,22 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
     return tab;
 }
 
+void QuolMainWindow::openMessageBoard() {
+    if (m_messageBoard) {
+        m_messageBoard->raise();
+        m_messageBoard->activateWindow();
+        return;
+    }
+
+    const QString adminKey = m_settings->data().value(QStringLiteral("admin_key")).toString();
+    auto *board = new MessageBoard(adminKey, this);
+    m_messageBoard = board;
+    connect(board, &QObject::destroyed, this, [this]() { m_messageBoard = nullptr; });
+    board->show();
+    board->raise();
+    board->activateWindow();
+}
+
 void QuolMainWindow::copySettingsToMainConfig() {
     const QString configPath = QApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json");
     QFile file(configPath);
@@ -560,9 +579,7 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
                 const QJsonArray options = arr.at(0).toArray();
                 const int idx = arr.at(1).toInt();
                 if (idx >= 0 && idx < options.size()) {
-                    m_settings->setValue(
-                        QStringLiteral("toggle_key"), options.at(idx).toString().trimmed().toLower()
-                    );
+                    m_settings->setValue(QStringLiteral("toggle_key"), options.at(idx).toString().trimmed().toLower());
                 }
             }
         }

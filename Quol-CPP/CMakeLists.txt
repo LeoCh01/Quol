@@ -27,13 +27,15 @@ add_library(quol_core SHARED
     src/ui/TitleBar.hpp
     src/ui/QuolPopupWindow.cpp
     src/ui/QuolPopupWindow.hpp
+    src/ui/MessageBoard.cpp
+    src/ui/MessageBoard.hpp
 )
 
 target_include_directories(quol_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(quol_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
 set_target_properties(quol_core PROPERTIES
     AUTOMOC_COMPILER_PREDEFINES OFF
