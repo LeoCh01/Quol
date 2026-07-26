@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
@@ -163,4 +164,75 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
             {QStringLiteral("-NoProfile"), QStringLiteral("-NonInteractive"), QStringLiteral("-Command"), script}
         );
     });
+}
+
+void PluginStoreManager::installLocalPlugin(const QString &zipFilePath) {
+    QFileInfo fi(zipFilePath);
+    QString baseName = fi.completeBaseName();
+
+    QString pluginName = baseName;
+    const int sep = pluginName.lastIndexOf(QStringLiteral("--v"));
+    if (sep != -1)
+        pluginName = pluginName.left(sep);
+
+    const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+    const QString pluginDir = pluginsDir + QStringLiteral("/") + pluginName;
+
+    if (QDir(pluginDir).exists()) {
+        emit localPluginInstallFinished(pluginName, false);
+        return;
+    }
+
+    if (!QDir().mkpath(pluginDir)) {
+        emit localPluginInstallFinished(pluginName, false);
+        return;
+    }
+
+    QTemporaryFile tempZip(QDir::tempPath() + QStringLiteral("/quol_plugin_XXXXXX.zip"));
+    tempZip.setAutoRemove(false);
+    if (!tempZip.open()) {
+        QDir(pluginDir).removeRecursively();
+        emit localPluginInstallFinished(pluginName, false);
+        return;
+    }
+    QFile srcFile(zipFilePath);
+    if (!srcFile.open(QIODevice::ReadOnly)) {
+        tempZip.remove();
+        QDir(pluginDir).removeRecursively();
+        emit localPluginInstallFinished(pluginName, false);
+        return;
+    }
+    tempZip.write(srcFile.readAll());
+    tempZip.close();
+    srcFile.close();
+    const QString zipPath = tempZip.fileName();
+
+    const QString script = QStringLiteral("Expand-Archive -LiteralPath \"%1\" -DestinationPath \"%2\" -Force")
+                               .arg(QDir::toNativeSeparators(zipPath), QDir::toNativeSeparators(pluginDir));
+
+    auto *proc = new QProcess(this);
+    connect(
+        proc,
+        qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
+        this,
+        [this, proc, pluginName, pluginDir, zipPath](int exitCode, QProcess::ExitStatus) {
+            proc->deleteLater();
+            QFile::remove(zipPath);
+
+            const QString configPath = pluginDir + QStringLiteral("/res/config.json");
+            const QString dllPath = pluginDir + QStringLiteral("/") + pluginName + QStringLiteral(".dll");
+            bool ok = exitCode == 0 && QFile::exists(configPath) && QFile::exists(dllPath);
+
+            if (!ok) {
+                if (QDir(pluginDir).exists())
+                    QDir(pluginDir).removeRecursively();
+            }
+
+            emit localPluginInstallFinished(pluginName, ok);
+        }
+    );
+    proc->start(
+        QStringLiteral("powershell"),
+        {QStringLiteral("-NoProfile"), QStringLiteral("-NonInteractive"), QStringLiteral("-Command"), script}
+    );
 }

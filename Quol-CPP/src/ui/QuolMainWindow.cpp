@@ -12,6 +12,7 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -200,6 +201,24 @@ void QuolMainWindow::openManagePluginsDialog() {
     QListWidget *storeList = nullptr;
     QLabel *storeStatus = nullptr;
     tabs->addTab(buildStoreTab(popup, storeList, storeStatus), QStringLiteral("Store"));
+
+    QLabel *customStatus = nullptr;
+    tabs->addTab(buildCustomTab(popup, customStatus), QStringLiteral("Custom"));
+
+    connect(m_pluginStore, &PluginStoreManager::localPluginInstallFinished, popup,
+        [this, popup, tabs, customStatus](const QString &pluginName, bool success) {
+            if (success) {
+                customStatus->setText(QStringLiteral("<span style='color: #4CAF50;'>\"%1\" installed successfully!</span>").arg(pluginName));
+                QWidget *oldInstalled = tabs->widget(0);
+                tabs->removeTab(0);
+                delete oldInstalled;
+                QList<QCheckBox *> newChecks;
+                tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
+            } else {
+                customStatus->setText(QStringLiteral("<span style='color: #f44336;'>Failed to install \"%1\". The ZIP may be invalid, or a plugin with that name already exists.</span>").arg(pluginName));
+            }
+        }
+    );
 
     popup->addContent(tabs);
 
@@ -474,6 +493,59 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
         }
     );
 
+    return tab;
+}
+
+QWidget *QuolMainWindow::buildCustomTab(QWidget *popup, QLabel *&statusOut) {
+    auto *tab = new QWidget();
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
+    layout->setAlignment(Qt::AlignTop);
+
+    auto *descLabel = new QLabel(QStringLiteral("Select a plugin ZIP file to install a custom plugin."));
+    descLabel->setWordWrap(true);
+    layout->addWidget(descLabel);
+
+    auto *statusLabel = new QLabel();
+    statusLabel->setWordWrap(true);
+    statusLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    statusLabel->setTextFormat(Qt::RichText);
+    layout->addWidget(statusLabel);
+
+    auto *selectBtn = new QPushButton(QStringLiteral("Select ZIP..."));
+    selectBtn->setToolTip(QStringLiteral("Browse for a plugin ZIP file"));
+    layout->addWidget(selectBtn);
+
+    layout->addStretch(1);
+
+    connect(selectBtn, &QPushButton::clicked, popup, [this, popup, statusLabel]() {
+        const QString zipPath = QFileDialog::getOpenFileName(
+            popup,
+            QStringLiteral("Select Plugin ZIP"),
+            QString(),
+            QStringLiteral("ZIP files (*.zip)")
+        );
+        if (zipPath.isEmpty())
+            return;
+
+        QFileInfo fi(zipPath);
+        QString pluginName = fi.completeBaseName();
+        const int sep = pluginName.lastIndexOf(QStringLiteral("--v"));
+        if (sep != -1)
+            pluginName = pluginName.left(sep);
+
+        const QString pluginDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + pluginName;
+        if (QDir(pluginDir).exists()) {
+            statusLabel->setText(QStringLiteral("<span style='color: #f44336;'>\"%1\" is already installed. Enable it in the Installed tab.</span>").arg(pluginName));
+            return;
+        }
+
+        statusLabel->setText(QStringLiteral("<span style='color: #888;'>Installing...</span>"));
+        m_pluginStore->installLocalPlugin(zipPath);
+    });
+
+    statusOut = statusLabel;
     return tab;
 }
 

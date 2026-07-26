@@ -1,7 +1,8 @@
 TODO
-- fix message board
 
 5.1.0 (CURRENT)
+- add custom plugin installer
+- fix message board
 - plugin dependency check
 - fix installed tab after installing plugin
 - "update popup" bugfixes

@@ -32,6 +32,7 @@ private:
     void openMessageBoard();
     QWidget *buildInstalledTab(QWidget *popup, QList<QCheckBox *> &pluginChecks);
     QWidget *buildStoreTab(QWidget *popup, QListWidget *&storeListOut, QLabel *&storeStatusOut);
+    QWidget *buildCustomTab(QWidget *popup, QLabel *&statusOut);
     QStringList discoverInstalledPluginIds() const;
     QMap<QString, int> getInstalledPluginVersions() const;
     void reloadApplication() const;
