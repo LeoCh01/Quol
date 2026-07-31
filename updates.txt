@@ -8,6 +8,7 @@ TODO
 - "update popup" bugfixes
 - fix close popup btns 
 - move QuolPopupWindow to shared core library
+- remove python folder
 
 ******* C++ MIGRATION (under Quol-CPP folder), python app will be deprecated *******
 
