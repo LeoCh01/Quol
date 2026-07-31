@@ -2,7 +2,7 @@
 
 ## Overview
 
-Quol (Quick-Tool) is an overlay desktop application built with ~~Pyside6~~ **Qt 6 / C++** , designed as a plugin toolbox for Windows. Quol provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity. (Migrated from Pyside6)
+Quol (Quick-Tool) is an overlay desktop application built with **Qt 6 / C++** (Migrated from Pyside6), designed as a plugin toolbox for Windows. Quol provides an intuitive and user-friendly interface to perform a variety of tasks and enhance productivity.
 
 ## Features
 
