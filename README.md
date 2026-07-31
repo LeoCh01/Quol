@@ -28,14 +28,6 @@ Quol (Quick-Tool) is an overlay desktop application built with ~~Pyside6~~ **Qt 
 
 Click [here](https://github.com/LeoCh01/Quol/releases) for the latest release of Quol.
 
-1. **Download and Extract the ZIP file:**
-   - Download the latest `Quol.zip` file from the releases page.
-   - Extract the contents to your desired location on your computer.
-
-2. **Run the Application:**
-   - Navigate to the extracted folder.
-   - Double-click on `Quol.exe` to launch the application.
-
 ## Adding Custom Plugins
 
 Plugins are located under the path specified in the `settings.json` `plugins_dir` field. (default `./plugins`)
@@ -45,7 +37,7 @@ Example plugin folder structure:
 ```
 myPlugin/
 ├── myPlugin.dll
-├── res/config.json
+└── res/config.json
 ```
 
 - `myPlugin.dll`: plugin binary. The DLL name must match the folder name.
@@ -62,8 +54,7 @@ plugins/myPlugin/
 ├── CMakeLists.txt
 ├── MyPlugin.cpp
 ├── MyPlugin.hpp
-├── res/config.json
-└── lib/ (optional)
+└── res/config.json
 ```
 
 A Quol plugin needs a class that inherits both `QObject` and `IQuolPlugin`, and implements `createWidget(...)`, `initialize(...)`, `onUpdateConfig(...)` and `shutdown()`.

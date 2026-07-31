@@ -24,7 +24,7 @@
     padding: 2px;
 }
 
-#content QLineEdit, #content QPlainTextEdit {
+#content QLineEdit, #content QPlainTextEdit, #content QTextEdit {
     background-color: #3d3d3d;
 }
 

@@ -5,6 +5,8 @@
 **/__pycache__/
 build/
 dist/
+scripts/
 stuff.txt
 reset.py
 Quol-CPP/CMakeUserPresets.json
+Quol-PY

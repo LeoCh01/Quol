@@ -11,6 +11,7 @@ class TransitionManager;
 class QCheckBox;
 class QLabel;
 class QListWidget;
+class MessageBoard;
 class QPushButton;
 class QuolPopupWindow;
 class PluginStoreManager;
@@ -28,8 +29,10 @@ signals:
 
 private:
     void openManagePluginsDialog();
+    void openMessageBoard();
     QWidget *buildInstalledTab(QWidget *popup, QList<QCheckBox *> &pluginChecks);
     QWidget *buildStoreTab(QWidget *popup, QListWidget *&storeListOut, QLabel *&storeStatusOut);
+    QWidget *buildCustomTab(QWidget *popup, QLabel *&statusOut);
     QStringList discoverInstalledPluginIds() const;
     QMap<QString, int> getInstalledPluginVersions() const;
     void reloadApplication() const;
@@ -41,5 +44,6 @@ private:
     TransitionManager *m_transitions;
     QPushButton *m_toggleBtn = nullptr;
     QuolPopupWindow *m_pluginManagerWindow = nullptr;
+    MessageBoard *m_messageBoard = nullptr;
     PluginStoreManager *m_pluginStore = nullptr;
 };

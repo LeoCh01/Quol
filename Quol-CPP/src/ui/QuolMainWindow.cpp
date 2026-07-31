@@ -1,6 +1,7 @@
 #include "ui/QuolMainWindow.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "core/PluginStoreManager.hpp"
+#include "ui/MessageBoard.hpp"
 #include "ui/QuolPopupWindow.hpp"
 #include "ui/TransitionManager.hpp"
 
@@ -11,6 +12,7 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QFile>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -69,7 +71,8 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     , m_pluginStore(new PluginStoreManager(this)) {
     copySettingsToMainConfig();
     attachConfigWindow(
-        QApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"), QStringLiteral("Quol Config")
+        QApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json"),
+        QStringLiteral("Quol Config")
     );
     setConfigSavedCallback([this](const QJsonObject &config) { applyMainConfigToSettings(config); });
 
@@ -96,7 +99,8 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     auto *msgBoardBtn = new QPushButton();
     msgBoardBtn->setIcon(QIcon(iconRoot + QStringLiteral("news.svg")));
     msgBoardBtn->setIconSize(iconSize);
-    msgBoardBtn->setToolTip(QStringLiteral("Message board is not implemented yet"));
+    msgBoardBtn->setToolTip(QStringLiteral("View message board"));
+    connect(msgBoardBtn, &QPushButton::clicked, this, &QuolMainWindow::openMessageBoard);
     grid->addWidget(msgBoardBtn, 1, 1, 1, 1);
 
     auto *openPluginsBtn = new QPushButton();
@@ -198,6 +202,24 @@ void QuolMainWindow::openManagePluginsDialog() {
     QLabel *storeStatus = nullptr;
     tabs->addTab(buildStoreTab(popup, storeList, storeStatus), QStringLiteral("Store"));
 
+    QLabel *customStatus = nullptr;
+    tabs->addTab(buildCustomTab(popup, customStatus), QStringLiteral("Custom"));
+
+    connect(m_pluginStore, &PluginStoreManager::localPluginInstallFinished, popup,
+        [this, popup, tabs, customStatus](const QString &pluginName, bool success) {
+            if (success) {
+                customStatus->setText(QStringLiteral("<span style='color: #4CAF50;'>\"%1\" installed successfully!</span>").arg(pluginName));
+                QWidget *oldInstalled = tabs->widget(0);
+                tabs->removeTab(0);
+                delete oldInstalled;
+                QList<QCheckBox *> newChecks;
+                tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
+            } else {
+                customStatus->setText(QStringLiteral("<span style='color: #f44336;'>Failed to install \"%1\". The ZIP may be invalid, or a plugin with that name already exists.</span>").arg(pluginName));
+            }
+        }
+    );
+
     popup->addContent(tabs);
 
     connect(m_pluginStore, &PluginStoreManager::storeItemsFetchFailed, popup, [storeStatus](const QString &error) {
@@ -207,9 +229,14 @@ void QuolMainWindow::openManagePluginsDialog() {
         m_pluginStore,
         &PluginStoreManager::pluginDownloadFinished,
         popup,
-        [this, storeStatus](const QString &pluginName, bool success) {
+        [this, popup, tabs, storeStatus](const QString &pluginName, bool success) {
             if (success) {
-                storeStatus->setText(QStringLiteral("\"%1\" installed. Refreshing store list...").arg(pluginName));
+                storeStatus->setText(QStringLiteral("\"%1\" installed. Refreshing...").arg(pluginName));
+                QWidget *oldInstalled = tabs->widget(0);
+                tabs->removeTab(0);
+                delete oldInstalled;
+                QList<QCheckBox *> newChecks;
+                tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
                 m_pluginStore->fetchStoreItems();
             } else {
                 storeStatus->setText(QStringLiteral("Failed to download \"%1\". Please try again.").arg(pluginName));
@@ -257,8 +284,8 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
             auto *row = new QHBoxLayout(itemWidget);
             row->setContentsMargins(6, 2, 6, 2);
 
-            const QString configPath =
-                QApplication::applicationDirPath() + QStringLiteral("/plugins/") + id + QStringLiteral("/res/config.json");
+            const QString configPath = QApplication::applicationDirPath() + QStringLiteral("/plugins/") + id
+                                       + QStringLiteral("/res/config.json");
             QString displayName = id;
             QFile cf(configPath);
             if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -435,10 +462,11 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
                         "padding: 5px 10px; border: 1px solid #b58900; border-radius: 6px; color: #b58900;"
                     ));
                     const QString capturedItemName = entry.itemName;
-                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName]() {
+                    const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
+                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName, appVer]() {
                         btn->setEnabled(false);
                         btn->setText(QStringLiteral("Updating..."));
-                        m_pluginStore->downloadPlugin(capturedItemName, true);
+                        m_pluginStore->downloadPlugin(capturedItemName, true, appVer);
                     });
                     row->addWidget(btn);
                 } else {
@@ -448,10 +476,11 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
                         "padding: 5px 10px; border: 1px solid #2d6cdf; border-radius: 6px; color: #2d6cdf;"
                     ));
                     const QString capturedItemName = entry.itemName;
-                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName]() {
+                    const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
+                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName, appVer]() {
                         btn->setEnabled(false);
                         btn->setText(QStringLiteral("Installing..."));
-                        m_pluginStore->downloadPlugin(capturedItemName, false);
+                        m_pluginStore->downloadPlugin(capturedItemName, false, appVer);
                     });
                     row->addWidget(btn);
                 }
@@ -465,6 +494,75 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
     );
 
     return tab;
+}
+
+QWidget *QuolMainWindow::buildCustomTab(QWidget *popup, QLabel *&statusOut) {
+    auto *tab = new QWidget();
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
+    layout->setAlignment(Qt::AlignTop);
+
+    auto *descLabel = new QLabel(QStringLiteral("Select a plugin ZIP file to install a custom plugin."));
+    descLabel->setWordWrap(true);
+    layout->addWidget(descLabel);
+
+    auto *statusLabel = new QLabel();
+    statusLabel->setWordWrap(true);
+    statusLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    statusLabel->setTextFormat(Qt::RichText);
+    layout->addWidget(statusLabel);
+
+    auto *selectBtn = new QPushButton(QStringLiteral("Select ZIP..."));
+    selectBtn->setToolTip(QStringLiteral("Browse for a plugin ZIP file"));
+    layout->addWidget(selectBtn);
+
+    layout->addStretch(1);
+
+    connect(selectBtn, &QPushButton::clicked, popup, [this, popup, statusLabel]() {
+        const QString zipPath = QFileDialog::getOpenFileName(
+            popup,
+            QStringLiteral("Select Plugin ZIP"),
+            QString(),
+            QStringLiteral("ZIP files (*.zip)")
+        );
+        if (zipPath.isEmpty())
+            return;
+
+        QFileInfo fi(zipPath);
+        QString pluginName = fi.completeBaseName();
+        const int sep = pluginName.lastIndexOf(QStringLiteral("--v"));
+        if (sep != -1)
+            pluginName = pluginName.left(sep);
+
+        const QString pluginDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + pluginName;
+        if (QDir(pluginDir).exists()) {
+            statusLabel->setText(QStringLiteral("<span style='color: #f44336;'>\"%1\" is already installed. Enable it in the Installed tab.</span>").arg(pluginName));
+            return;
+        }
+
+        statusLabel->setText(QStringLiteral("<span style='color: #888;'>Installing...</span>"));
+        m_pluginStore->installLocalPlugin(zipPath);
+    });
+
+    statusOut = statusLabel;
+    return tab;
+}
+
+void QuolMainWindow::openMessageBoard() {
+    if (m_messageBoard) {
+        m_messageBoard->raise();
+        m_messageBoard->activateWindow();
+        return;
+    }
+
+    const QString adminKey = m_settings->data().value(QStringLiteral("admin_key")).toString();
+    auto *board = new MessageBoard(adminKey, this);
+    m_messageBoard = board;
+    connect(board, &QObject::destroyed, this, [this]() { m_messageBoard = nullptr; });
+    board->show();
+    board->raise();
+    board->activateWindow();
 }
 
 void QuolMainWindow::copySettingsToMainConfig() {
@@ -484,7 +582,7 @@ void QuolMainWindow::copySettingsToMainConfig() {
     );
     config.insert(
         QStringLiteral("toggle_key"),
-        m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick"))
+        m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick")).toLower()
     );
 
     QString transition =
@@ -543,8 +641,21 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
 
     m_settings->setValue(QStringLiteral("is_default_pos"), config.value(QStringLiteral("reset_pos")).toBool());
 
-    const QString toggleKey = config.value(QStringLiteral("toggle_key")).toVariant().toString().trimmed().toLower();
-    m_settings->setValue(QStringLiteral("toggle_key"), toggleKey);
+    {
+        const QJsonValue toggleValue = config.value(QStringLiteral("toggle_key"));
+        if (toggleValue.isString()) {
+            m_settings->setValue(QStringLiteral("toggle_key"), toggleValue.toString().trimmed().toLower());
+        } else if (toggleValue.isArray()) {
+            const QJsonArray arr = toggleValue.toArray();
+            if (arr.size() == 2 && arr.at(0).isArray()) {
+                const QJsonArray options = arr.at(0).toArray();
+                const int idx = arr.at(1).toInt();
+                if (idx >= 0 && idx < options.size()) {
+                    m_settings->setValue(QStringLiteral("toggle_key"), options.at(idx).toString().trimmed().toLower());
+                }
+            }
+        }
+    }
 
     const QJsonValue transitionValue = config.value(QStringLiteral("transition"));
     if (transitionValue.isArray()) {
