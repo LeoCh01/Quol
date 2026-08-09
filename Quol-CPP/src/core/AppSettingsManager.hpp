@@ -17,13 +17,9 @@ public:
 
     void setValue(const QString &key, const QJsonValue &value);
 
-    void setWindowGeometry(const QString &configKey, int x, int y, int width, int height);
     QString settingString(const QString &key, const QString &defaultValue = QString()) const;
 
 private:
-    QJsonObject readPluginConfig(const QString &configKey);
-    void setPluginConfig(const QString &configKey, const QJsonObject &pluginConfig);
-
     QString m_settingsPath;
     QJsonObject m_data;
 };

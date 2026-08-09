@@ -60,19 +60,8 @@ void ConfigWindow::reloadFromDisk() {
 void ConfigWindow::saveConfig() {
     QJsonObject updated = extractFromLayout(m_configLayout);
 
-    QJsonObject latestUnderscore;
-    QFile readFile(m_configPath);
-    if (readFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        const QJsonDocument latestDoc = QJsonDocument::fromJson(readFile.readAll());
-        latestUnderscore = latestDoc.object().value(QStringLiteral("_")).toObject();
-        readFile.close();
-    }
-
-    if (latestUnderscore.isEmpty() && m_config.contains(QStringLiteral("_"))) {
-        latestUnderscore = m_config.value(QStringLiteral("_")).toObject();
-    }
-
-    updated.insert(QStringLiteral("_"), latestUnderscore);
+    QJsonObject underscore = m_config.value(QStringLiteral("_")).toObject();
+    updated.insert(QStringLiteral("_"), underscore);
 
     QFile file(m_configPath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {

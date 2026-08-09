@@ -32,7 +32,7 @@ public:
     void attachConfigWindow(const QString &configPath, const QString &configTitle = QString());
     void setConfigSavedCallback(const std::function<void(const QJsonObject &)> &callback);
     void setGeometryPersistence(bool enabled);
-    bool applyGeometryFromConfig();
+    void applyGeometryFromConfig();
 
     void snapToGrid();
     void saveGeometry();
@@ -44,7 +44,6 @@ protected:
 
 private:
     void updateMask();
-    void loadGeometry(int defaultX, int defaultY, int defaultW, int defaultH);
     bool loadGeometryFromPluginConfig();
     bool saveGeometryToPluginConfig() const;
     int autoHeightFromContent() const;

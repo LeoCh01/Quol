@@ -11,6 +11,7 @@ class TransitionManager;
 class QCheckBox;
 class QLabel;
 class QListWidget;
+class QTabWidget;
 class MessageBoard;
 class QPushButton;
 class QuolPopupWindow;
@@ -24,18 +25,26 @@ public:
 
     void updateToggleButton();
 
+    static void reloadApplication();
+
 signals:
     void mainConfigApplied(const QString &toggleKey, bool resetPos, const QString &transitionType);
 
 private:
+    struct InstalledPluginMeta {
+        QString id;
+        QString title;
+        int version;
+    };
+
     void openManagePluginsDialog();
     void openMessageBoard();
     QWidget *buildInstalledTab(QWidget *popup, QList<QCheckBox *> &pluginChecks);
     QWidget *buildStoreTab(QWidget *popup, QListWidget *&storeListOut, QLabel *&storeStatusOut);
     QWidget *buildCustomTab(QWidget *popup, QLabel *&statusOut);
-    QStringList discoverInstalledPluginIds() const;
-    QMap<QString, int> getInstalledPluginVersions() const;
-    void reloadApplication() const;
+    QMap<QString, InstalledPluginMeta> discoverInstalledPlugins() const;
+    void rebuildInstalledTab(QTabWidget *tabs, QWidget *popup);
+    void addListRow(QListWidget *list, QWidget *rowWidget);
 
     void copySettingsToMainConfig();
     void applyMainConfigToSettings(const QJsonObject &config);

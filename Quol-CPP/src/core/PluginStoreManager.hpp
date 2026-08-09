@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QString>
 
+#include <functional>
+
 class QNetworkAccessManager;
 
 class PluginStoreManager : public QObject {
@@ -17,6 +19,8 @@ public:
     void downloadPlugin(const QString &itemName, bool isUpdate, const QString &appVersion = QString());
     void installLocalPlugin(const QString &zipFilePath);
 
+    static QString artifactPluginName(const QString &itemName);
+
     static int compareVersions(const QString &a, const QString &b);
 
 signals:
@@ -26,5 +30,7 @@ signals:
     void localPluginInstallFinished(const QString &pluginName, bool success);
 
 private:
+    void extractZipAsync(const QString &zipPath, const QString &pluginDir, std::function<void(bool)> onDone);
+
     QNetworkAccessManager *m_network;
 };

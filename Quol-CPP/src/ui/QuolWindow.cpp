@@ -1,6 +1,7 @@
 #include "ui/QuolWindow.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "ui/ConfigWindow.hpp"
+#include "ui/QuolWindowLayout.hpp"
 #include "ui/TitleBar.hpp"
 
 #include <QCloseEvent>
@@ -16,10 +17,6 @@
 #include <QShowEvent>
 #include <QVBoxLayout>
 
-namespace {
-void quolInitBaseLayout(QWidget *widget, const QString &title, TitleBar *&titleBarOut, QVBoxLayout *&bodyLayoutOut);
-}
-
 QuolWindow::QuolWindow(
     const QString &title,
     AppSettingsManager *settings,
@@ -33,33 +30,9 @@ QuolWindow::QuolWindow(
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
     quolInitBaseLayout(this, title, m_titleBar, m_bodyLayout);
     m_titleBar->setDragReleaseAction([this]() { snapToGrid(); });
-    loadGeometry(defaultX, defaultY, defaultW, defaultH);
+    setGeometry(defaultX, defaultY, defaultW, defaultH);
     updateMask();
 }
-
-namespace {
-void quolInitBaseLayout(QWidget *widget, const QString &title, TitleBar *&titleBarOut, QVBoxLayout *&bodyLayoutOut) {
-    auto *rootLayout = new QVBoxLayout(widget);
-    rootLayout->setContentsMargins(0, 0, 0, 0);
-    rootLayout->setSpacing(0);
-
-    titleBarOut = new TitleBar(widget, title, widget);
-    rootLayout->addWidget(titleBarOut);
-
-    auto *sep = new QWidget(widget);
-    sep->setFixedHeight(1);
-    sep->setStyleSheet("background-color: #2F2F2F;");
-    rootLayout->addWidget(sep);
-
-    auto *body = new QWidget(widget);
-    body->setObjectName("content");
-    bodyLayoutOut = new QVBoxLayout(body);
-    bodyLayoutOut->setContentsMargins(8, 8, 8, 8);
-    bodyLayoutOut->setSpacing(6);
-    bodyLayoutOut->setAlignment(Qt::AlignTop);
-    rootLayout->addWidget(body, 1);
-}
-}  // namespace
 
 TitleBar *QuolWindow::titleBar() const {
     return m_titleBar;
@@ -127,9 +100,8 @@ void QuolWindow::setGeometryPersistence(bool enabled) {
     m_persistGeometry = enabled;
 }
 
-bool QuolWindow::applyGeometryFromConfig() {
+void QuolWindow::applyGeometryFromConfig() {
     loadGeometryFromPluginConfig();
-    return true;
 }
 
 void QuolWindow::snapToGrid() {
@@ -140,12 +112,8 @@ void QuolWindow::snapToGrid() {
 }
 
 void QuolWindow::saveGeometry() {
-    if (!m_persistGeometry) {
-        return;
-    }
-
-    if (!saveGeometryToPluginConfig()) {
-        m_settings->setWindowGeometry(m_titleText, x(), y(), width(), height());
+    if (m_persistGeometry) {
+        saveGeometryToPluginConfig();
     }
 }
 
@@ -177,30 +145,6 @@ void QuolWindow::updateMask() {
     setMask(QRegion(path.toFillPolygon().toPolygon()));
 }
 
-void QuolWindow::loadGeometry(int defaultX, int defaultY, int defaultW, int defaultH) {
-    if (!m_persistGeometry) {
-        setGeometry(defaultX, defaultY, defaultW, defaultH);
-        return;
-    }
-
-    const QJsonObject configs = m_settings->data().value(QStringLiteral("configs")).toObject();
-    const QJsonObject windowCfg = configs.value(m_titleText).toObject();
-    const QJsonArray geometry =
-        windowCfg.value(QStringLiteral("_")).toObject().value(QStringLiteral("geometry")).toArray();
-
-    if (geometry.size() >= 4) {
-        setGeometry(
-            geometry.at(0).toInt(defaultX),
-            geometry.at(1).toInt(defaultY),
-            geometry.at(2).toInt(defaultW),
-            geometry.at(3).toInt(defaultH)
-        );
-        return;
-    }
-
-    setGeometry(defaultX, defaultY, defaultW, defaultH);
-}
-
 bool QuolWindow::loadGeometryFromPluginConfig() {
     if (m_pluginConfigPath.isEmpty()) {
         return false;
@@ -215,28 +159,17 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
 
     QJsonObject root = doc.object();
     QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
-    const bool hasDefaultGeometry = underscore.value(QStringLiteral("default_geometry")).isArray()
-                                    && underscore.value(QStringLiteral("default_geometry")).toArray().size() >= 4;
     const bool useDefaultPos = m_settings && m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false);
     const QJsonArray defaultGeometry = underscore.value(QStringLiteral("default_geometry")).toArray();
     QJsonArray geometry = underscore.value(QStringLiteral("geometry")).toArray();
 
     bool configChanged = false;
 
-    if (useDefaultPos && defaultGeometry.size() >= 4) {
+    if ((geometry.size() < 4 || useDefaultPos) && defaultGeometry.size() >= 4) {
         geometry = defaultGeometry;
         underscore.insert(QStringLiteral("geometry"), geometry);
         root.insert(QStringLiteral("_"), underscore);
         configChanged = true;
-    }
-
-    if (geometry.size() < 4) {
-        if (defaultGeometry.size() >= 4) {
-            geometry = defaultGeometry;
-            underscore.insert(QStringLiteral("geometry"), geometry);
-            root.insert(QStringLiteral("_"), underscore);
-            configChanged = true;
-        }
     }
 
     const int gx = geometry.at(0).toInt(x());
@@ -255,7 +188,7 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
         }
     }
 
-    if (!hasDefaultGeometry) {
+    if (defaultGeometry.size() < 4) {
         saveGeometryToPluginConfig();
     }
 

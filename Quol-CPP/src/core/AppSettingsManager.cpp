@@ -1,7 +1,6 @@
 #include "core/AppSettingsManager.hpp"
 
 #include <QFile>
-#include <QJsonArray>
 #include <QJsonDocument>
 #include <utility>
 
@@ -39,28 +38,7 @@ void AppSettingsManager::setValue(const QString &key, const QJsonValue &value) {
     m_data.insert(key, value);
 }
 
-void AppSettingsManager::setWindowGeometry(const QString &configKey, int x, int y, int width, int height) {
-    QJsonObject pluginConfig = readPluginConfig(configKey);
-    QJsonObject meta = pluginConfig.value(QStringLiteral("_")).toObject();
-    meta.insert(QStringLiteral("geometry"), QJsonArray{x, y, width, height});
-    pluginConfig.insert(QStringLiteral("_"), meta);
-
-    setPluginConfig(configKey, pluginConfig);
-    save();
-}
-
 QString AppSettingsManager::settingString(const QString &key, const QString &defaultValue) const {
     const QString text = m_data.value(key).toString().trimmed();
     return text.isEmpty() ? defaultValue : text;
-}
-
-QJsonObject AppSettingsManager::readPluginConfig(const QString &configKey) {
-    const QJsonObject configs = m_data.value(QStringLiteral("configs")).toObject();
-    return configs.value(configKey).toObject();
-}
-
-void AppSettingsManager::setPluginConfig(const QString &configKey, const QJsonObject &pluginConfig) {
-    QJsonObject configs = m_data.value(QStringLiteral("configs")).toObject();
-    configs.insert(configKey, pluginConfig);
-    m_data.insert(QStringLiteral("configs"), configs);
 }

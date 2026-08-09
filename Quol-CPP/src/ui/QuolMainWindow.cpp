@@ -54,6 +54,32 @@ int mainDefaultGeometryValue(int index, int fallback) {
     }
     return geometry.at(index).toInt(fallback);
 }
+
+struct StoreEntry {
+    QString pluginName;
+    int version;
+    QString itemName;
+};
+
+QList<StoreEntry> parseStoreEntries(const QJsonArray &items) {
+    QList<StoreEntry> entries;
+    for (const QJsonValue &val : items) {
+        const QString name = val.toObject().value(QStringLiteral("name")).toString();
+        if (!name.endsWith(QStringLiteral(".zip")))
+            continue;
+        const QString base = name.left(name.size() - 4);
+        const int sep = base.lastIndexOf(QStringLiteral("--v"));
+        if (sep != -1)
+            entries.append({base.left(sep), base.mid(sep + 3).toInt(), base});
+        else
+            entries.append({base, 0, base});
+    }
+    return entries;
+}
+
+QString pluginNameFromZipName(const QString &zipName) {
+    return PluginStoreManager::artifactPluginName(zipName);
+}
 }  // namespace
 
 QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *transitions, QWidget *parent)
@@ -133,11 +159,12 @@ void QuolMainWindow::updateToggleButton() {
         m_toggleBtn->setText(m_transitions->isHidden() ? QStringLiteral("Toggle ON") : QStringLiteral("Toggle OFF"));
 }
 
-QStringList QuolMainWindow::discoverInstalledPluginIds() const {
+QMap<QString, QuolMainWindow::InstalledPluginMeta> QuolMainWindow::discoverInstalledPlugins() const {
+    typedef QuolMainWindow::InstalledPluginMeta Meta;
+    QMap<QString, Meta> plugins;
     const QString pluginsDirPath = QApplication::applicationDirPath() + QStringLiteral("/plugins");
     QDir pluginsDir(pluginsDirPath);
 
-    QStringList installed;
     const QStringList folderNames = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
     for (const QString &id : folderNames) {
         if (id.compare(QStringLiteral("quol"), Qt::CaseInsensitive) == 0) {
@@ -148,38 +175,47 @@ QStringList QuolMainWindow::discoverInstalledPluginIds() const {
         const QString configPath = root + QStringLiteral("/res/config.json");
         const QString dllPath = root + QStringLiteral("/") + id + QStringLiteral(".dll");
 
-        if (QFileInfo::exists(configPath) && QFileInfo::exists(dllPath)) {
-            installed.append(id);
-        }
-    }
-
-    return installed;
-}
-
-QMap<QString, int> QuolMainWindow::getInstalledPluginVersions() const {
-    QMap<QString, int> versions;
-    const QString pluginsDir = QApplication::applicationDirPath() + QStringLiteral("/plugins");
-    QDir dir(pluginsDir);
-    const QStringList folderNames = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-    for (const QString &id : folderNames) {
-        if (id.compare(QStringLiteral("quol"), Qt::CaseInsensitive) == 0)
+        if (!QFileInfo::exists(configPath) || !QFileInfo::exists(dllPath)) {
             continue;
-        const QString configPath = pluginsDir + QStringLiteral("/") + id + QStringLiteral("/res/config.json");
+        }
+
+        Meta meta{id, id, 0};
         QFile cf(configPath);
         if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
             const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
             cf.close();
-            const int ver =
-                doc.object().value(QStringLiteral("_")).toObject().value(QStringLiteral("version")).toInt(-1);
-            versions[id] = ver;
+            const QJsonObject underscore = doc.object().value(QStringLiteral("_")).toObject();
+            meta.title = underscore.value(QStringLiteral("name")).toString().trimmed();
+            if (meta.title.isEmpty()) {
+                meta.title = id;
+            }
+            meta.version = underscore.value(QStringLiteral("version")).toInt(0);
         }
+        plugins.insert(id, meta);
     }
-    return versions;
+
+    return plugins;
 }
 
-void QuolMainWindow::reloadApplication() const {
+void QuolMainWindow::reloadApplication() {
     QProcess::startDetached(QCoreApplication::applicationFilePath());
     QCoreApplication::quit();
+}
+
+void QuolMainWindow::addListRow(QListWidget *list, QWidget *rowWidget) {
+    auto *item = new QListWidgetItem(list);
+    item->setSizeHint(QSize(0, 34));
+    list->addItem(item);
+    list->setItemWidget(item, rowWidget);
+}
+
+void QuolMainWindow::rebuildInstalledTab(QTabWidget *tabs, QWidget *popup) {
+    QWidget *oldInstalled = tabs->widget(0);
+    tabs->removeTab(0);
+    delete oldInstalled;
+
+    QList<QCheckBox *> newChecks;
+    tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
 }
 
 void QuolMainWindow::openManagePluginsDialog() {
@@ -205,17 +241,23 @@ void QuolMainWindow::openManagePluginsDialog() {
     QLabel *customStatus = nullptr;
     tabs->addTab(buildCustomTab(popup, customStatus), QStringLiteral("Custom"));
 
-    connect(m_pluginStore, &PluginStoreManager::localPluginInstallFinished, popup,
+    connect(
+        m_pluginStore,
+        &PluginStoreManager::localPluginInstallFinished,
+        popup,
         [this, popup, tabs, customStatus](const QString &pluginName, bool success) {
             if (success) {
-                customStatus->setText(QStringLiteral("<span style='color: #4CAF50;'>\"%1\" installed successfully!</span>").arg(pluginName));
-                QWidget *oldInstalled = tabs->widget(0);
-                tabs->removeTab(0);
-                delete oldInstalled;
-                QList<QCheckBox *> newChecks;
-                tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
+                customStatus->setText(
+                    QStringLiteral("<span style='color: #4CAF50;'>\"%1\" installed successfully!</span>")
+                        .arg(pluginName)
+                );
+                rebuildInstalledTab(tabs, popup);
             } else {
-                customStatus->setText(QStringLiteral("<span style='color: #f44336;'>Failed to install \"%1\". The ZIP may be invalid, or a plugin with that name already exists.</span>").arg(pluginName));
+                customStatus->setText(QStringLiteral(
+                                          "<span style='color: #f44336;'>Failed to install \"%1\". The ZIP may be "
+                                          "invalid, or a plugin with that name already exists.</span>"
+                )
+                                          .arg(pluginName));
             }
         }
     );
@@ -232,11 +274,7 @@ void QuolMainWindow::openManagePluginsDialog() {
         [this, popup, tabs, storeStatus](const QString &pluginName, bool success) {
             if (success) {
                 storeStatus->setText(QStringLiteral("\"%1\" installed. Refreshing...").arg(pluginName));
-                QWidget *oldInstalled = tabs->widget(0);
-                tabs->removeTab(0);
-                delete oldInstalled;
-                QList<QCheckBox *> newChecks;
-                tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
+                rebuildInstalledTab(tabs, popup);
                 m_pluginStore->fetchStoreItems();
             } else {
                 storeStatus->setText(QStringLiteral("Failed to download \"%1\". Please try again.").arg(pluginName));
@@ -258,7 +296,8 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
     layout->setSpacing(4);
     layout->setAlignment(Qt::AlignTop);
 
-    const QStringList pluginIds = discoverInstalledPluginIds();
+    const QMap<QString, QuolMainWindow::InstalledPluginMeta> plugins = discoverInstalledPlugins();
+    const QStringList pluginIds = plugins.keys();
 
     auto *topRow = new QHBoxLayout();
     auto *selectAllCheck = new QCheckBox(QStringLiteral("Select All"));
@@ -284,21 +323,7 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
             auto *row = new QHBoxLayout(itemWidget);
             row->setContentsMargins(6, 2, 6, 2);
 
-            const QString configPath = QApplication::applicationDirPath() + QStringLiteral("/plugins/") + id
-                                       + QStringLiteral("/res/config.json");
-            QString displayName = id;
-            QFile cf(configPath);
-            if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
-                cf.close();
-                const QString title = doc.object()
-                                          .value(QStringLiteral("_"))
-                                          .toObject()
-                                          .value(QStringLiteral("name"))
-                                          .toString()
-                                          .trimmed();
-                displayName = title;
-            }
+            const QString displayName = plugins.value(id).title;
 
             auto *nameLabel = new QLabel(displayName);
             auto *statusLabel =
@@ -323,10 +348,7 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
             row->addWidget(statusLabel);
             row->addWidget(check);
 
-            auto *item = new QListWidgetItem(listWidget);
-            item->setSizeHint(QSize(0, 34));
-            listWidget->addItem(item);
-            listWidget->setItemWidget(item, itemWidget);
+            addListRow(listWidget, itemWidget);
 
             pluginChecks.append(check);
         }
@@ -404,27 +426,9 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
         popup,
         [this, popup, storeListWidget, storeStatusLabel](const QJsonArray &items) {
             storeListWidget->clear();
-            const QMap<QString, int> installedVersions = getInstalledPluginVersions();
+            const QMap<QString, QuolMainWindow::InstalledPluginMeta> installedPlugins = discoverInstalledPlugins();
 
-            struct StoreEntry {
-                QString pluginName;
-                int version;
-                QString itemName;
-            };
-            QList<StoreEntry> entries;
-
-            for (const QJsonValue &val : items) {
-                const QString name = val.toObject().value(QStringLiteral("name")).toString();
-                if (!name.endsWith(QStringLiteral(".zip")))
-                    continue;
-                const QString base = name.left(name.size() - 4);
-                const int sep = base.lastIndexOf(QStringLiteral("--v"));
-                if (sep != -1)
-                    entries.append({base.left(sep), base.mid(sep + 3).toInt(), base});
-                else
-                    entries.append({base, 0, base});
-            }
-
+            QList<StoreEntry> entries = parseStoreEntries(items);
             std::sort(entries.begin(), entries.end(), [](const StoreEntry &a, const StoreEntry &b) {
                 return a.pluginName < b.pluginName;
             });
@@ -436,8 +440,8 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
             storeStatusLabel->clear();
 
             for (const auto &entry : entries) {
-                const bool isInstalled = installedVersions.contains(entry.pluginName);
-                const bool isCurrent = isInstalled && installedVersions.value(entry.pluginName) == entry.version;
+                const bool isInstalled = installedPlugins.contains(entry.pluginName);
+                const bool isCurrent = isInstalled && installedPlugins.value(entry.pluginName).version == entry.version;
                 const QString displayName = entry.version > 0
                                                 ? QStringLiteral("%1 (v%2)").arg(entry.pluginName).arg(entry.version)
                                                 : entry.pluginName;
@@ -485,10 +489,7 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
                     row->addWidget(btn);
                 }
 
-                auto *item = new QListWidgetItem(storeListWidget);
-                item->setSizeHint(QSize(0, 34));
-                storeListWidget->addItem(item);
-                storeListWidget->setItemWidget(item, itemWidget);
+                addListRow(storeListWidget, itemWidget);
             }
         }
     );
@@ -521,23 +522,22 @@ QWidget *QuolMainWindow::buildCustomTab(QWidget *popup, QLabel *&statusOut) {
 
     connect(selectBtn, &QPushButton::clicked, popup, [this, popup, statusLabel]() {
         const QString zipPath = QFileDialog::getOpenFileName(
-            popup,
-            QStringLiteral("Select Plugin ZIP"),
-            QString(),
-            QStringLiteral("ZIP files (*.zip)")
+            popup, QStringLiteral("Select Plugin ZIP"), QString(), QStringLiteral("ZIP files (*.zip)")
         );
         if (zipPath.isEmpty())
             return;
 
         QFileInfo fi(zipPath);
-        QString pluginName = fi.completeBaseName();
-        const int sep = pluginName.lastIndexOf(QStringLiteral("--v"));
-        if (sep != -1)
-            pluginName = pluginName.left(sep);
+        const QString pluginName = pluginNameFromZipName(fi.completeBaseName());
 
         const QString pluginDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + pluginName;
         if (QDir(pluginDir).exists()) {
-            statusLabel->setText(QStringLiteral("<span style='color: #f44336;'>\"%1\" is already installed. Enable it in the Installed tab.</span>").arg(pluginName));
+            statusLabel->setText(
+                QStringLiteral(
+                    "<span style='color: #f44336;'>\"%1\" is already installed. Enable it in the Installed tab.</span>"
+                )
+                    .arg(pluginName)
+            );
             return;
         }
 

@@ -25,6 +25,8 @@ add_library(quol_core SHARED
     src/plugin_api/PluginConfig.hpp
     src/ui/TitleBar.cpp
     src/ui/TitleBar.hpp
+    src/ui/QuolWindowLayout.cpp
+    src/ui/QuolWindowLayout.hpp
     src/ui/QuolPopupWindow.cpp
     src/ui/QuolPopupWindow.hpp
     src/ui/MessageBoard.cpp

@@ -10,7 +10,6 @@
 #include <QApplication>
 #include <QDebug>
 #include <QMenu>
-#include <QProcess>
 #include <QSystemTrayIcon>
 
 QuolApplication::QuolApplication(AppSettingsManager *settings, QObject *parent)
@@ -140,8 +139,7 @@ void QuolApplication::setupTrayIcon() {
     connect(reloadAction, &QAction::triggered, this, [this]() {
         m_trayIcon->hide();
         performShutdown();
-        QProcess::startDetached(QCoreApplication::applicationFilePath());
-        QCoreApplication::quit();
+        QuolMainWindow::reloadApplication();
     });
 
     connect(quitAction, &QAction::triggered, this, [this]() {
