@@ -8,6 +8,8 @@
 #include <QString>
 #include <QStringList>
 #include <functional>
+#include <memory>
+#include <shared_mutex>
 
 // InputManager is a singleton-style service owned by main() and shared with
 // all plugins via QuolServices. It manages:
@@ -133,9 +135,18 @@ private:
     bool m_running = false;
 
     QHash<QString, HotkeyEntry> m_hotkeys;
-    QHash<QString, KeyListenerEntry> m_keyListeners;
+    // Reverse index: nativeId -> hotkey id, for O(1) dispatch in
+    // nativeEventFilter (previously a linear scan over all hotkeys per WM_HOTKEY).
+    QHash<int, QString> m_nativeToId;
+    // Listener stores are immutable snapshots. Dispatch reads a cheap
+    // shared_ptr copy; registration/unregistration publishes a fresh snapshot
+    // (copy-on-write) under a lock. This avoids deep-copying the whole hash on
+    // every key/mouse event and keeps dispatch safe when a callback adds or
+    // removes listeners (firing over a consistent snapshot, never a mutated map).
+    std::shared_ptr<const QHash<QString, KeyListenerEntry>> m_keyListeners;
     QHash<QString, KeyRemapEntry> m_keyRemaps;
-    QHash<QString, MouseListenerEntry> m_mouseListeners;
+    std::shared_ptr<const QHash<QString, MouseListenerEntry>> m_mouseListeners;
+    std::shared_mutex m_listenerMutex;
 
     void *m_keyboardHook = nullptr;
     void *m_mouseHook = nullptr;

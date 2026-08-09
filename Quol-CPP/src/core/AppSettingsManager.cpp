@@ -3,7 +3,6 @@
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QVariantList>
 #include <utility>
 
 AppSettingsManager::AppSettingsManager(QString settingsPath, QObject *parent)
@@ -38,29 +37,6 @@ const QJsonObject &AppSettingsManager::data() const {
 
 void AppSettingsManager::setValue(const QString &key, const QJsonValue &value) {
     m_data.insert(key, value);
-}
-
-QVariantList AppSettingsManager::windowGeometry(
-    const QString &configKey, int defaultX, int defaultY, int defaultWidth, int defaultHeight
-) {
-    QJsonObject pluginConfig = readPluginConfig(configKey);
-    QJsonObject meta = pluginConfig.value(QStringLiteral("_")).toObject();
-    QJsonArray geometry = meta.value(QStringLiteral("geometry")).toArray();
-
-    if (geometry.size() < 4) {
-        geometry = QJsonArray{defaultX, defaultY, defaultWidth, defaultHeight};
-        meta.insert(QStringLiteral("geometry"), geometry);
-        pluginConfig.insert(QStringLiteral("_"), meta);
-        setPluginConfig(configKey, pluginConfig);
-        save();
-    }
-
-    return QVariantList{
-        geometry.at(0).toInt(defaultX),
-        geometry.at(1).toInt(defaultY),
-        geometry.at(2).toInt(defaultWidth),
-        geometry.at(3).toInt(defaultHeight)
-    };
 }
 
 void AppSettingsManager::setWindowGeometry(const QString &configKey, int x, int y, int width, int height) {

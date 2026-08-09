@@ -242,7 +242,10 @@ void sendVirtualKey(quint32 vk, bool isDown) {
 
 }  // namespace
 
-InputManager::InputManager(QObject *parent) : QObject(parent) {
+InputManager::InputManager(QObject *parent)
+    : QObject(parent)
+    , m_keyListeners(std::make_shared<QHash<QString, KeyListenerEntry>>())
+    , m_mouseListeners(std::make_shared<QHash<QString, MouseListenerEntry>>()) {
 }
 
 InputManager::~InputManager() {
@@ -251,9 +254,10 @@ InputManager::~InputManager() {
     // and doing it synchronously here causes noticeable shutdown lag because
     // UnhookWindowsHookEx blocks until any in-progress hook callback finishes.
     m_hotkeys.clear();
-    m_keyListeners.clear();
+    m_nativeToId.clear();
+    m_keyListeners.reset();
     m_keyRemaps.clear();
-    m_mouseListeners.clear();
+    m_mouseListeners.reset();
     g_inputManager = nullptr;
 }
 
@@ -283,9 +287,13 @@ void InputManager::stop() {
     }
 
     m_hotkeys.clear();
-    m_keyListeners.clear();
+    m_nativeToId.clear();
+    {
+        std::lock_guard<std::shared_mutex> lock(m_listenerMutex);
+        m_keyListeners = std::make_shared<QHash<QString, KeyListenerEntry>>();
+        m_mouseListeners = std::make_shared<QHash<QString, MouseListenerEntry>>();
+    }
     m_keyRemaps.clear();
-    m_mouseListeners.clear();
 
     QCoreApplication::instance()->removeNativeEventFilter(this);
 
@@ -327,15 +335,9 @@ QString InputManager::addHotkey(const QString &combo, std::function<void()> call
 
     bool registered = false;
     for (int attempts = 0; attempts < maxNativeId; ++attempts) {
-        bool nativeIdTaken = false;
-        for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
-            if (it.value().nativeId == nativeId) {
-                nativeIdTaken = true;
-                break;
-            }
-        }
-
-        if (!nativeIdTaken && RegisterHotKey(nullptr, nativeId, registerModifiers, vk)) {
+        // Skip local collision (O(1) via the reverse index) and let
+        // RegisterHotKey reject IDs used by other applications.
+        if (!m_nativeToId.contains(nativeId) && RegisterHotKey(nullptr, nativeId, registerModifiers, vk)) {
             registered = true;
             break;
         }
@@ -364,6 +366,7 @@ QString InputManager::addHotkey(const QString &combo, std::function<void()> call
             std::move(callback)
         }
     );
+    m_nativeToId.insert(nativeId, id);
     return id;
 }
 
@@ -371,6 +374,7 @@ void InputManager::removeHotkey(const QString &id) {
     if (m_hotkeys.contains(id)) {
         const int nativeId = m_hotkeys.value(id).nativeId;
         UnregisterHotKey(nullptr, nativeId);
+        m_nativeToId.remove(nativeId);
         m_hotkeys.remove(id);
     }
 }
@@ -378,12 +382,20 @@ void InputManager::removeHotkey(const QString &id) {
 QString InputManager::addKeyListener(std::function<void(const QString &, bool)> callback) {
     start();
     const QString id = nextId();
-    m_keyListeners.insert(id, KeyListenerEntry{std::move(callback)});
+
+    std::lock_guard<std::shared_mutex> lock(m_listenerMutex);
+    auto next = std::make_shared<QHash<QString, KeyListenerEntry>>(*m_keyListeners);
+    next->insert(id, KeyListenerEntry{std::move(callback)});
+    m_keyListeners = std::move(next);
     return id;
 }
 
 void InputManager::removeKeyListener(const QString &id) {
-    m_keyListeners.remove(id);
+    std::lock_guard<std::shared_mutex> lock(m_listenerMutex);
+    auto next = std::make_shared<QHash<QString, KeyListenerEntry>>(*m_keyListeners);
+    if (next->remove(id) == 0)
+        return;
+    m_keyListeners = std::move(next);
 }
 
 QString InputManager::addKeyRemap(const QString &srcKey, const QString &dstCombo) {
@@ -404,12 +416,20 @@ void InputManager::removeKeyRemap(const QString &id) {
 
 QString InputManager::addMouseListener(std::function<void(const MouseEvent &)> callback) {
     const QString id = nextId();
-    m_mouseListeners.insert(id, MouseListenerEntry{std::move(callback)});
+
+    std::lock_guard<std::shared_mutex> lock(m_listenerMutex);
+    auto next = std::make_shared<QHash<QString, MouseListenerEntry>>(*m_mouseListeners);
+    next->insert(id, MouseListenerEntry{std::move(callback)});
+    m_mouseListeners = std::move(next);
     return id;
 }
 
 void InputManager::removeMouseListener(const QString &id) {
-    m_mouseListeners.remove(id);
+    std::lock_guard<std::shared_mutex> lock(m_listenerMutex);
+    auto next = std::make_shared<QHash<QString, MouseListenerEntry>>(*m_mouseListeners);
+    if (next->remove(id) == 0)
+        return;
+    m_mouseListeners = std::move(next);
 }
 
 QStringList InputManager::availableKeys() const {
@@ -453,16 +473,13 @@ bool InputManager::nativeEventFilter(const QByteArray &eventType, void *message,
 
     const int nativeId = static_cast<int>(msg->wParam);
 
-    const HotkeyEntry *hotkey = nullptr;
-    for (auto it = m_hotkeys.cbegin(); it != m_hotkeys.cend(); ++it) {
-        if (it.value().nativeId == nativeId) {
-            hotkey = &it.value();
-            break;
-        }
-    }
-
-    if (!hotkey)
+    const auto idIt = m_nativeToId.constFind(nativeId);
+    if (idIt == m_nativeToId.cend())
         return false;
+    const auto hotkeyIt = m_hotkeys.constFind(idIt.value());
+    if (hotkeyIt == m_hotkeys.cend())
+        return false;
+    const HotkeyEntry *hotkey = &hotkeyIt.value();
 
     if (!isModifierDown(hotkey->requiredModifiers))
         return false;
@@ -566,8 +583,10 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode, bool inj
             }
         }
 
+        // Iterate a snapshot so listeners can safely add/remove listeners
+        // inside a callback (each removal publishes a new immutable snapshot).
         const auto listeners = m_keyListeners;
-        for (const auto &entry : listeners)
+        for (const auto &entry : *listeners)
             entry.callback(key, pressed);
     }
 
@@ -611,8 +630,9 @@ void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wh
             return;
     }
 
-    // Copy map so listeners can safely add/remove listeners inside the callback.
+    // Iterate a snapshot so listeners can safely add/remove listeners
+    // inside the callback (each removal publishes a new immutable snapshot).
     const auto listeners = m_mouseListeners;
-    for (const auto &entry : listeners)
+    for (const auto &entry : *listeners)
         entry.callback(evt);
 }
