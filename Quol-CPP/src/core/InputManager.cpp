@@ -320,54 +320,42 @@ QString InputManager::addHotkey(const QString &combo, std::function<void()> call
     quint32 requiredModifiers = 0;
     QList<quint32> requiredKeys;
 
-    if (!parseHotkey(combo, registerModifiers, vk, requiredModifiers, requiredKeys)) {
+    if (!parseHotkey(combo, registerModifiers, vk, requiredModifiers, requiredKeys))
         return {};
-    }
 
     start();
 
     const int minNativeId = 1;
     const int maxNativeId = 0xBFFF;
     int nativeId = static_cast<int>(qHash(combo.toLower()) % maxNativeId);
-    if (nativeId < minNativeId) {
+    if (nativeId < minNativeId)
         nativeId = minNativeId;
-    }
-
-    bool registered = false;
-    for (int attempts = 0; attempts < maxNativeId; ++attempts) {
-        // Skip local collision (O(1) via the reverse index) and let
-        // RegisterHotKey reject IDs used by other applications.
-        if (!m_nativeToId.contains(nativeId) && RegisterHotKey(nullptr, nativeId, registerModifiers, vk)) {
-            registered = true;
-            break;
-        }
-
-        ++nativeId;
-        if (nativeId > maxNativeId) {
-            nativeId = minNativeId;
-        }
-    }
-
-    if (!registered) {
-        return {};
-    }
 
     const QString id = nextId();
-    m_hotkeys.insert(
-        id,
-        HotkeyEntry{
-            nativeId,
-            combo.toLower(),
-            registerModifiers,
-            vk,
-            requiredModifiers,
-            requiredKeys,
-            suppressed,
-            std::move(callback)
+    for (int attempts = 0; attempts < maxNativeId; ++attempts) {
+        if (m_nativeToId.contains(nativeId) || !RegisterHotKey(nullptr, nativeId, registerModifiers, vk)) {
+            ++nativeId;
+            if (nativeId > maxNativeId)
+                nativeId = minNativeId;
+            continue;
         }
-    );
-    m_nativeToId.insert(nativeId, id);
-    return id;
+        m_hotkeys.insert(
+            id,
+            HotkeyEntry{
+                nativeId,
+                combo.toLower(),
+                registerModifiers,
+                vk,
+                requiredModifiers,
+                requiredKeys,
+                suppressed,
+                std::move(callback)
+            }
+        );
+        m_nativeToId.insert(nativeId, id);
+        return id;
+    }
+    return {};
 }
 
 void InputManager::removeHotkey(const QString &id) {

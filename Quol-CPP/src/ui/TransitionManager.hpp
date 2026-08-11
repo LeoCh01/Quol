@@ -19,6 +19,7 @@ public:
     ~TransitionManager() override;
 
     void addWindow(QWidget *window);
+    void removeWindow(QWidget *window);
     void toggleAll();
     bool isHidden() const;
     void setType(const QString &type);

@@ -29,4 +29,5 @@ private:
 
     QList<QuolWindow *> m_windows;
     QList<LoadedPlugin> m_plugins;
+    TransitionManager *m_transitions = nullptr;
 };

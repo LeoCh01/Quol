@@ -31,10 +31,7 @@ void QuolApplication::start() {
     m_transitions->addWindow(m_mainWindow);
     m_mainWindow->show();
 
-    m_pluginManager->loadPlugins(m_settings, m_transitions, m_services.get());
-    for (auto *win : m_pluginManager->windows())
-        win->show();
-
+    loadAndShowPlugins();
     m_services->setWindowVisibilityCallbacks(
         [this]() {
             m_mainWindow->hide();
@@ -56,6 +53,12 @@ void QuolApplication::start() {
 
     connect(m_mainWindow, &QuolMainWindow::mainConfigApplied, this, &QuolApplication::onMainConfigApplied);
     connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() { performShutdown(); });
+}
+
+void QuolApplication::loadAndShowPlugins() {
+    m_pluginManager->loadPlugins(m_settings, m_transitions, m_services.get());
+    for (auto *win : m_pluginManager->windows())
+        win->show();
 }
 
 QString QuolApplication::registerMainHotkey() {
@@ -91,23 +94,24 @@ void QuolApplication::setQuolOn(bool on) {
     m_quolOn = on;
 
     if (on) {
+        loadAndShowPlugins();
         m_mainWindow->show();
-        for (auto *w : m_pluginManager->windows())
-            w->show();
         if (m_mainHotkeyId.isEmpty())
             m_mainHotkeyId = registerMainHotkey();
     } else {
-        // Cancel any in-progress hide transition before hiding
+        // Cancel any in-progress hide transition before hiding.
         if (m_transitions->isHidden())
             m_transitions->toggleAll();
         m_mainWindow->hide();
-        for (auto *w : m_pluginManager->windows())
-            w->hide();
         if (!m_mainHotkeyId.isEmpty()) {
             m_inputManager->removeHotkey(m_mainHotkeyId);
             m_mainHotkeyId.clear();
         }
+        // Destroy plugins
+        m_pluginManager->shutdownPlugins();
     }
+
+    m_services->notifyAppToggled(on);
 
     if (m_toggleAction)
         m_toggleAction->setText(on ? QStringLiteral("Turn OFF") : QStringLiteral("Turn ON"));

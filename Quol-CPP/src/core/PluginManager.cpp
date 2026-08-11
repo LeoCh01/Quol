@@ -49,6 +49,10 @@ void PluginManager::shutdownPlugins() {
     }
 
     // 2) Destroy plugin-created widgets before unloading plugin DLLs.
+    for (auto *win : std::as_const(m_windows)) {
+        if (m_transitions)
+            m_transitions->removeWindow(win);
+    }
     qDeleteAll(m_windows);
     m_windows.clear();
 
@@ -65,6 +69,8 @@ void PluginManager::shutdownPlugins() {
 void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager *transitions, QuolServices *services) {
     if (!settings)
         return;
+
+    m_transitions = transitions;
 
     auto removePluginFromSettings = [settings](const QString &pluginId) {
         QJsonArray plugins = settings->data().value(QStringLiteral("plugins")).toArray();

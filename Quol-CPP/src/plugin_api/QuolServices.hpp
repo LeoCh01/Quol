@@ -37,8 +37,18 @@ public:
             m_showAll();
     }
 
+    void setAppToggledCallback(std::function<void(bool)> callback) {
+        m_appToggled = std::move(callback);
+    }
+
+    void notifyAppToggled(bool on) const {
+        if (m_appToggled)
+            m_appToggled(on);
+    }
+
 private:
     InputManager *m_inputManager = nullptr;
     std::function<void()> m_hideAll;
     std::function<void()> m_showAll;
+    std::function<void(bool)> m_appToggled;
 };
