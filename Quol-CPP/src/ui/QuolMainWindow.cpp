@@ -269,13 +269,17 @@ void QuolMainWindow::openManagePluginsDialog() {
         m_pluginStore,
         &PluginStoreManager::pluginDownloadFinished,
         popup,
-        [this, popup, tabs, storeStatus](const QString &pluginName, bool success) {
+        [this, popup, tabs, storeStatus](const QString &pluginName, bool success, const QString &errorMessage) {
             if (success) {
                 storeStatus->setText(QStringLiteral("\"%1\" installed. Refreshing...").arg(pluginName));
                 rebuildInstalledTab(tabs, popup);
                 m_pluginStore->fetchStoreItems();
             } else {
-                storeStatus->setText(QStringLiteral("Failed to download \"%1\". Please try again.").arg(pluginName));
+                storeStatus->setText(
+                    errorMessage.isEmpty()
+                        ? QStringLiteral("Failed to download \"%1\". Please try again.").arg(pluginName)
+                        : errorMessage
+                );
                 m_pluginStore->fetchStoreItems();
             }
         }

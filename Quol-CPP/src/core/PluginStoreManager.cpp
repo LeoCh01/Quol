@@ -109,7 +109,7 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
         const QString pluginName = artifactPluginName(itemName);
 
         if (reply->error() != QNetworkReply::NoError) {
-            emit pluginDownloadFinished(pluginName, false);
+            emit pluginDownloadFinished(pluginName, false, reply->errorString());
             return;
         }
 
@@ -122,7 +122,9 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
         QTemporaryFile tempZip(QDir::tempPath() + QStringLiteral("/quol_plugin_XXXXXX.zip"));
         tempZip.setAutoRemove(false);
         if (!tempZip.open()) {
-            emit pluginDownloadFinished(pluginName, false);
+            emit pluginDownloadFinished(
+                pluginName, false, QStringLiteral("Failed to write the downloaded file to disk.")
+            );
             return;
         }
         tempZip.write(data);
@@ -138,12 +140,13 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
 
         if (!QDir().mkpath(pluginDir)) {
             QFile::remove(zipPath);
-            emit pluginDownloadFinished(pluginName, false);
+            emit pluginDownloadFinished(pluginName, false, QStringLiteral("Failed to create the plugin folder."));
             return;
         }
 
         extractZipAsync(
             zipPath, pluginDir, [this, pluginName, isUpdate, pluginDir, backupDir, appVersion](bool extracted) {
+                QString errorMessage;
                 bool ok = extracted;
 
                 if (ok && !appVersion.isEmpty()) {
@@ -155,7 +158,13 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
                                                    .toString();
                     if (!dependency.isEmpty() && compareVersions(appVersion, dependency) < 0) {
                         ok = false;
+                        errorMessage = QStringLiteral("This plugin requires Quol v%1 or newer.").arg(dependency);
                     }
+                }
+
+                if (!ok && errorMessage.isEmpty()) {
+                    errorMessage =
+                        QStringLiteral("The plugin ZIP could not be unpacked, or required files are missing.");
                 }
 
                 if (!ok) {
@@ -170,7 +179,7 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
                     QDir(backupDir).removeRecursively();
                 }
 
-                emit pluginDownloadFinished(pluginName, ok);
+                emit pluginDownloadFinished(pluginName, ok, errorMessage);
             }
         );
     });

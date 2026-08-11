@@ -4,26 +4,11 @@
     "description": "Main Quol control panel",
     "name": "Quol",
     "plugins": [],
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "dependency": "5.2.0"
   },
   "reset_pos": true,
   "startup": false,
-  "toggle_key": [
-    [
-      "backtick", "minus", "equals", "left_bracket", "right_bracket",
-      "backslash", "semicolon", "quote", "comma", "period", "slash",
-      "esc", "space", "tab", "enter",
-      "left", "right", "up", "down",
-      "insert", "delete", "home", "end", "pageup", "pagedown",
-      "ctrl", "shift", "alt", "win",
-      "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
-      "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-      "u", "v", "w", "x", "y", "z",
-      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-      "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8",
-      "f9", "f10", "f11", "f12"
-    ],
-    0
-  ],
+  "toggle_key": "backtick",
   "transition": [["none", "fade", "slide-left", "slide-right", "slide-up", "slide-down", "rand-slide"], 0]
 }

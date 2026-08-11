@@ -26,7 +26,7 @@ public:
 signals:
     void storeItemsFetched(const QJsonArray &items);
     void storeItemsFetchFailed(const QString &error);
-    void pluginDownloadFinished(const QString &pluginName, bool success);
+    void pluginDownloadFinished(const QString &pluginName, bool success, const QString &errorMessage);
     void localPluginInstallFinished(const QString &pluginName, bool success);
 
 private:
