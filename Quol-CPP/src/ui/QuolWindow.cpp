@@ -1,14 +1,13 @@
 #include "ui/QuolWindow.hpp"
 #include "core/AppSettingsManager.hpp"
+#include "core/JsonFile.hpp"
 #include "ui/ConfigWindow.hpp"
 #include "ui/QuolWindowLayout.hpp"
 #include "ui/TitleBar.hpp"
 
 #include <QCloseEvent>
-#include <QFile>
 #include <QGuiApplication>
 #include <QJsonArray>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QPainterPath>
 #include <QRegion>
@@ -150,14 +149,11 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
         return false;
     }
 
-    QFile file(m_pluginConfigPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    QJsonObject root = readJsonObjectFile(m_pluginConfigPath);
+    if (root.isEmpty()) {
         return false;
     }
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    file.close();
 
-    QJsonObject root = doc.object();
     QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
     const bool useDefaultPos = m_settings && m_settings->data().value(QStringLiteral("is_default_pos")).toBool(false);
     const QJsonArray defaultGeometry = underscore.value(QStringLiteral("default_geometry")).toArray();
@@ -182,10 +178,7 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
     setGeometry(gx, gy, gw, (gh <= 0) ? autoHeightFromContent() : gh);
 
     if (configChanged) {
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-            file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
-            file.close();
-        }
+        writeJsonObjectFile(m_pluginConfigPath, root);
     }
 
     if (defaultGeometry.size() < 4) {
@@ -200,14 +193,7 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
         return false;
     }
 
-    QFile file(m_pluginConfigPath);
-    QJsonObject root;
-
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        root = doc.object();
-        file.close();
-    }
+    QJsonObject root = readJsonObjectFile(m_pluginConfigPath);
 
     QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
     if (!underscore.value(QStringLiteral("default_geometry")).isArray()
@@ -217,10 +203,7 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
     underscore.insert(QStringLiteral("geometry"), QJsonArray{x(), y(), width(), height()});
     root.insert(QStringLiteral("_"), underscore);
 
-    bool written = file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
-    file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
-    file.close();
-    return true;
+    return writeJsonObjectFile(m_pluginConfigPath, root);
 }
 
 int QuolWindow::autoHeightFromContent() const {

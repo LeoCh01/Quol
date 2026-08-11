@@ -1,9 +1,9 @@
 #include "ui/QuolMainWindow.hpp"
 #include "core/AppSettingsManager.hpp"
+#include "core/JsonFile.hpp"
 #include "core/PluginStoreManager.hpp"
 #include "ui/MessageBoard.hpp"
 #include "ui/QuolPopupWindow.hpp"
-#include "ui/TransitionManager.hpp"
 
 #include <QAbstractButton>
 #include <QAbstractItemView>
@@ -11,14 +11,12 @@
 #include <QCheckBox>
 #include <QDesktopServices>
 #include <QDir>
-#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QJsonArray>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
 #include <QListWidget>
@@ -36,15 +34,13 @@
 #include <QVBoxLayout>
 
 #include <algorithm>
+#include <ranges>
 
 namespace {
 QJsonArray readMainDefaultGeometry() {
     const QString path = QApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json");
-    QFile file(path);
-    bool opened = file.open(QIODevice::ReadOnly | QIODevice::Text);
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    file.close();
-    return doc.object().value(QStringLiteral("_")).toObject().value(QStringLiteral("default_geometry")).toArray();
+    const QJsonObject root = readJsonObjectFile(path);
+    return root.value(QStringLiteral("_")).toObject().value(QStringLiteral("default_geometry")).toArray();
 }
 
 int mainDefaultGeometryValue(int index, int fallback) {
@@ -53,6 +49,23 @@ int mainDefaultGeometryValue(int index, int fallback) {
         return fallback;
     }
     return geometry.at(index).toInt(fallback);
+}
+
+// Returns the selected value of a config select field: either a plain string
+// or an {options, index} array. Empty when the value is unparseable.
+QString unwrapSelectValue(const QJsonValue &value) {
+    if (value.isString())
+        return value.toString();
+    if (value.isArray()) {
+        const QJsonArray arr = value.toArray();
+        if (arr.size() == 2 && arr.at(0).isArray()) {
+            const QJsonArray options = arr.at(0).toArray();
+            const int idx = arr.at(1).toInt();
+            if (idx >= 0 && idx < options.size())
+                return options.at(idx).toString();
+        }
+    }
+    return {};
 }
 
 struct StoreEntry {
@@ -76,13 +89,9 @@ QList<StoreEntry> parseStoreEntries(const QJsonArray &items) {
     }
     return entries;
 }
-
-QString pluginNameFromZipName(const QString &zipName) {
-    return PluginStoreManager::artifactPluginName(zipName);
-}
 }  // namespace
 
-QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *transitions, QWidget *parent)
+QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, QWidget *parent)
     : QuolWindow(
           QStringLiteral("Quol"),
           settings,
@@ -93,7 +102,6 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
           parent
       )
     , m_settings(settings)
-    , m_transitions(transitions)
     , m_pluginStore(new PluginStoreManager(this)) {
     copySettingsToMainConfig();
     attachConfigWindow(
@@ -154,11 +162,6 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, TransitionManager *
     addContent(grid);
 }
 
-void QuolMainWindow::updateToggleButton() {
-    if (m_toggleBtn)
-        m_toggleBtn->setText(m_transitions->isHidden() ? QStringLiteral("Toggle ON") : QStringLiteral("Toggle OFF"));
-}
-
 QMap<QString, QuolMainWindow::InstalledPluginMeta> QuolMainWindow::discoverInstalledPlugins() const {
     typedef QuolMainWindow::InstalledPluginMeta Meta;
     QMap<QString, Meta> plugins;
@@ -180,17 +183,12 @@ QMap<QString, QuolMainWindow::InstalledPluginMeta> QuolMainWindow::discoverInsta
         }
 
         Meta meta{id, id, 0};
-        QFile cf(configPath);
-        if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
-            cf.close();
-            const QJsonObject underscore = doc.object().value(QStringLiteral("_")).toObject();
-            meta.title = underscore.value(QStringLiteral("name")).toString().trimmed();
-            if (meta.title.isEmpty()) {
-                meta.title = id;
-            }
-            meta.version = underscore.value(QStringLiteral("version")).toInt(0);
+        const QJsonObject underscore = readJsonObjectFile(configPath).value(QStringLiteral("_")).toObject();
+        meta.title = underscore.value(QStringLiteral("name")).toString().trimmed();
+        if (meta.title.isEmpty()) {
+            meta.title = id;
         }
+        meta.version = underscore.value(QStringLiteral("version")).toInt(0);
         plugins.insert(id, meta);
     }
 
@@ -355,14 +353,7 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
 
         layout->addWidget(listWidget);
 
-        bool allSelected = true;
-        for (QCheckBox *check : pluginChecks) {
-            if (!check->isChecked()) {
-                allSelected = false;
-                break;
-            }
-        }
-        selectAllCheck->setChecked(allSelected);
+        selectAllCheck->setChecked(std::ranges::all_of(pluginChecks, &QCheckBox::isChecked));
 
         connect(selectAllCheck, &QCheckBox::checkStateChanged, popup, [pluginChecks](Qt::CheckState state) {
             const bool on = state == Qt::Checked;
@@ -372,13 +363,7 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
 
         for (QCheckBox *check : pluginChecks) {
             connect(check, &QCheckBox::checkStateChanged, popup, [pluginChecks, selectAllCheck]() {
-                bool all = !pluginChecks.isEmpty();
-                for (QCheckBox *c : pluginChecks) {
-                    if (!c || !c->isChecked()) {
-                        all = false;
-                        break;
-                    }
-                }
+                const bool all = std::ranges::all_of(pluginChecks, &QCheckBox::isChecked);
                 const QSignalBlocker blocker(selectAllCheck);
                 selectAllCheck->setChecked(all);
             });
@@ -439,6 +424,7 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
             }
             storeStatusLabel->clear();
 
+            const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
             for (const auto &entry : entries) {
                 const bool isInstalled = installedPlugins.contains(entry.pluginName);
                 const bool isCurrent = isInstalled && installedPlugins.value(entry.pluginName).version == entry.version;
@@ -459,33 +445,25 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
                         "padding: 4px 10px; border: 1px solid #2e7d32; border-radius: 6px; color: #2e7d32;"
                     ));
                     row->addWidget(lbl);
-                } else if (isInstalled) {
-                    auto *btn = new QPushButton(QStringLiteral("Update"));
-                    btn->setFixedWidth(80);
-                    btn->setStyleSheet(QStringLiteral(
-                        "padding: 5px 10px; border: 1px solid #b58900; border-radius: 6px; color: #b58900;"
-                    ));
-                    const QString capturedItemName = entry.itemName;
-                    const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
-                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName, appVer]() {
-                        btn->setEnabled(false);
-                        btn->setText(QStringLiteral("Updating..."));
-                        m_pluginStore->downloadPlugin(capturedItemName, true, appVer);
-                    });
-                    row->addWidget(btn);
                 } else {
-                    auto *btn = new QPushButton(QStringLiteral("Install"));
+                    const bool isUpdate = isInstalled;
+                    const QString label = isUpdate ? QStringLiteral("Update") : QStringLiteral("Install");
+                    const QString busyText = isUpdate ? QStringLiteral("Updating...") : QStringLiteral("Installing...");
+                    const QString color = isUpdate ? QStringLiteral("#b58900") : QStringLiteral("#2d6cdf");
+                    auto *btn = new QPushButton(label);
                     btn->setFixedWidth(80);
-                    btn->setStyleSheet(QStringLiteral(
-                        "padding: 5px 10px; border: 1px solid #2d6cdf; border-radius: 6px; color: #2d6cdf;"
-                    ));
+                    btn->setStyleSheet(
+                        QStringLiteral("padding: 5px 10px; border: 1px solid %1; border-radius: 6px; color: %1;")
+                            .arg(color)
+                    );
                     const QString capturedItemName = entry.itemName;
-                    const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
-                    connect(btn, &QPushButton::clicked, popup, [this, btn, capturedItemName, appVer]() {
-                        btn->setEnabled(false);
-                        btn->setText(QStringLiteral("Installing..."));
-                        m_pluginStore->downloadPlugin(capturedItemName, false, appVer);
-                    });
+                    connect(
+                        btn, &QPushButton::clicked, popup, [this, btn, capturedItemName, appVer, busyText, isUpdate]() {
+                            btn->setEnabled(false);
+                            btn->setText(busyText);
+                            m_pluginStore->downloadPlugin(capturedItemName, isUpdate, appVer);
+                        }
+                    );
                     row->addWidget(btn);
                 }
 
@@ -528,7 +506,7 @@ QWidget *QuolMainWindow::buildCustomTab(QWidget *popup, QLabel *&statusOut) {
             return;
 
         QFileInfo fi(zipPath);
-        const QString pluginName = pluginNameFromZipName(fi.completeBaseName());
+        const QString pluginName = PluginStoreManager::artifactPluginName(fi.completeBaseName());
 
         const QString pluginDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins/") + pluginName;
         if (QDir(pluginDir).exists()) {
@@ -567,14 +545,7 @@ void QuolMainWindow::openMessageBoard() {
 
 void QuolMainWindow::copySettingsToMainConfig() {
     const QString configPath = QApplication::applicationDirPath() + QStringLiteral("/plugins/quol/res/config.json");
-    QFile file(configPath);
-    QJsonObject config;
-
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        config = doc.object();
-        file.close();
-    }
+    QJsonObject config = readJsonObjectFile(configPath);
 
     config.insert(QStringLiteral("startup"), m_settings->data().value(QStringLiteral("startup")).toBool(false));
     config.insert(
@@ -596,15 +567,12 @@ void QuolMainWindow::copySettingsToMainConfig() {
         QStringLiteral("slide-down"),
         QStringLiteral("rand-slide")
     };
-    int transitionIndex = -1;
+    int transitionIndex = 0;
     for (int i = 0; i < transitionOptions.size(); ++i) {
         if (transitionOptions.at(i).toString() == transition) {
             transitionIndex = i;
             break;
         }
-    }
-    if (transitionIndex < 0) {
-        transitionIndex = 0;
     }
     config.insert(QStringLiteral("transition"), QJsonArray{transitionOptions, transitionIndex});
 
@@ -615,10 +583,7 @@ void QuolMainWindow::copySettingsToMainConfig() {
     underscore.insert(QStringLiteral("plugins"), m_settings->data().value(QStringLiteral("plugins")).toArray());
     config.insert(QStringLiteral("_"), underscore);
 
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-        file.write(QJsonDocument(config).toJson(QJsonDocument::Indented));
-        file.close();
-    }
+    writeJsonObjectFile(configPath, config);
 }
 
 void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
@@ -642,33 +607,14 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
     m_settings->setValue(QStringLiteral("is_default_pos"), config.value(QStringLiteral("reset_pos")).toBool());
 
     {
-        const QJsonValue toggleValue = config.value(QStringLiteral("toggle_key"));
-        if (toggleValue.isString()) {
-            m_settings->setValue(QStringLiteral("toggle_key"), toggleValue.toString().trimmed().toLower());
-        } else if (toggleValue.isArray()) {
-            const QJsonArray arr = toggleValue.toArray();
-            if (arr.size() == 2 && arr.at(0).isArray()) {
-                const QJsonArray options = arr.at(0).toArray();
-                const int idx = arr.at(1).toInt();
-                if (idx >= 0 && idx < options.size()) {
-                    m_settings->setValue(QStringLiteral("toggle_key"), options.at(idx).toString().trimmed().toLower());
-                }
-            }
-        }
+        const QString toggle = unwrapSelectValue(config.value(QStringLiteral("toggle_key")));
+        if (!toggle.isEmpty())
+            m_settings->setValue(QStringLiteral("toggle_key"), toggle.trimmed().toLower());
     }
 
-    const QJsonValue transitionValue = config.value(QStringLiteral("transition"));
-    if (transitionValue.isArray()) {
-        const QJsonArray arr = transitionValue.toArray();
-        if (arr.size() == 2 && arr.at(0).isArray()) {
-            const QJsonArray options = arr.at(0).toArray();
-            const int idx = arr.at(1).toInt();
-            if (idx >= 0 && idx < options.size()) {
-                const QString selected = options.at(idx).toString().trimmed().toLower();
-                m_settings->setValue(QStringLiteral("transition"), selected);
-            }
-        }
-    }
+    const QString selectedTransition = unwrapSelectValue(config.value(QStringLiteral("transition")));
+    if (!selectedTransition.isEmpty())
+        m_settings->setValue(QStringLiteral("transition"), selectedTransition.trimmed().toLower());
 
     const QJsonObject underscore = config.value(QStringLiteral("_")).toObject();
     if (underscore.contains(QStringLiteral("plugins")) && underscore.value(QStringLiteral("plugins")).isArray()) {

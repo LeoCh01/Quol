@@ -21,6 +21,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 add_library(quol_core SHARED
     src/core/InputManager.cpp
     src/core/InputManager.hpp
+    src/core/JsonFile.cpp
+    src/core/JsonFile.hpp
     src/plugin_api/PluginConfig.cpp
     src/plugin_api/PluginConfig.hpp
     src/ui/TitleBar.cpp

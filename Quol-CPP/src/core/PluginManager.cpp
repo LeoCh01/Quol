@@ -1,5 +1,6 @@
 #include "core/PluginManager.hpp"
 #include "core/AppSettingsManager.hpp"
+#include "core/JsonFile.hpp"
 #include "plugin_api/IQuolPlugin.hpp"
 #include "plugin_api/PluginConfig.hpp"
 #include "plugin_api/QuolServices.hpp"
@@ -9,10 +10,8 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
-#include <QJsonDocument>
 #include <QMessageBox>
 #include <QPluginLoader>
 
@@ -20,13 +19,11 @@
 
 namespace {
 QJsonObject readPluginConfig(const QString &configPath) {
-    QFile file(configPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    const QJsonObject config = readJsonObjectFile(configPath);
+    if (config.isEmpty()) {
         throw std::runtime_error(QString("Cannot open plugin config: %1").arg(configPath).toStdString());
     }
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    file.close();
-    return doc.object();
+    return config;
 }
 }  // namespace
 

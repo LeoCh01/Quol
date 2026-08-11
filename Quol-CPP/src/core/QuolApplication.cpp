@@ -16,7 +16,7 @@ QuolApplication::QuolApplication(AppSettingsManager *settings, QObject *parent)
     : QObject(parent), m_settings(settings) {
     const QString transitionType = m_settings->settingString(QStringLiteral("transition"), QStringLiteral("none"));
     m_transitions = new TransitionManager(transitionType, this);
-    m_mainWindow = new QuolMainWindow(m_settings, m_transitions);
+    m_mainWindow = new QuolMainWindow(m_settings);
     m_inputManager = new InputManager(this);
     m_services = std::make_unique<QuolServices>(m_inputManager);
     m_pluginManager = new PluginManager(this);
@@ -62,14 +62,7 @@ void QuolApplication::loadAndShowPlugins() {
 }
 
 QString QuolApplication::registerMainHotkey() {
-    return m_inputManager->addHotkey(
-        m_activeToggleKey,
-        [this]() {
-            m_transitions->toggleAll();
-            m_mainWindow->updateToggleButton();
-        },
-        true
-    );
+    return m_inputManager->addHotkey(m_activeToggleKey, [this]() { m_transitions->toggleAll(); }, true);
 }
 
 void QuolApplication::performShutdown() {

@@ -7,13 +7,11 @@
 #include <QStringList>
 
 class AppSettingsManager;
-class TransitionManager;
 class QCheckBox;
 class QLabel;
 class QListWidget;
 class QTabWidget;
 class MessageBoard;
-class QPushButton;
 class QuolPopupWindow;
 class PluginStoreManager;
 
@@ -21,9 +19,7 @@ class QuolMainWindow : public QuolWindow {
     Q_OBJECT
 
 public:
-    explicit QuolMainWindow(AppSettingsManager *settings, TransitionManager *transitions, QWidget *parent = nullptr);
-
-    void updateToggleButton();
+    explicit QuolMainWindow(AppSettingsManager *settings, QWidget *parent = nullptr);
 
     static void reloadApplication();
 
@@ -50,8 +46,6 @@ private:
     void applyMainConfigToSettings(const QJsonObject &config);
 
     AppSettingsManager *m_settings;
-    TransitionManager *m_transitions;
-    QPushButton *m_toggleBtn = nullptr;
     QuolPopupWindow *m_pluginManagerWindow = nullptr;
     MessageBoard *m_messageBoard = nullptr;
     PluginStoreManager *m_pluginStore = nullptr;

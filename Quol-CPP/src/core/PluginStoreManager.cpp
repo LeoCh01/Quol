@@ -1,4 +1,5 @@
 #include "core/PluginStoreManager.hpp"
+#include "core/JsonFile.hpp"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -147,18 +148,13 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
 
                 if (ok && !appVersion.isEmpty()) {
                     const QString configPath = pluginDir + QStringLiteral("/res/config.json");
-                    QFile cf(configPath);
-                    if (cf.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                        const QJsonDocument doc = QJsonDocument::fromJson(cf.readAll());
-                        cf.close();
-                        const QString dependency = doc.object()
-                                                       .value(QStringLiteral("_"))
-                                                       .toObject()
-                                                       .value(QStringLiteral("dependency"))
-                                                       .toString();
-                        if (!dependency.isEmpty() && compareVersions(appVersion, dependency) < 0) {
-                            ok = false;
-                        }
+                    const QString dependency = readJsonObjectFile(configPath)
+                                                   .value(QStringLiteral("_"))
+                                                   .toObject()
+                                                   .value(QStringLiteral("dependency"))
+                                                   .toString();
+                    if (!dependency.isEmpty() && compareVersions(appVersion, dependency) < 0) {
+                        ok = false;
                     }
                 }
 
