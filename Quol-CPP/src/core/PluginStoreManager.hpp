@@ -32,5 +32,9 @@ signals:
 private:
     void extractZipAsync(const QString &zipPath, const QString &pluginDir, std::function<void(bool)> onDone);
 
+    bool createTempPluginZip(const QByteArray &data, QString &zipPath) const;
+
+    bool backupExisting(const QString &pluginDir, const QString &backupDir) const;
+
     QNetworkAccessManager *m_network;
 };

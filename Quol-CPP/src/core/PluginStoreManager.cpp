@@ -96,6 +96,23 @@ void PluginStoreManager::extractZipAsync(
     );
 }
 
+bool PluginStoreManager::createTempPluginZip(const QByteArray &data, QString &zipPath) const {
+    QTemporaryFile tempZip(QDir::tempPath() + QStringLiteral("/quol_plugin_XXXXXX.zip"));
+    tempZip.setAutoRemove(false);
+    if (!tempZip.open())
+        return false;
+    tempZip.write(data);
+    tempZip.close();
+    zipPath = tempZip.fileName();
+    return true;
+}
+
+bool PluginStoreManager::backupExisting(const QString &pluginDir, const QString &backupDir) const {
+    if (QDir(backupDir).exists())
+        QDir(backupDir).removeRecursively();
+    return QDir().rename(pluginDir, backupDir);
+}
+
 void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, const QString &appVersion) {
     const QString url = QLatin1String(kRawBaseUrl) + itemName + QStringLiteral(".zip");
     QNetworkRequest request;
@@ -113,29 +130,23 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
             return;
         }
 
-        const QByteArray data = reply->readAll();
-        const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
-        const QString pluginDir = pluginsDir + QStringLiteral("/") + pluginName;
-        const QString backupDir = pluginsDir + QStringLiteral("/") + pluginName + QStringLiteral("_backup");
-
-        // Save downloaded zip to a temp file
-        QTemporaryFile tempZip(QDir::tempPath() + QStringLiteral("/quol_plugin_XXXXXX.zip"));
-        tempZip.setAutoRemove(false);
-        if (!tempZip.open()) {
+        QString zipPath;
+        if (!createTempPluginZip(reply->readAll(), zipPath)) {
             emit pluginDownloadFinished(
                 pluginName, false, QStringLiteral("Failed to write the downloaded file to disk.")
             );
             return;
         }
-        tempZip.write(data);
-        tempZip.close();
-        const QString zipPath = tempZip.fileName();
 
-        // Backup the existing plugin directory before updating
-        if (isUpdate && QDir(pluginDir).exists()) {
-            if (QDir(backupDir).exists())
-                QDir(backupDir).removeRecursively();
-            QDir().rename(pluginDir, backupDir);
+        const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+        const QString pluginDir = pluginsDir + QStringLiteral("/") + pluginName;
+        const QString backupDir = pluginsDir + QStringLiteral("/") + pluginName + QStringLiteral("_backup");
+
+        // Back up the existing plugin directory before updating.
+        if (isUpdate && QDir(pluginDir).exists() && !backupExisting(pluginDir, backupDir)) {
+            QFile::remove(zipPath);
+            emit pluginDownloadFinished(pluginName, false, QStringLiteral("Failed to back up the old plugin."));
+            return;
         }
 
         if (!QDir().mkpath(pluginDir)) {
@@ -146,8 +157,8 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
 
         extractZipAsync(
             zipPath, pluginDir, [this, pluginName, isUpdate, pluginDir, backupDir, appVersion](bool extracted) {
-                QString errorMessage;
                 bool ok = extracted;
+                QString errorMessage;
 
                 if (ok && !appVersion.isEmpty()) {
                     const QString configPath = pluginDir + QStringLiteral("/res/config.json");
@@ -168,14 +179,11 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
                 }
 
                 if (!ok) {
-                    if (isUpdate && QDir(backupDir).exists()) {
-                        if (QDir(pluginDir).exists())
-                            QDir(pluginDir).removeRecursively();
-                        QDir().rename(backupDir, pluginDir);
-                    } else if (QDir(pluginDir).exists()) {
+                    if (QDir(pluginDir).exists())
                         QDir(pluginDir).removeRecursively();
-                    }
-                } else if (isUpdate && QDir(backupDir).exists()) {
+                    if (isUpdate && QDir(backupDir).exists())
+                        QDir().rename(backupDir, pluginDir);
+                } else if (QDir(backupDir).exists()) {
                     QDir(backupDir).removeRecursively();
                 }
 
@@ -196,29 +204,25 @@ void PluginStoreManager::installLocalPlugin(const QString &zipFilePath) {
         return;
     }
 
-    if (!QDir().mkpath(pluginDir)) {
+    QFile srcFile(zipFilePath);
+    if (!srcFile.open(QIODevice::ReadOnly)) {
+        emit localPluginInstallFinished(pluginName, false);
+        return;
+    }
+    const QByteArray data = srcFile.readAll();
+    srcFile.close();
+
+    QString zipPath;
+    if (!createTempPluginZip(data, zipPath)) {
         emit localPluginInstallFinished(pluginName, false);
         return;
     }
 
-    QTemporaryFile tempZip(QDir::tempPath() + QStringLiteral("/quol_plugin_XXXXXX.zip"));
-    tempZip.setAutoRemove(false);
-    if (!tempZip.open()) {
-        QDir(pluginDir).removeRecursively();
+    if (!QDir().mkpath(pluginDir)) {
+        QFile::remove(zipPath);
         emit localPluginInstallFinished(pluginName, false);
         return;
     }
-    QFile srcFile(zipFilePath);
-    if (!srcFile.open(QIODevice::ReadOnly)) {
-        tempZip.remove();
-        QDir(pluginDir).removeRecursively();
-        emit localPluginInstallFinished(pluginName, false);
-        return;
-    }
-    tempZip.write(srcFile.readAll());
-    tempZip.close();
-    srcFile.close();
-    const QString zipPath = tempZip.fileName();
 
     extractZipAsync(zipPath, pluginDir, [this, pluginName, pluginDir](bool ok) {
         if (!ok && QDir(pluginDir).exists()) {

@@ -65,16 +65,20 @@ QString QuolApplication::registerMainHotkey() {
     return m_inputManager->addHotkey(m_activeToggleKey, [this]() { m_transitions->toggleAll(); }, true);
 }
 
+void QuolApplication::unregisterMainHotkey() {
+    if (m_mainHotkeyId.isEmpty())
+        return;
+    m_inputManager->removeHotkey(m_mainHotkeyId);
+    m_mainHotkeyId.clear();
+}
+
 void QuolApplication::performShutdown() {
     if (m_shutdownDone)
         return;
     m_shutdownDone = true;
     qInfo() << "Shutting down QuolApplication";
 
-    if (!m_mainHotkeyId.isEmpty()) {
-        m_inputManager->removeHotkey(m_mainHotkeyId);
-        m_mainHotkeyId.clear();
-    }
+    unregisterMainHotkey();
 
     m_pluginManager->shutdownPlugins();
     m_inputManager->stop();
@@ -96,10 +100,7 @@ void QuolApplication::setQuolOn(bool on) {
         if (m_transitions->isHidden())
             m_transitions->toggleAll();
         m_mainWindow->hide();
-        if (!m_mainHotkeyId.isEmpty()) {
-            m_inputManager->removeHotkey(m_mainHotkeyId);
-            m_mainHotkeyId.clear();
-        }
+        unregisterMainHotkey();
         // Destroy plugins
         m_pluginManager->shutdownPlugins();
     }
