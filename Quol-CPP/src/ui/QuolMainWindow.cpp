@@ -559,6 +559,9 @@ void QuolMainWindow::copySettingsToMainConfig() {
         QStringLiteral("toggle_key"),
         m_settings->data().value(QStringLiteral("toggle_key")).toString(QStringLiteral("backtick")).toLower()
     );
+    config.insert(
+        QStringLiteral("hide_on_startup"), m_settings->data().value(QStringLiteral("hide_on_startup")).toBool(false)
+    );
 
     QString transition =
         m_settings->data().value(QStringLiteral("transition")).toString(QStringLiteral("none")).toLower();
@@ -609,6 +612,9 @@ void QuolMainWindow::applyMainConfigToSettings(const QJsonObject &config) {
     }
 
     m_settings->setValue(QStringLiteral("is_default_pos"), config.value(QStringLiteral("reset_pos")).toBool());
+    m_settings->setValue(
+        QStringLiteral("hide_on_startup"), config.value(QStringLiteral("hide_on_startup")).toBool(false)
+    );
 
     {
         const QString toggle = unwrapSelectValue(config.value(QStringLiteral("toggle_key")));

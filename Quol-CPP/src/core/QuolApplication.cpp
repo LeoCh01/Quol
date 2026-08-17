@@ -59,6 +59,8 @@ void QuolApplication::loadAndShowPlugins() {
     m_pluginManager->loadPlugins(m_settings, m_transitions, m_services.get());
     for (auto *win : m_pluginManager->windows())
         win->show();
+    if (m_settings->data().value(QStringLiteral("hide_on_startup")).toBool(false))
+        m_transitions->toggleAll();
 }
 
 QString QuolApplication::registerMainHotkey() {
