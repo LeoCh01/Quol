@@ -3,7 +3,7 @@ TODO
 
 5.2.0 (CURRENT)
 - destruct on toggle app OFF
-- small memory fixes
+- small memory fixes/optimization
 - DRY fixes
 - better InputManager
 - code cleanup
