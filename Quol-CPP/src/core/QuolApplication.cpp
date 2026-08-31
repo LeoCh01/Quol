@@ -10,14 +10,13 @@
 #include <QApplication>
 #include <QDebug>
 #include <QMenu>
-#include <QProcess>
 #include <QSystemTrayIcon>
 
 QuolApplication::QuolApplication(AppSettingsManager *settings, QObject *parent)
     : QObject(parent), m_settings(settings) {
     const QString transitionType = m_settings->settingString(QStringLiteral("transition"), QStringLiteral("none"));
     m_transitions = new TransitionManager(transitionType, this);
-    m_mainWindow = new QuolMainWindow(m_settings, m_transitions);
+    m_mainWindow = new QuolMainWindow(m_settings);
     m_inputManager = new InputManager(this);
     m_services = std::make_unique<QuolServices>(m_inputManager);
     m_pluginManager = new PluginManager(this);
@@ -32,10 +31,7 @@ void QuolApplication::start() {
     m_transitions->addWindow(m_mainWindow);
     m_mainWindow->show();
 
-    m_pluginManager->loadPlugins(m_settings, m_transitions, m_services.get());
-    for (auto *win : m_pluginManager->windows())
-        win->show();
-
+    loadAndShowPlugins();
     m_services->setWindowVisibilityCallbacks(
         [this]() {
             m_mainWindow->hide();
@@ -59,15 +55,23 @@ void QuolApplication::start() {
     connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() { performShutdown(); });
 }
 
+void QuolApplication::loadAndShowPlugins() {
+    m_pluginManager->loadPlugins(m_settings, m_transitions, m_services.get());
+    for (auto *win : m_pluginManager->windows())
+        win->show();
+    if (m_settings->data().value(QStringLiteral("hide_on_startup")).toBool(false))
+        m_transitions->toggleAll();
+}
+
 QString QuolApplication::registerMainHotkey() {
-    return m_inputManager->addHotkey(
-        m_activeToggleKey,
-        [this]() {
-            m_transitions->toggleAll();
-            m_mainWindow->updateToggleButton();
-        },
-        true
-    );
+    return m_inputManager->addHotkey(m_activeToggleKey, [this]() { m_transitions->toggleAll(); }, true);
+}
+
+void QuolApplication::unregisterMainHotkey() {
+    if (m_mainHotkeyId.isEmpty())
+        return;
+    m_inputManager->removeHotkey(m_mainHotkeyId);
+    m_mainHotkeyId.clear();
 }
 
 void QuolApplication::performShutdown() {
@@ -76,10 +80,7 @@ void QuolApplication::performShutdown() {
     m_shutdownDone = true;
     qInfo() << "Shutting down QuolApplication";
 
-    if (!m_mainHotkeyId.isEmpty()) {
-        m_inputManager->removeHotkey(m_mainHotkeyId);
-        m_mainHotkeyId.clear();
-    }
+    unregisterMainHotkey();
 
     m_pluginManager->shutdownPlugins();
     m_inputManager->stop();
@@ -92,23 +93,21 @@ void QuolApplication::setQuolOn(bool on) {
     m_quolOn = on;
 
     if (on) {
+        loadAndShowPlugins();
         m_mainWindow->show();
-        for (auto *w : m_pluginManager->windows())
-            w->show();
         if (m_mainHotkeyId.isEmpty())
             m_mainHotkeyId = registerMainHotkey();
     } else {
-        // Cancel any in-progress hide transition before hiding
+        // Cancel any in-progress hide transition before hiding.
         if (m_transitions->isHidden())
             m_transitions->toggleAll();
         m_mainWindow->hide();
-        for (auto *w : m_pluginManager->windows())
-            w->hide();
-        if (!m_mainHotkeyId.isEmpty()) {
-            m_inputManager->removeHotkey(m_mainHotkeyId);
-            m_mainHotkeyId.clear();
-        }
+        unregisterMainHotkey();
+        // Destroy plugins
+        m_pluginManager->shutdownPlugins();
     }
+
+    m_services->notifyAppToggled(on);
 
     if (m_toggleAction)
         m_toggleAction->setText(on ? QStringLiteral("Turn OFF") : QStringLiteral("Turn ON"));
@@ -140,8 +139,7 @@ void QuolApplication::setupTrayIcon() {
     connect(reloadAction, &QAction::triggered, this, [this]() {
         m_trayIcon->hide();
         performShutdown();
-        QProcess::startDetached(QCoreApplication::applicationFilePath());
-        QCoreApplication::quit();
+        QuolMainWindow::reloadApplication();
     });
 
     connect(quitAction, &QAction::triggered, this, [this]() {

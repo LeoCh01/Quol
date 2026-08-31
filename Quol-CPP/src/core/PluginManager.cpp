@@ -1,5 +1,6 @@
 #include "core/PluginManager.hpp"
 #include "core/AppSettingsManager.hpp"
+#include "core/JsonFile.hpp"
 #include "plugin_api/IQuolPlugin.hpp"
 #include "plugin_api/PluginConfig.hpp"
 #include "plugin_api/QuolServices.hpp"
@@ -9,10 +10,8 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
-#include <QJsonDocument>
 #include <QMessageBox>
 #include <QPluginLoader>
 
@@ -20,13 +19,11 @@
 
 namespace {
 QJsonObject readPluginConfig(const QString &configPath) {
-    QFile file(configPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    const QJsonObject config = readJsonObjectFile(configPath);
+    if (config.isEmpty()) {
         throw std::runtime_error(QString("Cannot open plugin config: %1").arg(configPath).toStdString());
     }
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    file.close();
-    return doc.object();
+    return config;
 }
 }  // namespace
 
@@ -49,6 +46,10 @@ void PluginManager::shutdownPlugins() {
     }
 
     // 2) Destroy plugin-created widgets before unloading plugin DLLs.
+    for (auto *win : std::as_const(m_windows)) {
+        if (m_transitions)
+            m_transitions->removeWindow(win);
+    }
     qDeleteAll(m_windows);
     m_windows.clear();
 
@@ -65,6 +66,8 @@ void PluginManager::shutdownPlugins() {
 void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager *transitions, QuolServices *services) {
     if (!settings)
         return;
+
+    m_transitions = transitions;
 
     auto removePluginFromSettings = [settings](const QString &pluginId) {
         QJsonArray plugins = settings->data().value(QStringLiteral("plugins")).toArray();

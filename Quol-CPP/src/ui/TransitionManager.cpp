@@ -65,6 +65,15 @@ void TransitionManager::addWindow(QWidget *window) {
     m_savedPositions.append(window->pos());
 }
 
+void TransitionManager::removeWindow(QWidget *window) {
+    const int idx = m_windows.indexOf(window);
+    if (idx < 0)
+        return;
+    m_windows.removeAt(idx);
+    m_savedPositions.removeAt(idx);
+    stopAnimation(window);
+}
+
 bool TransitionManager::isHidden() const {
     return m_hidden;
 }

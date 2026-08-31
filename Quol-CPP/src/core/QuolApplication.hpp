@@ -30,9 +30,11 @@ private slots:
 
 private:
     void setupTrayIcon();
+    void loadAndShowPlugins();
     void setQuolOn(bool on);
     void performShutdown();
     QString registerMainHotkey();
+    void unregisterMainHotkey();
 
     AppSettingsManager *m_settings;
     TransitionManager *m_transitions = nullptr;

@@ -32,6 +32,17 @@ void clearLayoutRecursively(QLayout *layout) {
         delete item;
     }
 }
+
+QString displayKey(const QString &key) {
+    QString display = key;
+    display.replace(QLatin1Char('_'), QLatin1Char(' '));
+    return display;
+}
+
+QString widgetKey(const QWidget *widget, const QString &fallback) {
+    const QString key = widget->property("configKey").toString();
+    return key.isEmpty() ? fallback : key;
+}
 }  // namespace
 
 ConfigWindow::ConfigWindow(
@@ -60,19 +71,8 @@ void ConfigWindow::reloadFromDisk() {
 void ConfigWindow::saveConfig() {
     QJsonObject updated = extractFromLayout(m_configLayout);
 
-    QJsonObject latestUnderscore;
-    QFile readFile(m_configPath);
-    if (readFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        const QJsonDocument latestDoc = QJsonDocument::fromJson(readFile.readAll());
-        latestUnderscore = latestDoc.object().value(QStringLiteral("_")).toObject();
-        readFile.close();
-    }
-
-    if (latestUnderscore.isEmpty() && m_config.contains(QStringLiteral("_"))) {
-        latestUnderscore = m_config.value(QStringLiteral("_")).toObject();
-    }
-
-    updated.insert(QStringLiteral("_"), latestUnderscore);
+    QJsonObject underscore = m_config.value(QStringLiteral("_")).toObject();
+    updated.insert(QStringLiteral("_"), underscore);
 
     QFile file(m_configPath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
@@ -151,7 +151,9 @@ void ConfigWindow::addItemToLayout(QLayout *layout, QWidget *widget) {
 QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
     if (value.isBool()) {
         auto *row = new QHBoxLayout();
-        row->addWidget(new QLabel(key));
+        auto *label = new QLabel(displayKey(key));
+        label->setProperty("configKey", key);
+        row->addWidget(label);
         auto *checkbox = new QCheckBox();
         checkbox->setChecked(value.toBool());
         row->addWidget(checkbox);
@@ -159,7 +161,8 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
     }
 
     if (value.isObject()) {
-        auto *group = new QGroupBox(key);
+        auto *group = new QGroupBox(displayKey(key));
+        group->setProperty("configKey", key);
         auto *groupLayout = new QVBoxLayout(group);
 
         const QJsonObject object = value.toObject();
@@ -181,7 +184,9 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
         const QJsonArray arr = value.toArray();
         if (arr.size() == 2 && arr.at(0).isArray() && arr.at(1).isDouble()) {
             auto *row = new QHBoxLayout();
-            row->addWidget(new QLabel(key));
+            auto *label = new QLabel(displayKey(key));
+            label->setProperty("configKey", key);
+            row->addWidget(label);
 
             if (key == QStringLiteral("toggle_key")) {
                 auto *edit = new QLineEdit();
@@ -210,7 +215,9 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
     }
 
     auto *row = new QHBoxLayout();
-    row->addWidget(new QLabel(key));
+    auto *label = new QLabel(displayKey(key));
+    label->setProperty("configKey", key);
+    row->addWidget(label);
     auto *lineEdit = new QLineEdit();
     lineEdit->setText(value.toVariant().toString());
     row->addWidget(lineEdit, 1);
@@ -226,7 +233,7 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
         QLayout *subLayout = item->layout();
 
         if (auto *group = qobject_cast<QGroupBox *>(widget)) {
-            result.insert(group->title(), extractFromLayout(group->layout()));
+            result.insert(widgetKey(group, group->title()), extractFromLayout(group->layout()));
             continue;
         }
 
@@ -237,7 +244,7 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
         if (subLayout->count() == 1) {
             QWidget *firstWidget = subLayout->itemAt(0)->widget();
             if (auto *group = qobject_cast<QGroupBox *>(firstWidget)) {
-                result.insert(group->title(), extractFromLayout(group->layout()));
+                result.insert(widgetKey(group, group->title()), extractFromLayout(group->layout()));
                 continue;
             }
         }
@@ -246,7 +253,7 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
             auto *label = qobject_cast<QLabel *>(hbox->itemAt(0)->widget());
             QWidget *valueWidget = hbox->itemAt(1)->widget();
 
-            const QString key = label->text();
+            const QString key = widgetKey(label, label->text());
 
             if (auto *checkbox = qobject_cast<QCheckBox *>(valueWidget)) {
                 result.insert(key, checkbox->isChecked());
