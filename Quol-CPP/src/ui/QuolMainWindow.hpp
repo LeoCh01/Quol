@@ -34,8 +34,8 @@ private:
 
     void openManagePluginsDialog();
     void openMessageBoard();
-    QWidget *buildInstalledTab(QWidget *popup, QList<QCheckBox *> &pluginChecks);
-    QWidget *buildStoreTab(QWidget *popup, QListWidget *&storeListOut, QLabel *&storeStatusOut);
+    QWidget *buildInstalledTab(QWidget *popup);
+    QWidget *buildStoreTab(QWidget *popup, QLabel *&storeStatusOut);
     QWidget *buildCustomTab(QWidget *popup, QLabel *&statusOut);
     QMap<QString, InstalledPluginMeta> discoverInstalledPlugins() const;
     void rebuildInstalledTab(QTabWidget *tabs, QWidget *popup);

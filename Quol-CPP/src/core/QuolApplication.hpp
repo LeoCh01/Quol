@@ -31,6 +31,7 @@ private slots:
 private:
     void setupTrayIcon();
     void loadAndShowPlugins();
+    void setWindowsVisible(bool visible);
     void setQuolOn(bool on);
     void performShutdown();
     QString registerMainHotkey();

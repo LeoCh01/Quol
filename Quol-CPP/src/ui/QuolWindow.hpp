@@ -7,6 +7,7 @@ class AppSettingsManager;
 class TitleBar;
 class QVBoxLayout;
 class ConfigWindow;
+class QJsonArray;
 class QJsonObject;
 
 class QuolWindow : public QWidget {
@@ -41,6 +42,7 @@ protected:
 private:
     void snapToGrid();
     void persistGeometry();
+    void applyGeometryArray(const QJsonArray &geometry);
     bool loadGeometryFromPluginConfig();
     bool saveGeometryToPluginConfig() const;
     int autoHeightFromContent() const;

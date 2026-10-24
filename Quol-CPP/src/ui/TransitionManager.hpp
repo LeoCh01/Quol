@@ -27,10 +27,8 @@ public:
 private:
     void hideAll();
     void showAll();
-    void doHide(QWidget *w, int idx);
-    void doShow(QWidget *w, int idx);
+    void doTransition(QWidget *w, int idx, bool hide);
     QAbstractAnimation *createSlideAnimation(QWidget *w, const QPoint &target, int dir, bool isHide);
-    void trackAnimation(QWidget *w, QAbstractAnimation *anim);
     void stopAnimation(QWidget *w);
     static Type parseType(const QString &type);
     static int randomSlideDir();

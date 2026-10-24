@@ -1,7 +1,10 @@
 TODO
 - quol ver display in main plugin
 
-5.2.0 (CURRENT)
+5.3.0 (CURRENT)
+- deeper code cleanup
+
+5.2.0
 - destruct on toggle app OFF
 - small memory fixes/optimization
 - DRY fixes

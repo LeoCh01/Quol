@@ -22,8 +22,6 @@ protected:
     void showEvent(QShowEvent *event) override;
 
 private:
-    void centerOnScreen();
-
     bool m_centered = false;
     TitleBar *m_titleBar = nullptr;
     QVBoxLayout *m_bodyLayout = nullptr;

@@ -33,16 +33,7 @@ void QuolApplication::start() {
 
     loadAndShowPlugins();
     m_services->setWindowVisibilityCallbacks(
-        [this]() {
-            m_mainWindow->hide();
-            for (auto *w : m_pluginManager->windows())
-                w->hide();
-        },
-        [this]() {
-            m_mainWindow->show();
-            for (auto *w : m_pluginManager->windows())
-                w->show();
-        }
+        [this]() { setWindowsVisible(false); }, [this]() { setWindowsVisible(true); }
     );
 
     m_inputManager->start();
@@ -53,6 +44,12 @@ void QuolApplication::start() {
 
     connect(m_mainWindow, &QuolMainWindow::mainConfigApplied, this, &QuolApplication::onMainConfigApplied);
     connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() { performShutdown(); });
+}
+
+void QuolApplication::setWindowsVisible(bool visible) {
+    m_mainWindow->setVisible(visible);
+    for (auto *w : m_pluginManager->windows())
+        w->setVisible(visible);
 }
 
 void QuolApplication::loadAndShowPlugins() {

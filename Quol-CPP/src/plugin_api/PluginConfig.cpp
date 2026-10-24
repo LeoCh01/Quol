@@ -52,15 +52,13 @@ QJsonValue PluginConfig::readNested(const QJsonObject &obj, const QStringList &k
     if (keys.isEmpty())
         return obj;
 
-    const QJsonValue v = obj.value(keys.first());
-
-    if (keys.size() == 1)
-        return v;
-
-    if (!v.isObject())
-        return QJsonValue::Undefined;
-
-    return readNested(v.toObject(), keys.mid(1));
+    QJsonValue current = obj;
+    for (const QString &key : keys) {
+        if (!current.isObject())
+            return QJsonValue::Undefined;
+        current = current.toObject().value(key);
+    }
+    return current;
 }
 
 QJsonObject PluginConfig::writeNested(QJsonObject obj, const QStringList &keys, const QJsonValue &value) {
@@ -90,7 +88,7 @@ QJsonObject PluginConfig::removeNested(QJsonObject obj, const QStringList &keys)
         return obj;
     }
 
-    if (!obj.contains(key) || !obj.value(key).isObject())
+    if (!obj.value(key).isObject())
         return obj;
 
     QJsonObject child = obj.value(key).toObject();

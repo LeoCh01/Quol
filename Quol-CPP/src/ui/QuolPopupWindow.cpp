@@ -32,12 +32,8 @@ void QuolPopupWindow::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     if (!m_centered) {
         m_centered = true;
-        QTimer::singleShot(0, this, &QuolPopupWindow::centerOnScreen);
+        QTimer::singleShot(0, this, [this]() { quolCenterOnScreen(this); });
     }
-}
-
-void QuolPopupWindow::centerOnScreen() {
-    quolCenterOnScreen(this);
 }
 
 void QuolPopupWindow::resizeEvent(QResizeEvent *event) {

@@ -77,7 +77,7 @@ void PluginStoreManager::extractZipAsync(
         proc,
         qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
         this,
-        [this, proc, zipPath, pluginDir, onDone](int exitCode, QProcess::ExitStatus) {
+        [proc, zipPath, pluginDir, onDone](int exitCode, QProcess::ExitStatus) {
             proc->deleteLater();
             QFile::remove(zipPath);
 

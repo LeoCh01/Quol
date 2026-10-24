@@ -92,13 +92,13 @@ void TransitionManager::hideAll() {
     for (int i = 0; i < m_windows.size(); ++i) {
         if (!m_activeAnimations.contains(m_windows[i]))
             m_savedPositions[i] = m_windows[i]->pos();
-        doHide(m_windows[i], i);
+        doTransition(m_windows[i], i, true);
     }
 }
 
 void TransitionManager::showAll() {
     for (int i = 0; i < m_windows.size(); ++i)
-        doShow(m_windows[i], i);
+        doTransition(m_windows[i], i, false);
 }
 
 QAbstractAnimation *TransitionManager::createSlideAnimation(QWidget *w, const QPoint &target, int dir, bool isHide) {
@@ -139,53 +139,7 @@ QAbstractAnimation *TransitionManager::createSlideAnimation(QWidget *w, const QP
     return grp;
 }
 
-void TransitionManager::doHide(QWidget *w, int idx) {
-    stopAnimation(w);
-
-    Type type = m_type;
-    int dir = 0;
-    if (type == Type::RandSlide) {
-        dir = randomSlideDir();
-    }
-
-    const QPoint from = m_savedPositions[idx];
-    QAbstractAnimation *anim = nullptr;
-
-    switch (type) {
-        case Type::Fade: {
-            auto *fade = new QPropertyAnimation(w, "windowOpacity");
-            fade->setDuration(200);
-            fade->setStartValue(1.0);
-            fade->setEndValue(0.0);
-            QObject::connect(fade, &QAbstractAnimation::finished, w, &QWidget::hide);
-            anim = fade;
-            break;
-        }
-        case Type::SlideLeft:
-        case Type::SlideRight:
-        case Type::SlideUp:
-        case Type::SlideDown:
-            anim = createSlideAnimation(w, from, static_cast<int>(type) - static_cast<int>(Type::SlideLeft), true);
-            break;
-        case Type::RandSlide:
-            anim = createSlideAnimation(w, from, dir, true);
-            break;
-        default:
-            w->hide();
-            return;
-    }
-
-    trackAnimation(w, anim);
-    QObject::connect(anim, &QAbstractAnimation::finished, this, [this, w, anim]() {
-        if (m_activeAnimations.value(w) != anim)
-            return;
-        m_activeAnimations.remove(w);
-        anim->deleteLater();
-    });
-    anim->start();
-}
-
-void TransitionManager::doShow(QWidget *w, int idx) {
+void TransitionManager::doTransition(QWidget *w, int idx, bool hide) {
     stopAnimation(w);
 
     Type type = m_type;
@@ -199,13 +153,18 @@ void TransitionManager::doShow(QWidget *w, int idx) {
 
     switch (type) {
         case Type::Fade: {
-            w->setWindowOpacity(0.0);
-            w->move(saved);
-            w->show();
+            if (!hide) {
+                w->setWindowOpacity(0.0);
+                w->move(saved);
+                w->show();
+            }
             auto *fade = new QPropertyAnimation(w, "windowOpacity");
             fade->setDuration(200);
-            fade->setStartValue(0.0);
-            fade->setEndValue(1.0);
+            fade->setStartValue(hide ? 1.0 : 0.0);
+            fade->setEndValue(hide ? 0.0 : 1.0);
+            if (hide) {
+                QObject::connect(fade, &QAbstractAnimation::finished, w, &QWidget::hide);
+            }
             anim = fade;
             break;
         }
@@ -213,18 +172,22 @@ void TransitionManager::doShow(QWidget *w, int idx) {
         case Type::SlideRight:
         case Type::SlideUp:
         case Type::SlideDown:
-            anim = createSlideAnimation(w, saved, static_cast<int>(type) - static_cast<int>(Type::SlideLeft), false);
+            anim = createSlideAnimation(w, saved, static_cast<int>(type) - static_cast<int>(Type::SlideLeft), hide);
             break;
         case Type::RandSlide:
-            anim = createSlideAnimation(w, saved, dir, false);
+            anim = createSlideAnimation(w, saved, dir, hide);
             break;
         default:
+            if (hide) {
+                w->hide();
+                return;
+            }
             w->move(saved);
             w->show();
             return;
     }
 
-    trackAnimation(w, anim);
+    m_activeAnimations.insert(w, anim);
     QObject::connect(anim, &QAbstractAnimation::finished, this, [this, w, anim]() {
         if (m_activeAnimations.value(w) != anim)
             return;
@@ -236,10 +199,6 @@ void TransitionManager::doShow(QWidget *w, int idx) {
 
 // -- internal helpers
 // -------------------------------------------------------------------------
-void TransitionManager::trackAnimation(QWidget *w, QAbstractAnimation *anim) {
-    m_activeAnimations.insert(w, anim);
-}
-
 void TransitionManager::stopAnimation(QWidget *w) {
     QAbstractAnimation *anim = m_activeAnimations.take(w);
     if (!anim)

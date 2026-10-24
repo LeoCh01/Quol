@@ -11,11 +11,11 @@ class IQuolPlugin {
 public:
     virtual ~IQuolPlugin() = default;
 
-    // Called first; build and return the plugin's root widget.
+    // Build and return the plugin's root widget. Called after initialize().
     virtual QWidget *createWidget(QWidget *parent = nullptr) = 0;
 
-    // Called immediately after createWidget. pluginRootPath is the absolute
-    // path to the plugin's output folder (e.g. build/plugins/myPlugin/).
+    // Called first. pluginRootPath is the absolute path to the plugin's
+    // output folder (e.g. build/plugins/myPlugin/).
     // services provides access to the shared InputManager and any future
     // application-level services. The global appSettings JSON is intentionally
     // not forwarded here — plugins should only need their own pluginConfig.

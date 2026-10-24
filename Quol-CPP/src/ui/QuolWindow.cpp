@@ -55,13 +55,7 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
         const QJsonObject underscore = config.value(QStringLiteral("_")).toObject();
         const QJsonArray geometry = underscore.value(QStringLiteral("geometry")).toArray();
         if (geometry.size() >= 4) {
-            const int gx = geometry.at(0).toInt(x());
-            const int gy = geometry.at(1).toInt(y());
-            const int gw = geometry.at(2).toInt(width());
-            const int gh = geometry.at(3).toInt(height());
-
-            m_autoHeightRequested = (gh <= 0);
-            setGeometry(gx, gy, gw, (gh <= 0) ? autoHeightFromContent() : gh);
+            applyGeometryArray(geometry);
         }
     });
 
@@ -94,6 +88,16 @@ void QuolWindow::snapToGrid() {
     const int ny = qRound(static_cast<double>(pos().y()) / static_cast<double>(m_snapGrid)) * m_snapGrid;
     move(nx, ny);
     persistGeometry();
+}
+
+void QuolWindow::applyGeometryArray(const QJsonArray &geometry) {
+    const int gx = geometry.at(0).toInt(x());
+    const int gy = geometry.at(1).toInt(y());
+    const int gw = geometry.at(2).toInt(width());
+    const int gh = geometry.at(3).toInt(height());
+
+    m_autoHeightRequested = (gh <= 0);
+    setGeometry(gx, gy, gw, (gh <= 0) ? autoHeightFromContent() : gh);
 }
 
 void QuolWindow::persistGeometry() {
@@ -148,14 +152,7 @@ bool QuolWindow::loadGeometryFromPluginConfig() {
         configChanged = true;
     }
 
-    const int gx = geometry.at(0).toInt(x());
-    const int gy = geometry.at(1).toInt(y());
-    const int gw = geometry.at(2).toInt(width());
-    const int gh = geometry.at(3).toInt(height());
-
-    m_autoHeightRequested = (gh <= 0);
-
-    setGeometry(gx, gy, gw, (gh <= 0) ? autoHeightFromContent() : gh);
+    applyGeometryArray(geometry);
 
     if (configChanged) {
         writeJsonObjectFile(m_pluginConfigPath, root);
@@ -176,8 +173,7 @@ bool QuolWindow::saveGeometryToPluginConfig() const {
     QJsonObject root = readJsonObjectFile(m_pluginConfigPath);
 
     QJsonObject underscore = root.value(QStringLiteral("_")).toObject();
-    if (!underscore.value(QStringLiteral("default_geometry")).isArray()
-        || underscore.value(QStringLiteral("default_geometry")).toArray().size() < 4) {
+    if (underscore.value(QStringLiteral("default_geometry")).toArray().size() < 4) {
         underscore.insert(QStringLiteral("default_geometry"), QJsonArray{x(), y(), width(), 0});
     }
     underscore.insert(QStringLiteral("geometry"), QJsonArray{x(), y(), width(), height()});

@@ -28,9 +28,6 @@ private:
     void clearDynamicUi();
     void generateSettings();
 
-    static void addItemToLayout(QLayout *layout, QLayout *itemLayout);
-    static void addItemToLayout(QLayout *layout, QWidget *widget);
-
     QLayout *createItem(const QString &key, const QJsonValue &value);
     QJsonObject extractFromLayout(QLayout *layout) const;
 

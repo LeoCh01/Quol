@@ -73,7 +73,7 @@ void MessageBoard::fetchNotes() {
         reply->deleteLater();
         m_refreshBtn->setEnabled(true);
         if (reply->error() != QNetworkReply::NoError) {
-            onWorkerError(reply->errorString());
+            onWorkerError();
             return;
         }
         const QString text = QString::fromUtf8(reply->readAll());
@@ -101,7 +101,7 @@ void MessageBoard::postNotes() {
         reply->deleteLater();
         m_toggleBtn->setEnabled(true);
         if (reply->error() != QNetworkReply::NoError) {
-            onWorkerError(reply->errorString());
+            onWorkerError();
             return;
         }
         setText(text);
@@ -147,7 +147,7 @@ void MessageBoard::showEvent(QShowEvent *event) {
     QuolPopupWindow::showEvent(event);
 }
 
-void MessageBoard::onWorkerError(const QString &error) {
+void MessageBoard::onWorkerError() {
     m_refreshBtn->setEnabled(true);
     m_toggleBtn->setEnabled(true);
     m_viewWidget->setPlainText(QStringLiteral("Error communicating with server."));

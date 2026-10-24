@@ -3,7 +3,6 @@
 #include "core/AppSettingsManager.hpp"
 #include "ui/QuolWindowLayout.hpp"
 
-#include <QBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFile>
@@ -36,6 +35,14 @@ QString displayKey(const QString &key) {
     QString display = key;
     display.replace(QLatin1Char('_'), QLatin1Char(' '));
     return display;
+}
+
+QHBoxLayout *makeRow(const QString &key) {
+    auto *row = new QHBoxLayout();
+    auto *label = new QLabel(displayKey(key));
+    label->setProperty("configKey", key);
+    row->addWidget(label);
+    return row;
 }
 
 QString widgetKey(const QWidget *widget, const QString &fallback) {
@@ -122,7 +129,7 @@ void ConfigWindow::generateSettings() {
         }
 
         QLayout *itemLayout = createItem(it.key(), it.value());
-        addItemToLayout(m_configLayout, itemLayout);
+        m_configLayout->addLayout(itemLayout);
     }
 
     m_configLayout->invalidate();
@@ -133,25 +140,9 @@ void ConfigWindow::generateSettings() {
     resize(width(), totalHeight);
 }
 
-void ConfigWindow::addItemToLayout(QLayout *layout, QLayout *itemLayout) {
-    if (auto *boxLayout = qobject_cast<QBoxLayout *>(layout)) {
-        boxLayout->addLayout(itemLayout);
-        return;
-    }
-
-    layout->addItem(itemLayout);
-}
-
-void ConfigWindow::addItemToLayout(QLayout *layout, QWidget *widget) {
-    layout->addWidget(widget);
-}
-
 QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
     if (value.isBool()) {
-        auto *row = new QHBoxLayout();
-        auto *label = new QLabel(displayKey(key));
-        label->setProperty("configKey", key);
-        row->addWidget(label);
+        auto *row = makeRow(key);
         auto *checkbox = new QCheckBox();
         checkbox->setChecked(value.toBool());
         row->addWidget(checkbox);
@@ -170,7 +161,7 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
             }
 
             QLayout *itemLayout = createItem(it.key(), it.value());
-            addItemToLayout(groupLayout, itemLayout);
+            groupLayout->addLayout(itemLayout);
         }
 
         auto *wrapper = new QVBoxLayout();
@@ -181,10 +172,7 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
     if (value.isArray()) {
         const QJsonArray arr = value.toArray();
         if (arr.size() == 2 && arr.at(0).isArray() && arr.at(1).isDouble()) {
-            auto *row = new QHBoxLayout();
-            auto *label = new QLabel(displayKey(key));
-            label->setProperty("configKey", key);
-            row->addWidget(label);
+            auto *row = makeRow(key);
 
             if (key == QStringLiteral("toggle_key")) {
                 auto *edit = new QLineEdit();
@@ -212,10 +200,7 @@ QLayout *ConfigWindow::createItem(const QString &key, const QJsonValue &value) {
         }
     }
 
-    auto *row = new QHBoxLayout();
-    auto *label = new QLabel(displayKey(key));
-    label->setProperty("configKey", key);
-    row->addWidget(label);
+    auto *row = makeRow(key);
     auto *lineEdit = new QLineEdit();
     lineEdit->setText(value.toVariant().toString());
     row->addWidget(lineEdit, 1);
@@ -230,21 +215,18 @@ QJsonObject ConfigWindow::extractFromLayout(QLayout *layout) const {
         QWidget *widget = item->widget();
         QLayout *subLayout = item->layout();
 
-        if (auto *group = qobject_cast<QGroupBox *>(widget)) {
+        auto *group = qobject_cast<QGroupBox *>(widget);
+        if (!group && subLayout && subLayout->count() == 1) {
+            group = qobject_cast<QGroupBox *>(subLayout->itemAt(0)->widget());
+        }
+
+        if (group) {
             result.insert(widgetKey(group, group->title()), extractFromLayout(group->layout()));
             continue;
         }
 
         if (!subLayout) {
             continue;
-        }
-
-        if (subLayout->count() == 1) {
-            QWidget *firstWidget = subLayout->itemAt(0)->widget();
-            if (auto *group = qobject_cast<QGroupBox *>(firstWidget)) {
-                result.insert(widgetKey(group, group->title()), extractFromLayout(group->layout()));
-                continue;
-            }
         }
 
         if (auto *hbox = qobject_cast<QHBoxLayout *>(subLayout)) {

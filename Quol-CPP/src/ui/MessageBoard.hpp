@@ -28,7 +28,7 @@ private:
     void setText(const QString &text);
     void enableEditMode();
     void enableViewMode();
-    void onWorkerError(const QString &error);
+    void onWorkerError();
 
     QString m_adminKey;
     bool m_editMode = false;

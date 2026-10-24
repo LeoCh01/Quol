@@ -210,8 +210,7 @@ void QuolMainWindow::rebuildInstalledTab(QTabWidget *tabs, QWidget *popup) {
     tabs->removeTab(0);
     delete oldInstalled;
 
-    QList<QCheckBox *> newChecks;
-    tabs->insertTab(0, buildInstalledTab(popup, newChecks), QStringLiteral("Installed"));
+    tabs->insertTab(0, buildInstalledTab(popup), QStringLiteral("Installed"));
 }
 
 void QuolMainWindow::openManagePluginsDialog() {
@@ -227,12 +226,10 @@ void QuolMainWindow::openManagePluginsDialog() {
     popup->resize(420, 420);
 
     auto *tabs = new QTabWidget();
-    QList<QCheckBox *> pluginChecks;
-    tabs->addTab(buildInstalledTab(popup, pluginChecks), QStringLiteral("Installed"));
+    tabs->addTab(buildInstalledTab(popup), QStringLiteral("Installed"));
 
-    QListWidget *storeList = nullptr;
     QLabel *storeStatus = nullptr;
-    tabs->addTab(buildStoreTab(popup, storeList, storeStatus), QStringLiteral("Store"));
+    tabs->addTab(buildStoreTab(popup, storeStatus), QStringLiteral("Store"));
 
     QLabel *customStatus = nullptr;
     tabs->addTab(buildCustomTab(popup, customStatus), QStringLiteral("Custom"));
@@ -289,12 +286,14 @@ void QuolMainWindow::openManagePluginsDialog() {
     m_pluginStore->fetchStoreItems();
 }
 
-QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &pluginChecks) {
+QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup) {
     auto *tab = new QWidget();
     auto *layout = new QVBoxLayout(tab);
     layout->setContentsMargins(4, 4, 4, 4);
     layout->setSpacing(4);
     layout->setAlignment(Qt::AlignTop);
+
+    QList<QCheckBox *> pluginChecks;
 
     const QMap<QString, QuolMainWindow::InstalledPluginMeta> plugins = discoverInstalledPlugins();
     const QStringList pluginIds = plugins.keys();
@@ -388,7 +387,7 @@ QWidget *QuolMainWindow::buildInstalledTab(QWidget *popup, QList<QCheckBox *> &p
     return tab;
 }
 
-QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOut, QLabel *&storeStatusOut) {
+QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QLabel *&storeStatusOut) {
     auto *tab = new QWidget();
     auto *layout = new QVBoxLayout(tab);
     layout->setContentsMargins(4, 4, 4, 4);
@@ -404,7 +403,6 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
     storeListWidget->setSelectionMode(QAbstractItemView::NoSelection);
     layout->addWidget(storeListWidget);
 
-    storeListOut = storeListWidget;
     storeStatusOut = storeStatusLabel;
 
     connect(
@@ -416,9 +414,7 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QListWidget *&storeListOu
             const QMap<QString, QuolMainWindow::InstalledPluginMeta> installedPlugins = discoverInstalledPlugins();
 
             QList<StoreEntry> entries = parseStoreEntries(items);
-            std::sort(entries.begin(), entries.end(), [](const StoreEntry &a, const StoreEntry &b) {
-                return a.pluginName < b.pluginName;
-            });
+            std::ranges::sort(entries, {}, &StoreEntry::pluginName);
 
             if (entries.isEmpty()) {
                 storeStatusLabel->setText(QStringLiteral("No plugins available in the store."));

@@ -13,9 +13,8 @@ bool AppSettingsManager::load() {
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
     }
-    const auto doc = QJsonDocument::fromJson(file.readAll());
+    m_data = QJsonDocument::fromJson(file.readAll()).object();
     file.close();
-    m_data = doc.object();
     return true;
 }
 
@@ -24,8 +23,7 @@ bool AppSettingsManager::save() const {
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
         return false;
     }
-    const QJsonDocument doc(m_data);
-    file.write(doc.toJson(QJsonDocument::Indented));
+    file.write(QJsonDocument(m_data).toJson(QJsonDocument::Indented));
     file.close();
     return true;
 }

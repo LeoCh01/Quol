@@ -556,28 +556,27 @@ bool InputManager::handleKeyEvent(unsigned long wParam, quint32 vkCode, bool inj
     if (key.isEmpty())
         return false;
 
-    const bool isKeyMessage =
-        (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_SYSKEYUP);
-    if (isKeyMessage) {
-        const bool pressed = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
+    if (wParam != WM_KEYDOWN && wParam != WM_SYSKEYDOWN && wParam != WM_KEYUP && wParam != WM_SYSKEYUP)
+        return false;
 
-        // Key remaps: handled at WH_KEYBOARD_LL level so plain keys (no modifier)
-        // are supported.  Only fire on press; inject dst and suppress src.
-        if (pressed) {
-            for (const auto &remap : std::as_const(m_keyRemaps)) {
-                if (remap.srcVk == vkCode) {
-                    sendKeys(remap.dstCombo);
-                    return true;  // Suppress the source keystroke.
-                }
+    const bool pressed = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
+
+    // Key remaps: handled at WH_KEYBOARD_LL level so plain keys (no modifier)
+    // are supported.  Only fire on press; inject dst and suppress src.
+    if (pressed) {
+        for (const auto &remap : std::as_const(m_keyRemaps)) {
+            if (remap.srcVk == vkCode) {
+                sendKeys(remap.dstCombo);
+                return true;  // Suppress the source keystroke.
             }
         }
-
-        // Iterate a snapshot so listeners can safely add/remove listeners
-        // inside a callback (each removal publishes a new immutable snapshot).
-        const auto listeners = m_keyListeners;
-        for (const auto &entry : *listeners)
-            entry.callback(key, pressed);
     }
+
+    // Iterate a snapshot so listeners can safely add/remove listeners
+    // inside a callback (each removal publishes a new immutable snapshot).
+    const auto listeners = m_keyListeners;
+    for (const auto &entry : *listeners)
+        entry.callback(key, pressed);
 
     return false;
 }
