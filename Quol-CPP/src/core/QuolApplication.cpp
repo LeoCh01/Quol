@@ -107,8 +107,6 @@ void QuolApplication::setQuolOn(bool on) {
         m_pluginManager->shutdownPlugins();
     }
 
-    m_services->notifyAppToggled(on);
-
     if (m_toggleAction)
         m_toggleAction->setText(on ? QStringLiteral("Turn OFF") : QStringLiteral("Turn ON"));
     if (m_trayIcon)

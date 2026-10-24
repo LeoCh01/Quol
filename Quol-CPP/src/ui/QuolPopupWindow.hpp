@@ -6,7 +6,6 @@
 #include <functional>
 
 class QVBoxLayout;
-class QJsonObject;
 
 class QuolPopupWindow : public QWidget {
     Q_OBJECT
@@ -24,7 +23,6 @@ protected:
 
 private:
     void centerOnScreen();
-    void updateMask();
 
     bool m_centered = false;
     TitleBar *m_titleBar = nullptr;

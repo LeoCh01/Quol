@@ -226,8 +226,8 @@ LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
         return CallNextHookEx(nullptr, nCode, wParam, lParam);
     }
 
-    const int wheelDelta =
-        (wParam == WM_MOUSEWHEEL) ? static_cast<int>(static_cast<short>(HIWORD(data->mouseData))) : 0;
+    const bool isWheel = (wParam == WM_MOUSEWHEEL || wParam == WM_MOUSEHWHEEL);
+    const int wheelDelta = isWheel ? static_cast<int>(static_cast<short>(HIWORD(data->mouseData))) : 0;
     g_inputManager->handleMouseEvent(static_cast<unsigned long>(wParam), data->pt.x, data->pt.y, wheelDelta);
     return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
@@ -403,6 +403,7 @@ void InputManager::removeKeyRemap(const QString &id) {
 }
 
 QString InputManager::addMouseListener(std::function<void(const MouseEvent &)> callback) {
+    start();
     const QString id = nextId();
 
     std::lock_guard<std::shared_mutex> lock(m_listenerMutex);
@@ -609,10 +610,8 @@ void InputManager::handleMouseEvent(unsigned long wParam, long x, long y, int wh
             evt.type = MouseEvent::Type::MiddleUp;
             break;
         case WM_MOUSEWHEEL:
-            evt.type = (wheelDelta >= 0) ? MouseEvent::Type::WheelUp : MouseEvent::Type::WheelDown;
-            break;
         case WM_MOUSEHWHEEL:
-            evt.type = (wheelDelta >= 0) ? MouseEvent::Type::WheelUp : MouseEvent::Type::WheelDown;
+            evt.type = (wheelDelta > 0) ? MouseEvent::Type::WheelUp : MouseEvent::Type::WheelDown;
             break;
         default:
             return;

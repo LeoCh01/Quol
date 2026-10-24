@@ -1,11 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <QFrame>
 #include <QPoint>
 #include <functional>
 
 class QLabel;
-class QuolWindow;
 class QPushButton;
 
 class TitleBar : public QFrame {

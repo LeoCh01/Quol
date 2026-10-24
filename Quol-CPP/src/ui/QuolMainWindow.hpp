@@ -1,10 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include "ui/QuolWindow.hpp"
 
 #include <QList>
 #include <QMap>
-#include <QStringList>
 
 class AppSettingsManager;
 class QCheckBox;
@@ -45,7 +44,6 @@ private:
     void copySettingsToMainConfig();
     void applyMainConfigToSettings(const QJsonObject &config);
 
-    AppSettingsManager *m_settings;
     QuolPopupWindow *m_pluginManagerWindow = nullptr;
     MessageBoard *m_messageBoard = nullptr;
     PluginStoreManager *m_pluginStore = nullptr;

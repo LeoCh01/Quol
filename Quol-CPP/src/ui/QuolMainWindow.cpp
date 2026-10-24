@@ -1,14 +1,14 @@
-#include "ui/QuolMainWindow.hpp"
+﻿#include "ui/QuolMainWindow.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "core/JsonFile.hpp"
 #include "core/PluginStoreManager.hpp"
 #include "ui/MessageBoard.hpp"
 #include "ui/QuolPopupWindow.hpp"
 
-#include <QAbstractButton>
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QCheckBox>
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileDialog>
@@ -21,7 +21,6 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QMap>
-#include <QMessageBox>
 #include <QProcess>
 #include <QPushButton>
 #include <QSet>
@@ -101,7 +100,6 @@ QuolMainWindow::QuolMainWindow(AppSettingsManager *settings, QWidget *parent)
           mainDefaultGeometryValue(3, 180),
           parent
       )
-    , m_settings(settings)
     , m_pluginStore(new PluginStoreManager(this)) {
     copySettingsToMainConfig();
     attachConfigWindow(

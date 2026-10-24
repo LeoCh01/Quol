@@ -1,5 +1,5 @@
 TODO
-- fix hotkeys still active when Quol OFF
+- quol ver display in main plugin
 
 5.2.0 (CURRENT)
 - destruct on toggle app OFF

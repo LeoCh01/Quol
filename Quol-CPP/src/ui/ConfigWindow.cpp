@@ -1,8 +1,8 @@
 #include "ui/ConfigWindow.hpp"
 
 #include "core/AppSettingsManager.hpp"
+#include "ui/QuolWindowLayout.hpp"
 
-#include <QApplication>
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QComboBox>
@@ -16,7 +16,6 @@
 #include <QLayoutItem>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QScreen>
 #include <QVBoxLayout>
 
 namespace {
@@ -109,8 +108,7 @@ void ConfigWindow::buildUi() {
 
     addContent(m_rootContentLayout);
 
-    const QRect center = QApplication::primaryScreen()->availableGeometry();
-    move(center.center().x() - width() / 2, center.center().y() - height() / 2);
+    quolCenterOnScreen(this);
 }
 
 void ConfigWindow::clearDynamicUi() {

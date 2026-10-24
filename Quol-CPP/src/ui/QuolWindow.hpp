@@ -23,9 +23,6 @@ public:
         QWidget *parent = nullptr
     );
 
-    TitleBar *titleBar() const;
-    const QString &titleText() const;
-
     void addContent(QWidget *widget);
     void addContent(QLayout *layout);
 
@@ -34,23 +31,22 @@ public:
     void setGeometryPersistence(bool enabled);
     void applyGeometryFromConfig();
 
-    void snapToGrid();
-    void saveGeometry();
-
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
 
+    AppSettingsManager *m_settings = nullptr;
+
 private:
-    void updateMask();
+    void snapToGrid();
+    void persistGeometry();
     bool loadGeometryFromPluginConfig();
     bool saveGeometryToPluginConfig() const;
     int autoHeightFromContent() const;
 
     QString m_titleText;
     QString m_pluginConfigPath;
-    AppSettingsManager *m_settings;
     TitleBar *m_titleBar = nullptr;
     QVBoxLayout *m_bodyLayout = nullptr;
     ConfigWindow *m_configWindow = nullptr;

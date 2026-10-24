@@ -2,11 +2,7 @@
 #include "ui/QuolWindowLayout.hpp"
 #include "ui/TitleBar.hpp"
 
-#include <QGuiApplication>
-#include <QPainterPath>
-#include <QRegion>
 #include <QResizeEvent>
-#include <QScreen>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -17,7 +13,7 @@ QuolPopupWindow::QuolPopupWindow(const QString &title, QWidget *parent) : QWidge
     quolInitBaseLayout(this, title, m_titleBar, m_bodyLayout);
     m_titleBar->setCloseAction([this]() { close(); });
 
-    updateMask();
+    quolApplyRoundedMask(this);
 }
 
 TitleBar *QuolPopupWindow::titleBar() const {
@@ -41,19 +37,10 @@ void QuolPopupWindow::showEvent(QShowEvent *event) {
 }
 
 void QuolPopupWindow::centerOnScreen() {
-    if (QScreen *screen = QGuiApplication::primaryScreen()) {
-        const QRect g = screen->availableGeometry();
-        move(g.center().x() - width() / 2, g.center().y() - height() / 2);
-    }
+    quolCenterOnScreen(this);
 }
 
 void QuolPopupWindow::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
-    updateMask();
-}
-
-void QuolPopupWindow::updateMask() {
-    QPainterPath path;
-    path.addRoundedRect(rect(), 6, 6);
-    setMask(QRegion(path.toFillPolygon().toPolygon()));
+    quolApplyRoundedMask(this);
 }

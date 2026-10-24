@@ -1,4 +1,4 @@
-#include "core/PluginManager.hpp"
+﻿#include "core/PluginManager.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "core/JsonFile.hpp"
 #include "plugin_api/IQuolPlugin.hpp"
@@ -10,12 +10,12 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
-#include <QFileInfo>
 #include <QJsonArray>
 #include <QMessageBox>
 #include <QPluginLoader>
 
 #include <exception>
+#include <stdexcept>
 
 namespace {
 QJsonObject readPluginConfig(const QString &configPath) {
@@ -123,7 +123,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
             if (!plugin) {
                 qWarning() << "Failed to load plugin library:" << libPath << loader->errorString();
                 throw std::runtime_error(
-                    QString("Failed to load plugin library: %1 — %2").arg(libPath, loader->errorString()).toStdString()
+                    QString("Failed to load plugin library: %1 - %2").arg(libPath, loader->errorString()).toStdString()
                 );
             }
 

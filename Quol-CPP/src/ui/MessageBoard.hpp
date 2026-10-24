@@ -1,11 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "ui/QuolPopupWindow.hpp"
 
 #include <QString>
 
 class QNetworkAccessManager;
-class QNetworkReply;
 class QPushButton;
 class QTextBrowser;
 class QTextEdit;

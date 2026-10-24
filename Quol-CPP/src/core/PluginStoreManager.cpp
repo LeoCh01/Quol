@@ -1,4 +1,4 @@
-#include "core/PluginStoreManager.hpp"
+﻿#include "core/PluginStoreManager.hpp"
 #include "core/JsonFile.hpp"
 
 #include <QCoreApplication>
@@ -13,8 +13,6 @@
 #include <QProcess>
 #include <QTemporaryFile>
 #include <QUrl>
-
-#include <functional>
 
 static const char *kStoreApiUrl = "https://api.github.com/repos/LeoCh01/Quol-Tools/contents/plugins?ref=main";
 static const char *kRawBaseUrl = "https://raw.githubusercontent.com/LeoCh01/Quol-Tools/main/plugins/";

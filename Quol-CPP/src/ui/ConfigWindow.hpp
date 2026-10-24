@@ -1,10 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include "ui/QuolWindow.hpp"
 
 #include <QJsonObject>
 
-class QGroupBox;
 class QLayout;
 class QVBoxLayout;
 

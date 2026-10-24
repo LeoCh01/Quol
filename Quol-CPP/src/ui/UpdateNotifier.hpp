@@ -1,11 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <QObject>
 #include <QString>
 
 class AppSettingsManager;
 class QNetworkAccessManager;
-class QNetworkReply;
 
 class UpdateNotifier : public QObject {
     Q_OBJECT

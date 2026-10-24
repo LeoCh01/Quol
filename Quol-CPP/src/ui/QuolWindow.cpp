@@ -1,4 +1,4 @@
-#include "ui/QuolWindow.hpp"
+﻿#include "ui/QuolWindow.hpp"
 #include "core/AppSettingsManager.hpp"
 #include "core/JsonFile.hpp"
 #include "ui/ConfigWindow.hpp"
@@ -6,13 +6,9 @@
 #include "ui/TitleBar.hpp"
 
 #include <QCloseEvent>
-#include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonObject>
-#include <QPainterPath>
-#include <QRegion>
 #include <QResizeEvent>
-#include <QScreen>
 #include <QShowEvent>
 #include <QVBoxLayout>
 
@@ -30,15 +26,7 @@ QuolWindow::QuolWindow(
     quolInitBaseLayout(this, title, m_titleBar, m_bodyLayout);
     m_titleBar->setDragReleaseAction([this]() { snapToGrid(); });
     setGeometry(defaultX, defaultY, defaultW, defaultH);
-    updateMask();
-}
-
-TitleBar *QuolWindow::titleBar() const {
-    return m_titleBar;
-}
-
-const QString &QuolWindow::titleText() const {
-    return m_titleText;
+    quolApplyRoundedMask(this);
 }
 
 void QuolWindow::addContent(QWidget *widget) {
@@ -78,9 +66,7 @@ void QuolWindow::attachConfigWindow(const QString &configPath, const QString &co
     });
 
     m_titleBar->setConfigAction([this]() {
-        const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
-        const QSize sz = m_configWindow->size();
-        m_configWindow->move(screen.center().x() - sz.width() / 2, screen.center().y() - sz.height() / 2);
+        quolCenterOnScreen(m_configWindow);
         m_configWindow->show();
         m_configWindow->raise();
         m_configWindow->activateWindow();
@@ -107,10 +93,10 @@ void QuolWindow::snapToGrid() {
     const int nx = qRound(static_cast<double>(pos().x()) / static_cast<double>(m_snapGrid)) * m_snapGrid;
     const int ny = qRound(static_cast<double>(pos().y()) / static_cast<double>(m_snapGrid)) * m_snapGrid;
     move(nx, ny);
-    saveGeometry();
+    persistGeometry();
 }
 
-void QuolWindow::saveGeometry() {
+void QuolWindow::persistGeometry() {
     if (m_persistGeometry) {
         saveGeometryToPluginConfig();
     }
@@ -118,7 +104,7 @@ void QuolWindow::saveGeometry() {
 
 void QuolWindow::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
-    updateMask();
+    quolApplyRoundedMask(this);
 }
 
 void QuolWindow::closeEvent(QCloseEvent *event) {
@@ -134,14 +120,8 @@ void QuolWindow::showEvent(QShowEvent *event) {
     if (m_autoHeightRequested) {
         m_autoHeightRequested = false;
         resize(width(), autoHeightFromContent());
-        saveGeometry();
+        persistGeometry();
     }
-}
-
-void QuolWindow::updateMask() {
-    QPainterPath path;
-    path.addRoundedRect(rect(), 6, 6);
-    setMask(QRegion(path.toFillPolygon().toPolygon()));
 }
 
 bool QuolWindow::loadGeometryFromPluginConfig() {

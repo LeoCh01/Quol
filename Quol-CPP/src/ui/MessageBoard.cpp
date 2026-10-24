@@ -1,6 +1,5 @@
-#include "ui/MessageBoard.hpp"
+﻿#include "ui/MessageBoard.hpp"
 
-#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -8,7 +7,6 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPushButton>
-#include <QScreen>
 #include <QScrollBar>
 #include <QShowEvent>
 #include <QTextBrowser>
@@ -21,7 +19,6 @@ MessageBoard::MessageBoard(const QString &adminKey, QWidget *parent)
     : QuolPopupWindow(QStringLiteral("Message Board"), parent)
     , m_adminKey(adminKey)
     , m_network(new QNetworkAccessManager(this)) {
-
     auto *container = new QWidget();
     auto *layout = new QVBoxLayout(container);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -53,9 +50,7 @@ MessageBoard::MessageBoard(const QString &adminKey, QWidget *parent)
 
     addContent(container);
 
-    const QRect screen = QGuiApplication::primaryScreen()->geometry();
     resize(400, 400);
-    move(screen.center().x() - 200, screen.center().y() - 200);
 }
 
 void MessageBoard::setText(const QString &text) {
@@ -97,9 +92,7 @@ void MessageBoard::postNotes() {
     QJsonObject body;
     body.insert(QStringLiteral("notes"), text);
 
-    QNetworkRequest request(
-        QUrl(QString::fromLatin1(kNotesBaseUrl) + QStringLiteral("/notes/") + m_adminKey)
-    );
+    QNetworkRequest request(QUrl(QString::fromLatin1(kNotesBaseUrl) + QStringLiteral("/notes/") + m_adminKey));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
     request.setRawHeader("User-Agent", "Quol-App");
 
