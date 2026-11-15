@@ -42,11 +42,6 @@ public:
         int wheelDelta = 0;  // non-zero for WheelUp / WheelDown
     };
 
-signals:
-    // Emitted for every mouse event received by the low-level hook.
-    // Connect with Qt::QueuedConnection to safely update UI from the hook callback.
-    void mouseEventReceived(InputManager::MouseEvent event);
-
 public:
     explicit InputManager(QObject *parent = nullptr);
     ~InputManager() override;
@@ -87,8 +82,6 @@ public:
     void sendKeys(const QString &combo);
     void sendPress(const QString &combo);
     void sendRelease(const QString &combo);
-
-    QStringList availableKeys() const;
 
     // Called by the global hook callbacks (public for hook proc access).
     bool handleKeyEvent(unsigned long wParam, quint32 vkCode, bool injected);

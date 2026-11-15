@@ -124,7 +124,8 @@ bool PluginStoreManager::checkPluginDependency(
     return true;
 }
 
-void PluginStoreManager::applyPendingUpdates() {    const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
+void PluginStoreManager::applyPendingUpdates() {
+    const QString pluginsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/plugins");
     const QFileInfoList staged = QDir(pluginsDir).entryInfoList(QStringList{QStringLiteral("*_updated")}, QDir::Dirs);
     if (staged.isEmpty())
         return;
@@ -210,21 +211,23 @@ void PluginStoreManager::downloadPlugin(const QString &itemName, bool isUpdate, 
 
         extractZipAsync(
             zipPath, targetDir, pluginName, [this, pluginName, targetDir, appVersion, staging](bool extracted) {
-            bool ok = extracted;
-            QString errorMessage;
-            if (ok)
-                ok = checkPluginDependency(targetDir, appVersion, errorMessage);
-            if (!ok && errorMessage.isEmpty())
-                errorMessage = QStringLiteral("The plugin ZIP could not be unpacked, or required files are missing.");
+                bool ok = extracted;
+                QString errorMessage;
+                if (ok)
+                    ok = checkPluginDependency(targetDir, appVersion, errorMessage);
+                if (!ok && errorMessage.isEmpty())
+                    errorMessage =
+                        QStringLiteral("The plugin ZIP could not be unpacked, or required files are missing.");
 
-            if (ok) {
-                emit pluginDownloadFinished(pluginName, true, QString(), staging);
-                return;
+                if (ok) {
+                    emit pluginDownloadFinished(pluginName, true, QString(), staging);
+                    return;
+                }
+
+                QDir(targetDir).removeRecursively();
+                emit pluginDownloadFinished(pluginName, false, errorMessage, false);
             }
-
-            QDir(targetDir).removeRecursively();
-            emit pluginDownloadFinished(pluginName, false, errorMessage, false);
-        });
+        );
     });
 }
 

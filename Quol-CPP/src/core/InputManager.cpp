@@ -433,12 +433,6 @@ void InputManager::removeMouseListener(const QString &id) {
     m_mouseListeners = std::move(next);
 }
 
-QStringList InputManager::availableKeys() const {
-    QStringList keys = keyMap().keys();
-    std::sort(keys.begin(), keys.end());
-    return keys;
-}
-
 void InputManager::sendKeys(const QString &combo) {
     sendPress(combo);
     sendRelease(combo);
