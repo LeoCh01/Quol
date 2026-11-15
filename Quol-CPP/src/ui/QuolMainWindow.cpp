@@ -264,7 +264,14 @@ void QuolMainWindow::openManagePluginsDialog() {
         m_pluginStore,
         &PluginStoreManager::pluginDownloadFinished,
         popup,
-        [this, popup, tabs, storeStatus](const QString &pluginName, bool success, const QString &errorMessage) {
+        [this, popup, tabs, storeStatus](
+            const QString &pluginName, bool success, const QString &errorMessage, bool restartRequired
+        ) {
+            if (success && restartRequired) {
+                storeStatus->setText(QStringLiteral("\"%1\" updated. Restarting...").arg(pluginName));
+                reloadApplication();
+                return;
+            }
             if (success) {
                 storeStatus->setText(QStringLiteral("\"%1\" installed. Refreshing...").arg(pluginName));
                 rebuildInstalledTab(tabs, popup);
@@ -396,6 +403,7 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QLabel *&storeStatusOut) 
     auto *topRow = new QHBoxLayout();
     auto *storeStatusLabel = new QLabel(QStringLiteral("Loading..."));
     storeStatusLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    storeStatusLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     topRow->addWidget(storeStatusLabel, 1);
     layout->addLayout(topRow);
 
@@ -420,7 +428,8 @@ QWidget *QuolMainWindow::buildStoreTab(QWidget *popup, QLabel *&storeStatusOut) 
                 storeStatusLabel->setText(QStringLiteral("No plugins available in the store."));
                 return;
             }
-            storeStatusLabel->clear();
+            if (storeStatusLabel->text() == QStringLiteral("Loading..."))
+                storeStatusLabel->clear();
 
             const QString appVer = m_settings->data().value(QStringLiteral("version")).toString();
             for (const auto &entry : entries) {

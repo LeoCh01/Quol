@@ -4,6 +4,7 @@
 
 #include "core/AppSettingsManager.hpp"
 #include "core/LogManager.hpp"
+#include "core/PluginStoreManager.hpp"
 #include "core/QuolApplication.hpp"
 #include "ui/SplashScreen.hpp"
 #include "ui/UpdateNotifier.hpp"
@@ -38,6 +39,10 @@ int main(int argc, char *argv[]) {
     SplashScreen splash(baseDir + QStringLiteral("/res/icons/splash.png"));
     splash.show();
     app.processEvents();
+
+    // swap staged plugin updates in before plugins load; may briefly wait out a
+    // previous instance that is still shutting down and holding the DLLs mapped
+    PluginStoreManager::applyPendingUpdates();
 
     // Start the application (loads plugins, registers hotkeys, shows tray)
     QuolApplication quolApp(&settings);

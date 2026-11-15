@@ -19,6 +19,10 @@ public:
     void downloadPlugin(const QString &itemName, bool isUpdate, const QString &appVersion = QString());
     void installLocalPlugin(const QString &zipFilePath);
 
+    // Applies staged plugin updates (<name>_updated dirs) by swapping them in. Must run
+    // before plugins load: loaded DLLs cannot be renamed mid-process.
+    static void applyPendingUpdates();
+
     static QString artifactPluginName(const QString &itemName);
 
     static int compareVersions(const QString &a, const QString &b);
@@ -26,15 +30,21 @@ public:
 signals:
     void storeItemsFetched(const QJsonArray &items);
     void storeItemsFetchFailed(const QString &error);
-    void pluginDownloadFinished(const QString &pluginName, bool success, const QString &errorMessage);
+    // restartRequired: the update was staged and applies after an app restart
+    void pluginDownloadFinished(
+        const QString &pluginName, bool success, const QString &errorMessage, bool restartRequired
+    );
     void localPluginInstallFinished(const QString &pluginName, bool success);
 
 private:
-    void extractZipAsync(const QString &zipPath, const QString &pluginDir, std::function<void(bool)> onDone);
+    void extractZipAsync(
+        const QString &zipPath, const QString &pluginDir, const QString &pluginName, std::function<void(bool)> onDone
+    );
 
     bool createTempPluginZip(const QByteArray &data, QString &zipPath) const;
 
-    bool backupExisting(const QString &pluginDir, const QString &backupDir) const;
+    // sets errorMessage and returns false when the plugin needs a newer app version
+    bool checkPluginDependency(const QString &pluginDir, const QString &appVersion, QString &errorMessage) const;
 
     QNetworkAccessManager *m_network;
 };
