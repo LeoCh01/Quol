@@ -99,6 +99,9 @@ public:
 private:
     QString nextId();
 
+    // Installs the Win32 hooks; deferred to the next event-loop pass by start().
+    void installHooks();
+
     bool parseHotkey(
         const QString &combo,
         quint32 &registerModifiers,

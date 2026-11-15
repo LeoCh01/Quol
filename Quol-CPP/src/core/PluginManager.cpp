@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QJsonArray>
 #include <QMessageBox>
 #include <QPluginLoader>
@@ -96,6 +97,8 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
     for (const auto &val : pluginIds) {
         qInfo() << "Loading plugin:" << val.toString();
         const QString id = val.toString().trimmed();
+        QElapsedTimer loadTimer;
+        loadTimer.start();
 
         QuolWindow *win = nullptr;
         QPluginLoader *loader = nullptr;
@@ -147,7 +150,7 @@ void PluginManager::loadPlugins(AppSettingsManager *settings, TransitionManager 
 
             transitions->addWindow(win);
 
-            qInfo() << "Plugin loaded:" << id;
+            qInfo() << "Plugin loaded:" << id << "(" << loadTimer.elapsed() << "ms )";
             m_windows.append(win);
             m_plugins.append(LoadedPlugin{loader, plugin});
             win = nullptr;

@@ -47,7 +47,7 @@ void TitleBar::setTitle(const QString &title) {
 
 void TitleBar::setConfigAction(const std::function<void()> &onClick) {
     m_configBtn->setVisible(true);
-    m_configBtn->disconnect();
+    QObject::disconnect(m_configBtn, &QPushButton::clicked, nullptr, nullptr);
     connect(m_configBtn, &QPushButton::clicked, this, [onClick]() {
         if (onClick) {
             onClick();
@@ -57,7 +57,7 @@ void TitleBar::setConfigAction(const std::function<void()> &onClick) {
 
 void TitleBar::setCloseAction(const std::function<void()> &onClick) {
     m_closeBtn->setVisible(true);
-    m_closeBtn->disconnect();
+    QObject::disconnect(m_closeBtn, &QPushButton::clicked, nullptr, nullptr);
     connect(m_closeBtn, &QPushButton::clicked, this, [onClick]() {
         if (onClick) {
             onClick();

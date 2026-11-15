@@ -270,11 +270,23 @@ void InputManager::start() {
         return;
     }
 
-    QCoreApplication::instance()->installNativeEventFilter(this);
+    m_running = true;
     g_inputManager = this;
+
+    // Low-level hooks are serviced by the thread that installs them. Defer the
+    // install to the next event-loop pass so a busy startup (plugin loading,
+    // window creation) doesn't starve the hooks and lag the mouse system-wide.
+    QMetaObject::invokeMethod(this, &InputManager::installHooks, Qt::QueuedConnection);
+}
+
+void InputManager::installHooks() {
+    if (!m_running || m_keyboardHook) {
+        return;
+    }
+
+    QCoreApplication::instance()->installNativeEventFilter(this);
     m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardHookProc, nullptr, 0);
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseHookProc, nullptr, 0);
-    m_running = true;
 }
 
 void InputManager::stop() {
